@@ -35,6 +35,12 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
+// Inside your registration submit handler:
+const fullName = formData.fullName; // e.g., "Emmanuel Chibuikem"
+
+// Convert "Emmanuel Chibuikem" -> "emmanuelchibuikem" (removing spaces and invalid chars)
+const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -45,7 +51,7 @@ export default function RegisterPage() {
     try {
       // Map frontend fields to match your Django RegisterSerializer fields (username, email, password, phone_number)
       await registerUser({
-        username: formData.fullName,
+        username: generatedUsername,
         email: formData.email,
         password: formData.password,
         phone_number: formData.phone,
