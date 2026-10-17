@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Layers, 
@@ -34,7 +33,7 @@ import {
   adminProcessWithdrawal 
 } from '@/src/lib/api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -44,6 +43,7 @@ export default function AdminDashboardPage() {
   // Dynamic states
   const [usersList, setUsersList] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [txFilter, setTxFilter] = useState('all');
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   
   // Credit user form states
@@ -56,7 +56,7 @@ export default function AdminDashboardPage() {
   const [platformName, setPlatformName] = useState('Crystals Investments');
   const [settingsStatus, setSettingsStatus] = useState('');
 
-  // Fetch live data on tab change
+  // Fetch live data on tab change or filter change
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
         .then(data => setUsersList(data))
         .catch(err => console.error('Failed to load users', err));
     } else if (activeTab === 'transactions') {
-      adminFetchTransactions()
+      adminFetchTransactions(txFilter)
         .then(data => setTransactions(data))
         .catch(err => console.error('Failed to load transactions', err));
     } else if (activeTab === 'withdrawal_requests') {
@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
         })
         .catch(err => console.error('Failed to load settings', err));
     }
-  }, [activeTab]);
+  }, [activeTab, txFilter]);
 
   const handleCreditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
     try {
       await adminUpdateUserStatus(userId, !currentStatus);
       setUsersList(usersList.map(u => u.id === userId ? { ...u, is_blacklisted: !currentStatus } : u));
-    } catch (err) {
+    } catch {
       alert('Failed to update blacklist status');
     }
   };
@@ -114,7 +114,7 @@ export default function AdminDashboardPage() {
     try {
       await adminProcessWithdrawal(id, action);
       setWithdrawals(withdrawals.filter(w => w.id !== id));
-    } catch (err) {
+    } catch {
       alert('Failed to process withdrawal action');
     }
   };
@@ -372,25 +372,42 @@ export default function AdminDashboardPage() {
           {/* TAB 4: TRANSACTIONS HISTORY */}
           {activeTab === 'transactions' && (
             <div className="bg-[#111622] border border-gray-800 rounded-xl p-6 space-y-4 shadow-xl">
-              <h2 className="text-base font-bold text-white uppercase tracking-wider">Transactions History</h2>
-              <p className="text-xs text-gray-400">Global log of all deposits, withdrawals, and system earnings.</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-base font-bold text-white uppercase tracking-wider">Transactions History</h2>
+                  <p className="text-xs text-gray-400">Global log of all deposits, withdrawals, and system earnings.</p>
+                </div>
+                <select 
+                  value={txFilter} 
+                  onChange={(e) => setTxFilter(e.target.value)}
+                  className="bg-[#181e28] border border-gray-800 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                >
+                  <option value="all">All Transactions</option>
+                  <option value="deposit">Deposits</option>
+                  <option value="withdrawal">Withdrawals</option>
+                  <option value="investment">Investments</option>
+                </select>
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-[#181e28] text-gray-400 uppercase text-[10px]">
                     <tr>
-                      <th className="p-3">ID</th>
+                      <th className="p-3">UserName</th>
                       <th className="p-3">Type</th>
                       <th className="p-3">Amount</th>
                       <th className="p-3">Status</th>
+                      <th className="p-3">Date</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800 text-gray-300">
                     {transactions.map((txn) => (
-                      <tr key={txn.id}>
-                        <td className="p-3 font-mono">#{txn.id}</td>
+                      <tr key={txn.id} className="hover:bg-[#181e28]/40">
+                        <td className="p-3 font-bold text-blue-400">{txn.username}</td>
                         <td className="p-3 text-emerald-400 font-semibold">{txn.transaction_type}</td>
                         <td className="p-3 font-bold text-white">${txn.amount}</td>
                         <td className="p-3"><span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-[10px]">{txn.status}</span></td>
+                        <td className="p-3 text-gray-400">{txn.date}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -408,7 +425,7 @@ export default function AdminDashboardPage() {
                 {withdrawals.map((w) => (
                   <div key={w.id} className="bg-[#181e28] border border-gray-800 rounded-xl p-4 flex items-center justify-between text-xs">
                     <div className="space-y-1">
-                      <div className="font-bold text-white">User ID: {w.user} requested <span className="text-amber-400">${w.amount}</span></div>
+                      <div className="font-bold text-white">User: <span className="text-blue-400">{w.user}</span> requested <span className="text-amber-400">${w.amount}</span></div>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => handleWithdrawalAction(w.id, 'approve')} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 cursor-pointer">
@@ -445,7 +462,7 @@ export default function AdminDashboardPage() {
                     type="email" 
                     value={creditEmail}
                     onChange={(e) => setCreditEmail(e.target.value)}
-                    placeholder="e.g., evelynwells1234@gmail.com" 
+                    placeholder="e.g., demo@crystalsinvestments.org" 
                     required
                     className="w-full bg-[#181e28] border border-gray-800 rounded-lg px-3.5 py-2.5 text-white outline-none focus:border-blue-500" 
                   />
@@ -503,12 +520,12 @@ export default function AdminDashboardPage() {
             <div className="bg-[#111622] border border-gray-800 rounded-xl p-6 space-y-4 shadow-xl">
               <div className="border-b border-gray-800 pb-3">
                 <h2 className="text-base font-bold text-white">Live Customer Chat Messages</h2>
-                <p className="text-xs text-gray-400">Incoming user queries routed directly to your admin WhatsApp via CallMeBot.</p>
+                <p className="text-xs text-gray-400">Incoming user queries routed directly to your admin WhatsApp.</p>
               </div>
 
               <div className="bg-[#181e28] border border-gray-800 rounded-lg p-4 space-y-3 text-xs">
                 <div className="flex justify-between font-bold text-blue-400">
-                  <span>Evelyn (evelynwells1234@gmail.com)</span>
+                  <span>Demo User (demo@crystalsinvestments.org)</span>
                   <span className="text-gray-500 text-[10px]">Just now</span>
                 </div>
                 <p className="bg-[#111622] p-3 rounded-lg border border-gray-800 text-gray-200">
