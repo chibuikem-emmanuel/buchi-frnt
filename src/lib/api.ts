@@ -1,5 +1,6 @@
 // src/lib/api.ts
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+// src/lib/api.ts
+const API_URL = 'https://buchi-bck.onrender.com/api';
 
 // Helper for authenticated requests
 function getAuthHeaders() {
