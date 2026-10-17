@@ -1,26 +1,35 @@
 // src/lib/api.ts
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
+// src/lib/api.ts
+const API_URL = 'https://buchi-bck.onrender.com/api';
 
-const getAuthHeaders = () => {
+// Helper for authenticated requests
+function getAuthHeaders() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
   };
-};
+}
 
-// 1. Register User
-export async function registerUser(userData: { 
-  email: string; 
-  username: string; 
-  password: string; 
-  phone_number?: string;
-  country?: string;
-  eth_address?: string;
-  btc_address?: string;
-  usdt_erc20?: string;
-  usdt_trc20?: string;
-}) {
+// 1. Fetch Investment Plans
+export async function fetchInvestmentPlans() {
+  const res = await fetch(`${API_URL}/plans/`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch investment plans');
+  return res.json();
+}
+
+// 2. Submit Chat Message to CallMeBot WhatsApp Bridge
+export async function sendWhatsAppMessage(data: { name: string; email?: string; message: string }) {
+  const res = await fetch(`${API_URL}/chat/send-whatsapp/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+// 3. Register User
+export async function registerUser(userData: { email: string; username: string; password: string; phone_number?: string }) {
   const res = await fetch(`${API_URL}/accounts/register/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -33,7 +42,7 @@ export async function registerUser(userData: {
   return res.json();
 }
 
-// 2. Login User (Returns JWT & verifies admin staff status)
+// 4. Login User (Returns JWT & verifies admin staff status)
 export async function loginUser(credentials: { email: string; password: string }) {
   const res = await fetch(`${API_URL}/accounts/login/`, {
     method: 'POST',
@@ -60,81 +69,78 @@ export async function loginUser(credentials: { email: string; password: string }
   return data;
 }
 
-// 3. Fetch Authenticated User Profile
+// 5. Fetch Authenticated User Profile
 export async function fetchUserProfile() {
   const res = await fetch(`${API_URL}/accounts/profile/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch profile (${res.status})`);
   return res.json();
 }
 
-// 4. User Actions (Deposits & Withdrawals)
+// 6. User Deposit & Withdrawal Requests
 export async function createDeposit(amount: number) {
-  const res = await fetch(`${API_URL}/deposit/`, {
+  const res = await fetch(`${API_URL}/deposits/`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ amount }),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to process deposit');
-  return data;
-}
-
-export async function createWithdrawal(amount: number) {
-  const res = await fetch(`${API_URL}/withdraw/`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ amount }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to submit withdrawal request');
-  return data;
-}
-
-// 5. Admin API Helpers
-export async function adminFetchUsers() {
-  const res = await fetch(`${API_URL}/admin/users/`, { headers: getAuthHeaders() });
-  if (!res.ok) throw new Error('Failed to fetch users');
+  if (!res.ok) throw new Error('Deposit submission failed');
   return res.json();
 }
 
-export async function adminFetchTransactions(type = 'all') {
-  const res = await fetch(`${API_URL}/admin/transactions/?type=${type}`, { headers: getAuthHeaders() });
+export async function createWithdrawal(amount: number) {
+  const res = await fetch(`${API_URL}/withdrawals/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ amount }),
+  });
+  if (!res.ok) throw new Error('Withdrawal submission failed');
+  return res.json();
+}
+
+// 7. Admin Actions & Management Endpoints
+export async function adminCreditUser(email: string, amount: number) {
+  const res = await fetch(`${API_URL}/admin/credit-user/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ email, amount }),
+  });
+  if (!res.ok) throw new Error('Failed to credit user account');
+  return res.json();
+}
+
+export async function adminFetchUsers() {
+  const res = await fetch(`${API_URL}/admin/users/`, { headers: getAuthHeaders() });
+  if (!res.ok) throw new Error(`Admin fetch users failed (${res.status})`);
+  return res.json();
+}
+
+export async function adminUpdateUserStatus(userId: number, isBlacklisted: boolean) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}/`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ is_blacklisted: isBlacklisted }),
+  });
+  if (!res.ok) throw new Error('Failed to update user status');
+  return res.json();
+}
+
+export async function adminFetchTransactions() {
+  const res = await fetch(`${API_URL}/admin/transactions/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch transactions');
   return res.json();
 }
 
 export async function adminFetchWithdrawals() {
-  const res = await fetch(`${API_URL}/admin/withdrawals/pending/`, { headers: getAuthHeaders() });
+  const res = await fetch(`${API_URL}/admin/withdrawals/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch withdrawals');
   return res.json();
 }
 
-export async function adminCreditUser(email: string, amount: number) {
-  const res = await fetch(`${API_URL}/admin/credit-user/`, {
+export async function adminProcessWithdrawal(withdrawalId: number, action: 'approve' | 'reject') {
+  const res = await fetch(`${API_URL}/admin/withdrawals/${withdrawalId}/`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ email, amount })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to credit user');
-  return data;
-}
-
-export async function adminUpdateUserStatus(userId: number, is_blacklisted: boolean) {
-  const res = await fetch(`${API_URL}/admin/users/${userId}/`, {
-    method: 'PATCH',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ is_blacklisted })
-  });
-  if (!res.ok) throw new Error('Failed to update status');
-  return res.json();
-}
-
-export async function adminProcessWithdrawal(id: number, action: 'approve' | 'reject') {
-  const res = await fetch(`${API_URL}/admin/withdrawals/${id}/process/`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ action })
+    body: JSON.stringify({ action }),
   });
   if (!res.ok) throw new Error('Failed to process withdrawal');
   return res.json();
