@@ -35,26 +35,33 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
 
-// Inside your registration submit handler:
-const fullName = formData.fullName; // e.g., "Emmanuel Chibuikem"
-
-// Convert "Emmanuel Chibuikem" -> "emmanuelchibuikem" (removing spaces and invalid chars)
-const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
-
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    // Automatically generate a valid alphanumeric username from fullName (e.g., "Emmanuel Chibuikem" -> "emmanuelchibuikem")
+    const generatedUsername = formData.fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
+
+    if (!generatedUsername) {
+      setError('Please enter a valid name to generate a username.');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Map frontend fields to match your Django RegisterSerializer fields (username, email, password, phone_number)
+      // Map frontend fields to match your Django RegisterSerializer fields
       await registerUser({
         username: generatedUsername,
         email: formData.email,
         password: formData.password,
         phone_number: formData.phone,
+        country: formData.country,
+        eth_address: formData.ethAddress,
+        btc_address: formData.btcAddress,
+        usdt_erc20: formData.usdtErc20,
+        usdt_trc20: formData.usdtTrc20,
       });
 
       // Redirect to login page upon successful registration
@@ -116,7 +123,7 @@ const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
                     required
                     value={formData.fullName}
                     onChange={handleChange}
-                    placeholder="John Doe"
+                    placeholder="Emmanuel Chibuikem"
                     className="w-full bg-[#181e28] border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white rounded-lg pl-10 pr-4 py-2.5 text-xs transition-all outline-none"
                   />
                 </div>
@@ -165,7 +172,6 @@ const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-gray-300 transition-colors"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -194,7 +200,6 @@ const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-gray-300 transition-colors"
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -216,7 +221,7 @@ const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
                     required
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+234..."
                     className="w-full bg-[#181e28] border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white rounded-lg pl-10 pr-4 py-2.5 text-xs transition-all outline-none"
                   />
                 </div>
@@ -238,15 +243,10 @@ const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
                     className="w-full bg-[#181e28] border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white rounded-lg pl-10 pr-4 py-2.5 text-xs transition-all outline-none appearance-none"
                   >
                     <option value="United States">United States</option>
+                    <option value="Nigeria">Nigeria</option>
                     <option value="United Kingdom">United Kingdom</option>
                     <option value="Canada">Canada</option>
                     <option value="Germany">Germany</option>
-                    <option value="Australia">Australia</option>
-                    <option value="Brazil">Brazil</option>
-                    <option value="Nigeria">Nigeria</option>
-                    <option value="Spain">Spain</option>
-                    <option value="France">France</option>
-                    <option value="Afghanistan">Afghanistan</option>
                   </select>
                 </div>
               </div>
@@ -356,9 +356,6 @@ const generatedUsername = fullName.toLowerCase().replace(/[^a-zA-Z0-9_]/g, '');
             <div className="flex items-center justify-between text-xs text-gray-400 pt-2">
               <Link href="/login" className="hover:text-blue-400 transition-colors">
                 Already registered? <span className="font-semibold text-white underline">Login Here</span>
-              </Link>
-              <Link href="/forgot-password" className="hover:text-blue-400 transition-colors">
-                Reset Password
               </Link>
             </div>
           </div>
