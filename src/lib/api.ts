@@ -67,7 +67,30 @@ export async function fetchUserProfile() {
   return res.json();
 }
 
-// 4. Admin API Helpers
+// 4. User Actions (Deposits & Withdrawals)
+export async function createDeposit(amount: number) {
+  const res = await fetch(`${API_URL}/deposit/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ amount }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to process deposit');
+  return data;
+}
+
+export async function createWithdrawal(amount: number) {
+  const res = await fetch(`${API_URL}/withdraw/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ amount }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to submit withdrawal request');
+  return data;
+}
+
+// 5. Admin API Helpers
 export async function adminFetchUsers() {
   const res = await fetch(`${API_URL}/admin/users/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to fetch users');
