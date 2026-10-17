@@ -3,17 +3,37 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, UserCheck, Eye, EyeOff } from 'lucide-react';
+import { loginUser } from '@/src/lib/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', { email, password });
-    // Handle authentication logic here (e.g., redirecting to dashboard)
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await loginUser({ email, password });
+      
+      // Check if logged-in user is staff/admin and route accordingly
+      if (res && res.is_staff) {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,6 +65,12 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/30 text-red-400 text-xs p-3 rounded-lg">
+                {error}
+              </div>
+            )}
+
             {/* Email Field */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-xs font-semibold text-gray-300 uppercase tracking-wide">
@@ -106,14 +132,15 @@ export default function LoginPage() {
             <div className="pt-2 space-y-3">
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3.5 rounded-lg transition-all shadow-lg hover:shadow-blue-600/20 uppercase tracking-wider"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3.5 rounded-lg transition-all shadow-lg hover:shadow-blue-600/20 uppercase tracking-wider cursor-pointer disabled:opacity-50"
               >
-                Sign In
+                {loading ? 'Signing In...' : 'Sign In'}
               </button>
 
               <div className="text-center pt-2">
                 <p className="text-xs text-gray-400">
-                  Don't have an account yet?{' '}
+                  Don&apos;t have an account yet?{' '}
                   <Link href="/register" className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
                     Register Now
                   </Link>

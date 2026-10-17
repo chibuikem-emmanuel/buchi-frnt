@@ -3,9 +3,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, Phone, Globe, Wallet, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { registerUser } from '@/src/lib/api';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -21,15 +24,40 @@ export default function RegisterPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration submitted:', formData);
-    // Handle registration submission logic here
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Map frontend fields to match your Django RegisterSerializer fields (username, email, password, phone_number)
+      await registerUser({
+        username: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        phone_number: formData.phone,
+      });
+
+      // Redirect to login page upon successful registration
+      router.push('/login?registered=success');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,6 +81,12 @@ export default function RegisterPage() {
         {/* Registration Card Form */}
         <form onSubmit={handleSubmit} className="bg-[#111622] border border-gray-800 rounded-2xl shadow-2xl p-6 sm:p-10 space-y-8">
           
+          {error && (
+            <div className="bg-red-500/20 border border-red-500/30 text-red-400 text-xs p-3 rounded-lg">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* LEFT COLUMN: Account Information */}
@@ -307,9 +341,10 @@ export default function RegisterPage() {
           <div className="pt-4 space-y-4 border-t border-gray-800/80">
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-blue-600/20 uppercase tracking-widest"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-blue-600/20 uppercase tracking-widest cursor-pointer disabled:opacity-50"
             >
-              REGISTER
+              {loading ? 'Creating Account...' : 'REGISTER'}
             </button>
 
             <div className="flex items-center justify-between text-xs text-gray-400 pt-2">
