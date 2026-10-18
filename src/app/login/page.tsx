@@ -20,7 +20,11 @@ export default function LoginPage() {
 
     try {
       const res = await loginUser({ email, password });
-      if (res.is_staff) {
+
+      // Check if user is staff or matches your admin email address
+      const isAdminAccount = email.toLowerCase() === 'admin@crystalsinvestments.org' || res.is_staff;
+
+      if (isAdminAccount) {
         router.push('/admin/dashboard');
       } else {
         router.push('/dashboard');
