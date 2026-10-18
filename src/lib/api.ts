@@ -56,7 +56,9 @@ export async function loginUser(credentials: { email: string; password: string }
     localStorage.setItem('refreshToken', data.refresh);
   }
 
-  // Fetch profile to verify admin / staff privileges
+  // Force admin recognition if it's your admin email or backend flags it
+  const isAdminEmail = credentials.email.toLowerCase() === 'admin@crystalsinvestments.org'; // Replace with your exact admin email if different
+
   try {
     const profileRes = await fetch(`${API_URL}/accounts/profile/`, {
       headers: { 'Authorization': `Bearer ${data.access}` },
@@ -65,14 +67,14 @@ export async function loginUser(credentials: { email: string; password: string }
       const profile = await profileRes.json();
       return { 
         ...data, 
-        is_staff: Boolean(profile.is_staff || profile.is_superuser || profile.role === 'admin') 
+        is_staff: Boolean(isAdminEmail || profile.is_staff || profile.is_superuser || profile.role === 'admin') 
       };
     }
   } catch (err) {
     console.error('Failed to verify profile role:', err);
   }
 
-  return data;
+  return { ...data, is_staff: isAdminEmail };
 }
 
 export async function fetchUserProfile() {
