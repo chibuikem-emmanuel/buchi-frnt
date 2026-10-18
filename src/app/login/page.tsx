@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,6 @@ export default function LoginPage() {
     try {
       const res = await loginUser({ email, password });
 
-      // Direct check: force route to admin dashboard if it's your admin email or backend flags staff/superuser
       const isAdminAccount = 
         email.trim().toLowerCase() === 'admin@crystalsinvestments.org' || 
         res?.is_staff === true || 
@@ -54,7 +54,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Right Login Card */}
+        {/* Right Login Form Card */}
         <div className="bg-[#1f2937] border border-gray-800 rounded-xl p-6 shadow-xl space-y-4">
           <div>
             <h2 className="text-xl font-bold text-white">LOGIN</h2>
