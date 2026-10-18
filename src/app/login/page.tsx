@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, UserCheck, Eye, EyeOff } from 'lucide-react';
-import { loginUser } from '@/src/lib/api';
+import { loginUser } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,8 +21,11 @@ export default function LoginPage() {
     try {
       const res = await loginUser({ email, password });
 
-      // Check if user is staff or matches your admin email address
-      const isAdminAccount = email.toLowerCase() === 'admin@crystalsinvestments.org' || res.is_staff;
+      // Direct check: force route to admin dashboard if it's your admin email or backend flags staff/superuser
+      const isAdminAccount = 
+        email.trim().toLowerCase() === 'admin@crystalsinvestments.org' || 
+        res?.is_staff === true || 
+        res?.is_superuser === true;
 
       if (isAdminAccount) {
         router.push('/admin/dashboard');

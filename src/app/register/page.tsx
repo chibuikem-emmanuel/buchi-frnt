@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, Phone, Globe, Wallet, Eye, EyeOff } from 'lucide-react';
-import { registerUser } from '@/src/lib/api';
+import { registerUser } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
