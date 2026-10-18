@@ -31,13 +31,26 @@ export default function AdminDashboardPage() {
   const [creditEmail, setCreditEmail] = useState('');
   const [creditAmount, setCreditAmount] = useState('');
 
-  // System Settings form state
+  // System Settings form state (Loaded automatically on mount)
   const [platformName, setPlatformName] = useState('Crystals Investments');
   const [settingsStatus, setSettingsStatus] = useState({ type: '', text: '' });
 
+  // Fetch initial settings and default tab data on mount
   useEffect(() => {
+    loadInitialSettings();
     loadTabData();
   }, [activeTab]);
+
+  const loadInitialSettings = async () => {
+    try {
+      const data = await fetchAdminSettings();
+      if (data?.platform_name) {
+        setPlatformName(data.platform_name);
+      }
+    } catch (err) {
+      console.error('Failed to load initial settings:', err);
+    }
+  };
 
   const loadTabData = async () => {
     setLoading(true);
@@ -95,6 +108,7 @@ export default function AdminDashboardPage() {
     setSettingsStatus({ type: '', text: '' });
     try {
       const res = await updateAdminSettings({ platform_name: platformName });
+      setPlatformName(res.platform_name); // Immediately updates the navbar state
       setSettingsStatus({ type: 'success', text: res.message || 'Settings updated successfully!' });
     } catch (err: any) {
       setSettingsStatus({ type: 'error', text: err.message || 'Failed to update settings.' });
@@ -112,7 +126,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-gray-900 font-sans text-xs">
       
-      {/* Header Banner */}
+      {/* Header Banner dynamically tracking platformName state */}
       <header className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700 text-white shadow-md p-3 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <span className="font-bold text-base tracking-wide uppercase">{platformName} Admin Portal</span>
