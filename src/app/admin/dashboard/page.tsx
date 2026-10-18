@@ -8,8 +8,13 @@ import {
   CheckCircle, XCircle 
 } from 'lucide-react';
 import { 
-  fetchAdminUsers, toggleUserBlacklist, creditUserAccount, 
-  fetchPendingWithdrawals, processWithdrawalRequest 
+  fetchAdminUsers, 
+  toggleUserBlacklist, 
+  creditUserAccount, 
+  fetchPendingWithdrawals, 
+  processWithdrawalRequest,
+  fetchAdminSettings,
+  updateAdminSettings
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
@@ -26,8 +31,9 @@ export default function AdminDashboardPage() {
   const [creditEmail, setCreditEmail] = useState('');
   const [creditAmount, setCreditAmount] = useState('');
 
-  // Settings form state
+  // System Settings form state
   const [platformName, setPlatformName] = useState('Crystals Investments');
+  const [settingsStatus, setSettingsStatus] = useState({ type: '', text: '' });
 
   useEffect(() => {
     loadTabData();
@@ -42,6 +48,9 @@ export default function AdminDashboardPage() {
       } else if (activeTab === 'withdrawals') {
         const data = await fetchPendingWithdrawals();
         setWithdrawals(Array.isArray(data) ? data : []);
+      } else if (activeTab === 'settings') {
+        const data = await fetchAdminSettings();
+        if (data?.platform_name) setPlatformName(data.platform_name);
       }
     } catch (err: any) {
       console.error('Error fetching tab data:', err);
@@ -81,6 +90,17 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSettingsStatus({ type: '', text: '' });
+    try {
+      const res = await updateAdminSettings({ platform_name: platformName });
+      setSettingsStatus({ type: 'success', text: res.message || 'Settings updated successfully!' });
+    } catch (err: any) {
+      setSettingsStatus({ type: 'error', text: err.message || 'Failed to update settings.' });
+    }
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/login';
@@ -92,10 +112,10 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-gray-900 font-sans text-xs">
       
-      {/* Orange Gold Header Banner */}
+      {/* Header Banner */}
       <header className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700 text-white shadow-md p-3 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <span className="font-bold text-base tracking-wide uppercase">Crystals Investments Admin Portal</span>
+          <span className="font-bold text-base tracking-wide uppercase">{platformName} Admin Portal</span>
           <div className="flex items-center space-x-4">
             <Link href="/admin/dashboard" className="hover:underline text-white font-medium">Home</Link>
             <span>|</span>
@@ -109,7 +129,7 @@ export default function AdminDashboardPage() {
       {/* Main Workspace Layout */}
       <div className="max-w-7xl mx-auto p-4 flex flex-col md:flex-row gap-6">
         
-        {/* Left Sidebar Menu */}
+        {/* Left Sidebar Navigation */}
         <aside className="w-full md:w-64 bg-white border border-orange-200 rounded shadow-sm p-3 shrink-0 h-fit space-y-1">
           <div className="bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold uppercase text-[11px] px-3 py-1.5 rounded mb-2">
             Menu
@@ -145,7 +165,7 @@ export default function AdminDashboardPage() {
           </nav>
         </aside>
 
-        {/* Dynamic Content Panel */}
+        {/* Dynamic Content Workspace */}
         <main className="flex-1 bg-white border border-gray-200 rounded shadow-sm p-5 min-h-[550px]">
           
           {/* TAB 1: INVESTMENT PROGRAMS */}
@@ -393,8 +413,21 @@ export default function AdminDashboardPage() {
           {/* TAB 9: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-4 max-w-md text-xs">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">System Settings</h2>
-              <form className="space-y-3">
+              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">
+                System Settings
+              </h2>
+
+              {settingsStatus.text && (
+                <div className={`p-2.5 rounded font-semibold text-xs ${
+                  settingsStatus.type === 'success' 
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
+                    : 'bg-red-50 text-red-800 border border-red-300'
+                }`}>
+                  {settingsStatus.text}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveSettings} className="space-y-3">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1 uppercase">Platform Name</label>
                   <input
@@ -405,7 +438,10 @@ export default function AdminDashboardPage() {
                     className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500"
                   />
                 </div>
-                <button type="button" className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider">
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider transition"
+                >
                   Save Changes
                 </button>
               </form>
