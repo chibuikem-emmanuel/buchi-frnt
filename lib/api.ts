@@ -161,7 +161,9 @@ export async function processWithdrawalRequest(id: number, action: 'approve' | '
 
 
 export async function fetchAdminSettings() {
-  const res = await fetch(`${API_URL}/admin/settings/`, { headers: getAuthHeaders() });
+  const res = await fetch(`${API_URL}/admin/settings/`, { 
+    headers: getAuthHeaders() 
+  });
   if (!res.ok) throw new Error('Failed to load system settings');
   return res.json();
 }
@@ -172,7 +174,10 @@ export async function updateAdminSettings(settings: { platform_name: string }) {
     headers: getAuthHeaders(),
     body: JSON.stringify(settings),
   });
+  
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to update system settings');
+  if (!res.ok) {
+    throw new Error(data.error || data.detail || 'Failed to update system settings');
+  }
   return data;
 }
