@@ -1,8 +1,13 @@
 // src/lib/api.ts
 
 const getRawApiUrl = () => {
-  const url = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
-  // Automatically fix any malformed slashes or single-slash typos from environment variables
+  let url = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
+  // Strip out any accidental markdown formatting or brackets
+  url = url.replace(/\[.*?\]\(.*?\)/g, '').replace(/[\[\]]/g, '').trim();
+  if (!url || !url.startsWith('http')) {
+    url = 'https://buchi-bck.onrender.com/api';
+  }
+  // Sanitize trailing slashes and malformed protocol slashes
   return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
 };
 
@@ -21,6 +26,8 @@ export async function registerUser(userData: {
   username: string; 
   password: string; 
   phone_number?: string;
+  country?: string;
+  payout_address?: string;
 }) {
   const res = await fetch(`${API_URL}/accounts/register/`, {
     method: 'POST',
@@ -35,30 +42,36 @@ export async function registerUser(userData: {
 }
 
 export async function loginUser(credentials: { email: string; password: string }) {
-  const targetUrl = `${API_URL}/accounts/login/`;
-  console.log("--> Attempting login to URL:", targetUrl); // <-- Check your browser console for this!
-
-  const res = await fetch(targetUrl, {
+  const res = await fetch(`${API_URL}/accounts/login/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
   });
 
-  // If the server returns HTML instead of JSON, catch it gracefully
-  const contentType = res.headers.get("content-type");
-  if (!contentType || !contentType.includes("application/json")) {
-    const textResponse = await res.text();
-    console.error("Server returned non-JSON response:", textResponse);
-    throw new Error("Server error: Endpoint returned HTML instead of API data.");
-  }
-
   if (!res.ok) throw new Error('Invalid email or password');
-  
+
   const data = await res.json();
   if (typeof window !== 'undefined') {
     localStorage.setItem('accessToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
   }
+
+  // Fetch profile to verify admin / staff privileges
+  try {
+    const profileRes = await fetch(`${API_URL}/accounts/profile/`, {
+      headers: { 'Authorization': `Bearer ${data.access}` },
+    });
+    if (profileRes.ok) {
+      const profile = await profileRes.json();
+      return { 
+        ...data, 
+        is_staff: Boolean(profile.is_staff || profile.is_superuser || profile.role === 'admin') 
+      };
+    }
+  } catch (err) {
+    console.error('Failed to verify profile role:', err);
+  }
+
   return data;
 }
 

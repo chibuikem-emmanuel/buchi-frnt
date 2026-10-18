@@ -15,9 +15,7 @@ import {
   Sliders, 
   FileText, 
   CheckCircle, 
-  XCircle,
-  FolderPlus,
-  BarChart2
+  XCircle
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com';
@@ -41,33 +39,54 @@ export default function AdminDashboardPage() {
   const [platformName, setPlatformName] = useState('Crystals Investments');
   const [settingsStatus, setSettingsStatus] = useState('');
 
-  // Fetch true data on tab change
+  // Fetch true data on tab change safely
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const headers = { 'Authorization': `Bearer ${token}` };
 
+    const parseArrayData = (data: any) => {
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.results)) return data.results;
+      return [];
+    };
+
     if (activeTab === 'users' || activeTab === 'blacklist') {
       fetch(`${API_URL}/admin/users/`, { headers })
         .then(res => res.json())
-        .then(data => setUsers(data))
-        .catch(err => console.error('Failed to load users', err));
+        .then(data => setUsers(parseArrayData(data)))
+        .catch(err => {
+          console.error('Failed to load users', err);
+          setUsers([]);
+        });
     } else if (activeTab === 'transactions') {
       fetch(`${API_URL}/admin/transactions/`, { headers })
         .then(res => res.json())
-        .then(data => setTransactions(data))
-        .catch(err => console.error('Failed to load transactions', err));
+        .then(data => setTransactions(parseArrayData(data)))
+        .catch(err => {
+          console.error('Failed to load transactions', err);
+          setTransactions([]);
+        });
     } else if (activeTab === 'withdrawals') {
       fetch(`${API_URL}/admin/withdrawals/pending/`, { headers })
         .then(res => res.json())
-        .then(data => setWithdrawals(data))
-        .catch(err => console.error('Failed to load withdrawals', err));
+        .then(data => setWithdrawals(parseArrayData(data)))
+        .catch(err => {
+          console.error('Failed to load withdrawals', err);
+          setWithdrawals([]);
+        });
     } else if (activeTab === 'settings') {
       fetch(`${API_URL}/admin/settings/`, { headers })
         .then(res => res.json())
-        .then(data => setPlatformName(data.platform_name))
+        .then(data => {
+          if (data && data.platform_name) setPlatformName(data.platform_name);
+        })
         .catch(err => console.error('Failed to load settings', err));
     }
   }, [activeTab]);
+
+  const safeUsers = Array.isArray(users) ? users : [];
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  const safeWithdrawals = Array.isArray(withdrawals) ? withdrawals : [];
 
   const handleCreditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +118,7 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ is_blacklisted: !currentStatus })
       });
-      setUsers(users.map(u => u.id === userId ? { ...u, is_blacklisted: !currentStatus } : u));
+      setUsers(safeUsers.map(u => u.id === userId ? { ...u, is_blacklisted: !currentStatus } : u));
     } catch (err) {
       alert('Failed to update blacklist status');
     }
@@ -113,7 +132,7 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action })
       });
-      setWithdrawals(withdrawals.filter(w => w.id !== id));
+      setWithdrawals(safeWithdrawals.filter(w => w.id !== id));
     } catch (err) {
       alert('Failed to process withdrawal action');
     }
@@ -151,7 +170,7 @@ export default function AdminDashboardPage() {
             <span className="font-bold text-lg tracking-wide uppercase">Crystals Investments Admin Portal</span>
           </div>
           <div className="text-sm space-x-4 font-medium flex items-center">
-            <Link href="/admin" className="hover:underline text-white">Home</Link>
+            <Link href="/admin/dashboard" className="hover:underline text-white">Home</Link>
             <span>|</span>
             <button onClick={handleLogout} className="hover:underline text-amber-100 flex items-center gap-1">
               <LogOut size={14} /> Logout
@@ -260,12 +279,12 @@ export default function AdminDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {users
-                      .filter((u: any) => !u.is_blacklisted)
-                      .filter((u: any) => u.username?.toLowerCase().includes(searchQuery.toLowerCase()) || u.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+                    {safeUsers
+                      .filter((u: any) => u && !u.is_blacklisted)
+                      .filter((u: any) => (u.username || '').toLowerCase().includes(searchQuery.toLowerCase()) || (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()))
                       .map((user: any, idx: number) => (
                         <tr key={user.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50/30'}>
-                          <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{user.username}</td>
+                          <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{user.username || 'User'}</td>
                           <td className="p-2 border-r border-gray-200 text-gray-600">{user.email}</td>
                           <td className="p-2 border-r border-gray-200 font-bold text-emerald-700">${Number(user.balance || 0).toFixed(2)}</td>
                           <td className="p-2 text-right">
@@ -298,11 +317,11 @@ export default function AdminDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {users
-                      .filter((u: any) => u.is_blacklisted)
+                    {safeUsers
+                      .filter((u: any) => u && u.is_blacklisted)
                       .map((user: any, idx: number) => (
                         <tr key={user.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50/30'}>
-                          <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{user.username}</td>
+                          <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{user.username || 'User'}</td>
                           <td className="p-2 border-r border-gray-200 text-gray-600">{user.email}</td>
                           <td className="p-2 text-right">
                             <button
@@ -335,11 +354,11 @@ export default function AdminDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {transactions.map((tx: any, idx: number) => (
+                    {safeTransactions.map((tx: any, idx: number) => (
                       <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50/30'}>
-                        <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{tx.username || tx.email}</td>
+                        <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{tx.username || tx.email || 'User'}</td>
                         <td className="p-2 border-r border-gray-200 font-bold uppercase text-orange-700">{tx.type}</td>
-                        <td className="p-2 border-r border-gray-200 font-bold text-emerald-700">${Number(tx.amount).toFixed(2)}</td>
+                        <td className="p-2 border-r border-gray-200 font-bold text-emerald-700">${Number(tx.amount || 0).toFixed(2)}</td>
                         <td className="p-2 text-gray-600">{new Date(tx.created_at || Date.now()).toLocaleString()}</td>
                       </tr>
                     ))}
@@ -354,14 +373,14 @@ export default function AdminDashboardPage() {
             <div className="space-y-4">
               <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Withdrawal Requests</h2>
               <div className="space-y-3">
-                {withdrawals.length === 0 ? (
+                {safeWithdrawals.length === 0 ? (
                   <p className="text-gray-500 text-xs py-4 text-center">No pending withdrawal requests.</p>
                 ) : (
-                  withdrawals.map((w: any) => (
+                  safeWithdrawals.map((w: any) => (
                     <div key={w.id} className="border border-orange-200 bg-amber-50/30 p-3 rounded flex justify-between items-center text-xs">
                       <div>
                         <p className="font-bold text-blue-900">{w.username || w.email}</p>
-                        <p className="font-bold text-emerald-700">Amount: ${Number(w.amount).toFixed(2)}</p>
+                        <p className="font-bold text-emerald-700">Amount: ${Number(w.amount || 0).toFixed(2)}</p>
                         <p className="text-gray-500">{new Date(w.created_at || Date.now()).toLocaleString()}</p>
                       </div>
                       <div className="flex gap-2">
