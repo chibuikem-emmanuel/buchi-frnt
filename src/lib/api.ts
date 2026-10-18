@@ -35,11 +35,23 @@ export async function registerUser(userData: {
 }
 
 export async function loginUser(credentials: { email: string; password: string }) {
-  const res = await fetch(`${API_URL}/accounts/login/`, {
+  const targetUrl = `${API_URL}/accounts/login/`;
+  console.log("--> Attempting login to URL:", targetUrl); // <-- Check your browser console for this!
+
+  const res = await fetch(targetUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
   });
+
+  // If the server returns HTML instead of JSON, catch it gracefully
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    const textResponse = await res.text();
+    console.error("Server returned non-JSON response:", textResponse);
+    throw new Error("Server error: Endpoint returned HTML instead of API data.");
+  }
+
   if (!res.ok) throw new Error('Invalid email or password');
   
   const data = await res.json();
@@ -47,16 +59,6 @@ export async function loginUser(credentials: { email: string; password: string }
     localStorage.setItem('accessToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
   }
-  
-  const profileRes = await fetch(`${API_URL}/accounts/profile/`, {
-    headers: { 'Authorization': `Bearer ${data.access}` },
-  });
-  
-  if (profileRes.ok) {
-    const profile = await profileRes.json();
-    return { ...data, is_staff: profile.is_staff || profile.is_superuser };
-  }
-
   return data;
 }
 
