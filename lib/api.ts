@@ -15,7 +15,7 @@ const getAuthHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
+    'Authorization': token ? `Bearer ${token}` : ''
   };
 };
 
@@ -95,11 +95,11 @@ export async function createDeposit(amount: number) {
   return data;
 }
 
-export async function createWithdrawal(amount: number) {
+export async function createWithdrawal(amount: number, method: string) {
   const res = await fetch(`${API_URL}/withdraw/`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ amount }),
+    body: JSON.stringify({ amount, method }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to submit withdrawal request');
@@ -157,13 +157,8 @@ export async function processWithdrawalRequest(id: number, action: 'approve' | '
   return res.json();
 }
 
-
-
-
 export async function fetchAdminSettings() {
-  const res = await fetch(`${API_URL}/admin/settings/`, { 
-    headers: getAuthHeaders() 
-  });
+  const res = await fetch(`${API_URL}/admin/settings/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to load system settings');
   return res.json();
 }
@@ -174,10 +169,7 @@ export async function updateAdminSettings(settings: { platform_name: string }) {
     headers: getAuthHeaders(),
     body: JSON.stringify(settings),
   });
-  
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || data.detail || 'Failed to update system settings');
-  }
+  if (!res.ok) throw new Error(data.error || 'Failed to update system settings');
   return data;
 }
