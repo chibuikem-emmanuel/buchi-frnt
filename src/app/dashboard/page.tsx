@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  CreditCard, 
   ArrowDownCircle, 
   ArrowUpCircle, 
   LogOut, 
@@ -13,7 +12,8 @@ import {
   TrendingUp,
   DollarSign
 } from 'lucide-react';
-import { fetchUserProfile, createDeposit, createWithdrawal } from '@/src/lib/api';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -24,7 +24,19 @@ export default function DashboardPage() {
   const [actionType, setActionType] = useState<'deposit' | 'withdraw'>('deposit');
 
   useEffect(() => {
-    fetchUserProfile()
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    fetch(`${API_URL}/accounts/profile/`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Unauthorized');
+        return res.json();
+      })
       .then(data => {
         setProfile(data);
         setLoading(false);
@@ -37,19 +49,32 @@ export default function DashboardPage() {
   const handleTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionMessage('');
+    const token = localStorage.getItem('accessToken');
+    const endpoint = actionType === 'deposit' ? `${API_URL}/deposit/` : `${API_URL}/withdraw/`;
+
     try {
-      const numAmount = parseFloat(amount);
-      if (actionType === 'deposit') {
-        const res = await createDeposit(numAmount);
-        setActionMessage(res.message || 'Deposit processed successfully!');
-      } else {
-        const res = await createWithdrawal(numAmount);
-        setActionMessage(res.message || 'Withdrawal request submitted!');
-      }
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: parseFloat(amount) })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Transaction failed');
+
+      setActionMessage(data.message || 'Transaction processed successfully!');
       setAmount('');
-      // Refresh profile data
-      const updated = await fetchUserProfile();
-      setProfile(updated);
+
+      // Refresh user profile stats
+      const profileRes = await fetch(`${API_URL}/accounts/profile/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (profileRes.ok) {
+        const updated = await profileRes.json();
+        setProfile(updated);
+      }
     } catch (err: any) {
       setActionMessage(err.message || 'Transaction failed');
     }
@@ -71,11 +96,12 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full bg-[#181e28] text-white min-h-screen flex flex-col">
-      {/* Top Navigation */}
+      
+      {/* Top Navigation Bar */}
       <header className="bg-[#111622] border-b border-gray-800 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-lg">
+            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-md">
               💎
             </div>
             <div>
@@ -102,10 +128,10 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Container Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
         
-        {/* Metric Cards */}
+        {/* Metric Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-[#111622] border border-gray-800 rounded-xl p-6 space-y-2 shadow-xl">
             <div className="flex items-center justify-between text-gray-400 text-xs uppercase font-bold">
@@ -132,7 +158,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Action Panel: Deposit / Withdraw */}
+        {/* Action Panel: Deposits & Withdrawals */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-[#111622] border border-gray-800 rounded-xl p-6 space-y-4 shadow-xl">
             <div className="flex gap-4 border-b border-gray-800 pb-3">
@@ -180,14 +206,14 @@ export default function DashboardPage() {
             </form>
           </div>
 
-          {/* Quick Links / Info */}
+          {/* Portfolio Information Card */}
           <div className="bg-[#111622] border border-gray-800 rounded-xl p-6 space-y-4 shadow-xl flex flex-col justify-between">
             <div>
               <h3 className="text-base font-bold text-white uppercase tracking-wider">Active Portfolio</h3>
-              <p className="text-xs text-gray-400 pt-1">Your capital is actively generating daily returns based on your chosen plans.</p>
+              <p className="text-xs text-gray-400 pt-1">Your capital is actively generating returns based on your chosen investment programs.</p>
             </div>
             <div className="bg-[#181e28] border border-gray-800 p-4 rounded-lg text-center text-xs text-gray-400">
-              No active manual plan locks currently. Your balance is fully liquid.
+              No active manual plan locks currently. Your balance is liquid and ready for deployment or withdrawal.
             </div>
           </div>
         </div>

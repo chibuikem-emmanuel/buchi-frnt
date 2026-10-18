@@ -13,7 +13,6 @@ export async function registerUser(userData: {
   username: string; 
   password: string; 
   phone_number?: string;
-  country?: string;
 }) {
   const res = await fetch(`${API_URL}/accounts/register/`, {
     method: 'POST',
@@ -57,28 +56,6 @@ export async function fetchUserProfile() {
   const res = await fetch(`${API_URL}/accounts/profile/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch profile (${res.status})`);
   return res.json();
-}
-
-export async function createDeposit(amount: number) {
-  const res = await fetch(`${API_URL}/deposit/`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ amount }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to process deposit');
-  return data;
-}
-
-export async function createWithdrawal(amount: number) {
-  const res = await fetch(`${API_URL}/withdraw/`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ amount }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to submit withdrawal request');
-  return data;
 }
 
 export async function adminFetchUsers() {
