@@ -1,4 +1,12 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
+// src/lib/api.ts
+
+const getRawApiUrl = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
+  // Automatically fix any malformed slashes or single-slash typos from environment variables
+  return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
+};
+
+const API_URL = getRawApiUrl();
 
 const getAuthHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -56,6 +64,28 @@ export async function fetchUserProfile() {
   const res = await fetch(`${API_URL}/accounts/profile/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch profile (${res.status})`);
   return res.json();
+}
+
+export async function createDeposit(amount: number) {
+  const res = await fetch(`${API_URL}/deposit/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ amount }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to process deposit');
+  return data;
+}
+
+export async function createWithdrawal(amount: number) {
+  const res = await fetch(`${API_URL}/withdraw/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ amount }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to submit withdrawal request');
+  return data;
 }
 
 export async function adminFetchUsers() {
