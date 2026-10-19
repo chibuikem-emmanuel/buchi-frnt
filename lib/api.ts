@@ -194,3 +194,21 @@ export async function fetchUserTransactions() {
   }
   return Array.isArray(data) ? data : [];
 }
+
+
+
+// src/lib/api.ts
+
+export async function updateAdminUserProfile(userId: number, payload: any) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}/`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to update user profile');
+  }
+  return data;
+}

@@ -14,7 +14,8 @@ import {
   fetchPendingWithdrawals, 
   processWithdrawalRequest,
   fetchAdminSettings,
-  updateAdminSettings
+  updateAdminSettings,
+  updateAdminUserProfile
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
@@ -54,11 +55,9 @@ export default function AdminDashboardPage() {
 
   // Credit/Penalty state for Funds view
   const [fundActionAmount, setFundActionAmount] = useState('');
-  const [fundActionType, setFundActionType] = useState<'bonus' | 'penalty'>('bonus');
 
   // System Settings form state
   const [platformName, setPlatformName] = useState('Crystals Investments');
-  const [settingsStatus, setSettingsStatus] = useState({ type: '', text: '' });
 
   useEffect(() => {
     loadInitialSettings();
@@ -127,10 +126,37 @@ export default function AdminDashboardPage() {
     setViewMode('funds');
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`User profile for ${selectedUser?.username} updated successfully!`);
-    setViewMode('list');
+    
+    if (editFormData.password && editFormData.password !== editFormData.retypePassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      const payload = {
+        full_name: editFormData.fullName,
+        username: editFormData.username,
+        email: editFormData.email,
+        status: editFormData.status,
+        password: editFormData.password || undefined,
+        btc_address: editFormData.btcAddress,
+        usdt_trc20: editFormData.usdtTrc20Address,
+        usdt_erc20: editFormData.usdtErc20Address,
+        eth_address: editFormData.ethAddress,
+        bnb_address: editFormData.bnbAddress,
+        admin_note: editFormData.adminNote
+      };
+
+      await updateAdminUserProfile(selectedUser.id, payload);
+      alert(`User profile for ${editFormData.username} updated successfully!`);
+      
+      await loadTabData();
+      setViewMode('list');
+    } catch (err: any) {
+      alert(err.message || 'Failed to save changes');
+    }
   };
 
   const handleAddBonusOrPenalty = async (type: 'bonus' | 'penalty') => {
@@ -323,7 +349,7 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              {/* VIEW 2: EDIT USER PAGE (userp2.PNG) */}
+              {/* VIEW 2: EDIT USER PAGE */}
               {viewMode === 'edit' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
@@ -405,7 +431,6 @@ export default function AdminDashboardPage() {
                       />
                     </div>
 
-                    {/* Crypto Address Fields */}
                     {[
                       { key: 'btcAddress', label: 'Address ₿', placeholder: 'Bitcoin Address' },
                       { key: 'usdtTrc20Address', label: 'Address ₮', placeholder: 'USDT TRC20 Address' },
@@ -456,7 +481,7 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              {/* VIEW 3: USER DETAILS & FUNDS PAGE (userp3.PNG) */}
+              {/* VIEW 3: USER DETAILS & FUNDS PAGE */}
               {viewMode === 'funds' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
@@ -572,16 +597,6 @@ export default function AdminDashboardPage() {
                         <span>Oct-18-2026 11:29:23 PM</span>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Instruction Notes Box */}
-                  <div className="border border-yellow-400 bg-yellow-50 p-3 rounded text-[11px] text-yellow-900 leading-relaxed">
-                    <p className="font-bold mb-1">Manage user funds:</p>
-                    <p><b>Account balance:</b> how many funds can the user deposit to any investment package or withdraw from the system.</p>
-                    <p><b>Total deposit:</b> how many funds has the user ever deposited to your system.</p>
-                    <p><b>Total active deposit:</b> the whole current deposit of this user.</p>
-                    <p><b>Total earnings:</b> how many funds has the user ever earned with your system.</p>
-                    <p><b>Total withdrawals:</b> how many funds has the user ever withdrawn from system.</p>
                   </div>
                 </div>
               )}
