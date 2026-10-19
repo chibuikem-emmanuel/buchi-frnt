@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Users, DollarSign, ShieldAlert, MessageSquare, 
   Settings, LogOut, TrendingUp, Search, Lock, Sliders, 
-  CreditCard, PlusCircle, ArrowLeft, Clock, Activity, Edit3, Trash2, History
+  CreditCard, PlusCircle, ArrowLeft, Clock, Activity, Edit3, Trash2
 } from 'lucide-react';
 import { 
   fetchAdminUsers, 
@@ -57,20 +57,6 @@ export default function AdminDashboardPage() {
     duration_days: '5',
     status: 'Active'
   });
-
-  // Transactions History Filter State
-  const [txTypeFilter, setTxTypeFilter] = useState('Deposit');
-  const [txCurrencyFilter, setTxCurrencyFilter] = useState('All eCurrencies');
-  const [txPageSize, setTxPageSize] = useState('20');
-  const [adminTransactions, setAdminTransactions] = useState<any[]>([
-    { id: 1, username: 'K38kamran', note: 'Deposit returned to user account: Deposit return', amount: '1209.00', date: 'Oct-11-2026 05:29:21 PM' },
-    { id: 2, username: '00000', note: 'Deposit returned to user account: Deposit return', amount: '4999.00', date: 'Oct-10-2026 10:35:16 AM' },
-    { id: 3, username: 'K38kamran', note: 'Deposit: Deposit to BASIC PLAN', amount: '1209.00', date: 'Oct-8-2026 05:29:21 PM' },
-    { id: 4, username: '00000', note: 'Deposit: Deposit to BASIC PLAN', amount: '4999.00', date: 'Oct-7-2026 10:35:16 AM' },
-    { id: 5, username: 'K38kamran', note: 'Deposit returned to user account: Deposit return', amount: '593.60', date: 'Sep-30-2026 04:48:13 PM' },
-    { id: 6, username: 'K38kamran', note: 'Deposit: Deposit to BASIC PLAN', amount: '593.60', date: 'Sep-27-2026 04:48:13 PM' },
-    { id: 7, username: 'K38kamran', note: 'Deposit returned to user account: Deposit return', amount: '530.00', date: 'Sep-21-2026 09:06:35 AM' },
-  ]);
 
   // Edit Processing Form State
   const [procFormData, setProcFormData] = useState({
@@ -364,7 +350,6 @@ export default function AdminDashboardPage() {
               { id: 'expiring', label: 'Expiring Deposits', icon: Clock },
               { id: 'users', label: 'Users', icon: Users },
               { id: 'blacklist', label: 'Accounts Blacklist', icon: ShieldAlert },
-              { id: 'transactions', label: 'Transactions History', icon: History },
               { id: 'withdrawals', label: 'Withdrawal Requests', icon: DollarSign },
               { id: 'processings', label: 'Processings', icon: CreditCard },
               { id: 'settings', label: 'System Settings', icon: Settings },
@@ -462,7 +447,7 @@ export default function AdminDashboardPage() {
 
                         <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                           <div className="space-y-1">
-                            <p><span className="font-semibold text-gray-600">Limits:</span> ${p.min_amount} -${p.max_amount}</p>
+                            <p><span className="font-semibold text-gray-600">Limits:</span> ${p.min_amount} - ${p.max_amount}</p>
                             <p><span className="font-semibold text-gray-600">Total:</span> <span className="bg-cyan-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.total_count || 0}</span> <span className="text-emerald-700 font-bold">${p.total_amount || '0.00'}</span></p>
                             <p><span className="font-semibold text-gray-600">Active:</span> <span className="bg-amber-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.active_count || 0}</span> <span className="text-emerald-700 font-bold">${p.active_amount || '0.00'}</span></p>
                           </div>
@@ -962,7 +947,7 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              {/* VIEW 3: USER DETAILS & FUNDS PAGE */}
+              {/* VIEW 3: USER DETAILS & FUNDS PAGE (Matches userp3_2.PNG) */}
               {viewMode === 'funds' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
@@ -972,6 +957,7 @@ export default function AdminDashboardPage() {
                     <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold flex items-center gap-1"><ArrowLeft size={14} /> Back</button>
                   </div>
 
+                  {/* Top user identification box */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs">
                     <div className="grid grid-cols-2 p-2 bg-amber-50/50 border-b border-orange-100">
                       <span className="font-bold text-gray-700">Username:</span>
@@ -987,6 +973,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
+                  {/* Processing Balances Table */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs">
                     <div className="grid grid-cols-3 bg-orange-500 p-2 font-bold text-white border-b border-orange-600">
                       <span>Processing</span>
@@ -1008,6 +995,7 @@ export default function AdminDashboardPage() {
                     ))}
                   </div>
 
+                  {/* Summary Statistics Rows with Action Buttons */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs divide-y divide-orange-100 bg-amber-50/20">
                     {[
                       { label: 'Total Balance', val: `$${Number(selectedUser.balance || 0).toFixed(2)}`, btn1: 'HISTORY' },
@@ -1032,6 +1020,7 @@ export default function AdminDashboardPage() {
                     ))}
                   </div>
 
+                  {/* Manage Bonus & Penalty Action box */}
                   <div className="p-3 bg-amber-100 border border-orange-200 rounded space-y-2">
                     <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
                     <div className="flex gap-2 items-center">
@@ -1041,6 +1030,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
+                  {/* User IPs */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs">
                     <div className="bg-orange-500 p-2 font-bold text-white border-b border-orange-600">User IPs:</div>
                     <div className="grid grid-cols-2 bg-amber-100 p-1.5 font-bold text-gray-700 border-b border-orange-200">
@@ -1052,122 +1042,17 @@ export default function AdminDashboardPage() {
                       <span>Active Now</span>
                     </div>
                   </div>
+
+                  {/* Help text box */}
+                  <div className="border border-amber-400 bg-amber-50/50 p-3 rounded text-[11px] text-gray-700 space-y-1">
+                    <p><b>Manage user funds:</b> Account balance, total deposits, active deposits, earnings, withdrawals, bonus, and penalty tracking.</p>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 6: TRANSACTIONS HISTORY */}
-          {activeTab === 'transactions' && (
-            <div className="space-y-4 text-xs font-sans">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
-                Transactions History:
-              </h2>
-
-              <div className="bg-amber-50/50 border border-orange-200 p-3 rounded space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <select 
-                      value={txTypeFilter} 
-                      onChange={(e) => setTxTypeFilter(e.target.value)}
-                      className="border border-orange-300 rounded px-2 py-1 bg-white font-bold"
-                    >
-                      <option value="All">All Transactions</option>
-                      <option value="Deposit">Deposit</option>
-                      <option value="Withdrawal">Withdrawal</option>
-                      <option value="Earning">Earning</option>
-                      <option value="Bonus">Bonus</option>
-                      <option value="Penalty">Penalty</option>
-                    </select>
-
-                    <select 
-                      value={txCurrencyFilter} 
-                      onChange={(e) => setTxCurrencyFilter(e.target.value)}
-                      className="border border-orange-300 rounded px-2 py-1 bg-white"
-                    >
-                      <option value="All eCurrencies">All eCurrencies</option>
-                      <option value="Bitcoin">Bitcoin</option>
-                      <option value="USDT TRC20">USDT TRC20</option>
-                      <option value="USDT ERC20">USDT ERC20</option>
-                      <option value="Ethereum">Ethereum</option>
-                      <option value="BNB">BNB</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-gray-700">From:</span>
-                    <select className="border border-orange-300 rounded px-1 py-0.5 bg-white"><option>19</option></select>
-                    <select className="border border-orange-300 rounded px-1 py-0.5 bg-white"><option>09</option></select>
-                    <select className="border border-orange-300 rounded px-1 py-0.5 bg-white"><option>2026</option></select>
-
-                    <span className="font-semibold text-gray-700 ml-2">To:</span>
-                    <select className="border border-orange-300 rounded px-1 py-0.5 bg-white"><option>19</option></select>
-                    <select className="border border-orange-300 rounded px-1 py-0.5 bg-white"><option>10</option></select>
-                    <select className="border border-orange-300 rounded px-1 py-0.5 bg-white"><option>2026</option></select>
-
-                    <span className="font-semibold text-gray-700 ml-2">Per Page:</span>
-                    <select 
-                      value={txPageSize} 
-                      onChange={(e) => setTxPageSize(e.target.value)}
-                      className="border border-orange-300 rounded px-1 py-0.5 bg-white"
-                    >
-                      <option value="20">20</option>
-                      <option value="50">50</option>
-                      <option value="100">100</option>
-                    </select>
-
-                    <button className="px-3 py-1 bg-amber-200 hover:bg-amber-300 border border-orange-300 font-bold rounded text-[10px] uppercase">
-                      Go
-                    </button>
-                    <button className="px-3 py-1 bg-amber-200 hover:bg-amber-300 border border-orange-300 font-bold rounded text-[10px] uppercase">
-                      CSV
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border border-orange-200 rounded overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-amber-100 text-gray-900 border-b border-orange-200 font-bold uppercase">
-                      <th className="p-2 border-r border-orange-200 text-center">UserName</th>
-                      <th className="p-2 border-r border-orange-200 text-right">Amount</th>
-                      <th className="p-2 text-center">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-orange-100">
-                    {adminTransactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-amber-50/40">
-                        <td className="p-2 border-r border-orange-100">
-                          <p className="font-bold text-blue-900">{tx.username}</p>
-                          <p className="text-[10px] text-gray-500 italic">{tx.note}</p>
-                        </td>
-                        <td className="p-2 border-r border-orange-100 text-right font-bold text-emerald-700">
-                          ${tx.amount} <span className="bg-emerald-100 border border-emerald-300 text-emerald-800 text-[9px] px-1 py-0.5 rounded ml-1">₮</span>
-                        </td>
-                        <td className="p-2 text-center text-gray-600 text-[11px] font-mono">
-                          {tx.date}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="flex justify-between items-center p-2 bg-amber-50/50 border border-orange-200 rounded font-bold">
-                <span className="text-gray-800 uppercase">Total for selected options:</span>
-                <span className="text-emerald-700">${adminTransactions.reduce((acc, curr) => acc + parseFloat(curr.amount), 0).toFixed(2)} <span className="bg-emerald-100 border border-emerald-300 text-emerald-800 text-[9px] px-1 py-0.5 rounded ml-1">₮</span></span>
-              </div>
-
-              <div className="flex gap-1 justify-start pt-2">
-                <button className="px-3 py-1 border border-gray-300 bg-white font-bold rounded">&lt;&lt;</button>
-                <button className="px-3 py-1 border border-orange-400 bg-amber-200 font-bold rounded">1</button>
-                <button className="px-3 py-1 border border-gray-300 bg-white font-bold rounded">&gt;&gt;</button>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 7: ACCOUNTS BLACKLIST */}
+          {/* TAB 6: ACCOUNTS BLACKLIST */}
           {activeTab === 'blacklist' && (
             <div className="space-y-4">
               <h2 className="text-base font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Accounts Blacklist</h2>
@@ -1203,7 +1088,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 8: WITHDRAWAL REQUESTS */}
+          {/* TAB 7: WITHDRAWAL REQUESTS */}
           {activeTab === 'withdrawals' && (
             <div className="space-y-4">
               <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
@@ -1228,7 +1113,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 9: SYSTEM SETTINGS */}
+          {/* TAB 8: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-4 max-w-md text-xs">
               <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">System Settings</h2>
