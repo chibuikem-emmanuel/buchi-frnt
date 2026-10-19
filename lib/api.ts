@@ -1,5 +1,3 @@
-// frontend/src/lib/api.ts
-
 const getRawApiUrl = () => {
   let url = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
   url = url.replace(/\[.*?\]\(.*?\)/g, '').replace(/[\[\]]/g, '').trim();
@@ -19,7 +17,7 @@ const getAuthHeaders = () => {
   };
 };
 
-// --- AUTHENTICATION ---
+// --- AUTHENTICATION & USER PROFILE ---
 
 export async function registerUser(userData: { 
   email: string; 
@@ -111,7 +109,9 @@ export async function createWithdrawal(amount: number, method: string) {
 export async function fetchAdminUsers() {
   const res = await fetch(`${API_URL}/admin/users/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error('Failed to load user directory');
-  return res.json();
+  const data = await res.json();
+  if (data && Array.isArray(data.results)) return data.results;
+  return Array.isArray(data) ? data : [];
 }
 
 export async function toggleUserBlacklist(userId: number, isBlacklisted: boolean) {
@@ -135,16 +135,22 @@ export async function creditUserAccount(email: string, amount: number) {
   return data;
 }
 
-export async function fetchAdminTransactions() {
-  const res = await fetch(`${API_URL}/admin/transactions/`, { headers: getAuthHeaders() });
-  if (!res.ok) throw new Error('Failed to load transactions');
-  return res.json();
-}
-
 export async function fetchPendingWithdrawals() {
-  const res = await fetch(`${API_URL}/admin/withdrawals/pending/`, { headers: getAuthHeaders() });
-  if (!res.ok) throw new Error('Failed to load pending withdrawals');
-  return res.json();
+  const res = await fetch(`${API_URL}/admin/withdrawals/pending/`, { 
+    headers: getAuthHeaders() 
+  });
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('Pending withdrawals fetch error:', res.status, errorText);
+    throw new Error('Failed to load pending withdrawals');
+  }
+
+  const data = await res.json();
+  if (data && Array.isArray(data.results)) {
+    return data.results;
+  }
+  return Array.isArray(data) ? data : [];
 }
 
 export async function processWithdrawalRequest(id: number, action: 'approve' | 'reject') {

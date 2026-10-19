@@ -35,11 +35,12 @@ export default function AdminDashboardPage() {
   const [platformName, setPlatformName] = useState('Crystals Investments');
   const [settingsStatus, setSettingsStatus] = useState({ type: '', text: '' });
 
-  // Load initial system settings and current tab data
+  // Load initial settings on mount
   useEffect(() => {
     loadInitialSettings();
   }, []);
 
+  // Fetch data whenever active tab changes
   useEffect(() => {
     loadTabData();
   }, [activeTab]);
