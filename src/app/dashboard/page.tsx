@@ -72,7 +72,6 @@ export default function UserDashboardPage() {
         setInvestmentPlans(data);
         setSelectedPlan(data[0]);
       } else {
-        // Fallback default plans
         const fallback = [
           { id: 1, name: 'BASIC PLAN', min_amount: '100.00', max_amount: '4999.00', profit_percent: '4.00', duration_days: '3' },
           { id: 2, name: 'EXPERT PLAN', min_amount: '5000.00', max_amount: '19999.00', profit_percent: '6.00', duration_days: '5' },
@@ -306,7 +305,6 @@ export default function UserDashboardPage() {
                 </div>
               )}
 
-              {/* Step 1: Dynamic Investment Plans */}
               <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
                 <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -326,7 +324,6 @@ export default function UserDashboardPage() {
                 </div>
               </div>
 
-              {/* Step 2: Deposit Amount & Address */}
               <form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
                 <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
                 <div className="space-y-3">

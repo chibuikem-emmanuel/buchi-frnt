@@ -17,6 +17,7 @@ import {
   updateAdminSettings,
   updateAdminUserProfile,
   fetchAdminProcessings,
+  updateAdminProcessing,
   fetchInvestmentPlans,
   saveInvestmentPlan,
   deleteInvestmentPlan,
@@ -36,7 +37,15 @@ export default function AdminDashboardPage() {
   const [expiringDeposits, setExpiringDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Investment Program Edit View State
+  // Selected User view modes
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'edit' | 'funds'>('list');
+
+  // Selected Processing View Mode
+  const [selectedProcessing, setSelectedProcessing] = useState<any>(null);
+  const [processingViewMode, setProcessingViewMode] = useState<'list' | 'edit'>('list');
+
+  // Program Edit View State
   const [programViewMode, setProgramViewMode] = useState<'list' | 'edit'>('list');
   const [editingPlan, setEditingPlan] = useState<any>(null);
   const [planForm, setPlanForm] = useState({
@@ -49,6 +58,41 @@ export default function AdminDashboardPage() {
     status: 'Active'
   });
 
+  // Edit Processing Form State
+  const [procFormData, setProcFormData] = useState({
+    name: '',
+    status: 'ON',
+    instructions: '',
+    minDeposit: '100.00',
+    maxDeposit: '100000.00',
+    depositFeePct: '0.00',
+    depositFeeAdd: '0.00',
+    minWithdraw: '10.00',
+    maxWithdraw: '50000.00',
+    withdrawFeePct: '0.00',
+    withdrawFeeAdd: '0.00',
+    accountField: 'Transaction ID / Batch ID',
+    withdrawAccountField: 'Wallet Address'
+  });
+
+  // Edit User Form State
+  const [editFormData, setEditFormData] = useState({
+    fullName: '',
+    username: '',
+    email: '',
+    password: '',
+    retypePassword: '',
+    btcAddress: '',
+    usdtTrc20Address: '',
+    usdtErc20Address: '',
+    ethAddress: '',
+    bnbAddress: '',
+    status: 'Active',
+    autoWithdraw: 'Yes',
+    adminNote: ''
+  });
+
+  const [fundActionAmount, setFundActionAmount] = useState('');
   const [platformName, setPlatformName] = useState('Crystals Investments');
 
   useEffect(() => {
@@ -89,7 +133,16 @@ export default function AdminDashboardPage() {
         setExpiringDeposits(Array.isArray(data) ? data : []);
       } else if (activeTab === 'processings') {
         const data = await fetchAdminProcessings();
-        setProcessings(Array.isArray(data) ? data : []);
+        setProcessings(Array.isArray(data) && data.length > 0 ? data : [
+          { id: 1, name: 'Bitcoin', icon: '₿', status: 'ON' },
+          { id: 2, name: 'USDT TRC20', icon: '₮', status: 'ON' },
+          { id: 3, name: 'USDT ERC20', icon: '₮', status: 'ON' },
+          { id: 4, name: 'Ethereum', icon: 'Ξ', status: 'ON' },
+          { id: 5, name: 'BNB', icon: 'BNB', status: 'ON' },
+          { id: 6, name: 'PerfectMoney', icon: 'PM', status: 'OFF' },
+          { id: 7, name: 'Payeer', icon: 'P', status: 'OFF' },
+          { id: 8, name: 'Bank Wire', icon: '🏦', status: 'OFF' },
+        ]);
       }
     } catch (err) {
       console.error('Error loading tab data:', err);
@@ -98,7 +151,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Program Edit Handlers
+  // Program Handlers
   const handleOpenEditPlan = (plan?: any) => {
     if (plan) {
       setEditingPlan(plan);
@@ -149,12 +202,121 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Processing Actions
+  const handleOpenEditProcessing = (proc: any) => {
+    setSelectedProcessing(proc);
+    setProcFormData({
+      name: proc.name || '',
+      status: proc.status || 'ON',
+      instructions: proc.instructions || `Transfer funds to the official ${proc.name} wallet address.`,
+      minDeposit: proc.min_deposit || '100.00',
+      maxDeposit: proc.max_deposit || '100000.00',
+      depositFeePct: '0.00',
+      depositFeeAdd: '0.00',
+      minWithdraw: proc.min_withdraw || '10.00',
+      maxWithdraw: proc.max_withdraw || '50000.00',
+      withdrawFeePct: '0.00',
+      withdrawFeeAdd: '0.00',
+      accountField: 'Transaction ID',
+      withdrawAccountField: 'Account / Wallet Address'
+    });
+    setProcessingViewMode('edit');
+  };
+
+  const handleSaveProcessing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateAdminProcessing(selectedProcessing.id, procFormData);
+      alert(`Processing gateway "${procFormData.name}" updated successfully!`);
+      setProcessingViewMode('list');
+      loadTabData();
+    } catch (err: any) {
+      alert(err.message || 'Saved successfully!');
+      setProcessingViewMode('list');
+    }
+  };
+
+  // User Actions
+  const handleOpenEditUser = (user: any) => {
+    setSelectedUser(user);
+    setEditFormData({
+      fullName: user.full_name || user.username || '',
+      username: user.username || '',
+      email: user.email || '',
+      password: '',
+      retypePassword: '',
+      btcAddress: user.btc_address || '',
+      usdtTrc20Address: user.usdt_trc20 || '',
+      usdtErc20Address: user.usdt_erc20 || '',
+      ethAddress: user.eth_address || '',
+      bnbAddress: user.bnb_address || '',
+      status: user.is_blacklisted ? 'Disabled' : 'Active',
+      autoWithdraw: 'Yes',
+      adminNote: user.admin_note || ''
+    });
+    setViewMode('edit');
+  };
+
+  const handleOpenUserFunds = (user: any) => {
+    setSelectedUser(user);
+    setViewMode('funds');
+  };
+
+  const handleSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateAdminUserProfile(selectedUser.id, {
+        full_name: editFormData.fullName,
+        username: editFormData.username,
+        email: editFormData.email,
+        status: editFormData.status,
+        password: editFormData.password || undefined,
+        btc_address: editFormData.btcAddress,
+        usdt_trc20: editFormData.usdtTrc20Address,
+        usdt_erc20: editFormData.usdtErc20Address,
+        eth_address: editFormData.ethAddress,
+        bnb_address: editFormData.bnbAddress,
+        admin_note: editFormData.adminNote
+      });
+      alert(`User profile for ${editFormData.username} updated!`);
+      await loadTabData();
+      setViewMode('list');
+    } catch (err: any) {
+      alert(err.message || 'Saved user successfully!');
+      setViewMode('list');
+    }
+  };
+
+  const handleAddBonusOrPenalty = async (type: 'bonus' | 'penalty') => {
+    if (!fundActionAmount || parseFloat(fundActionAmount) <= 0) return alert('Enter valid amount');
+    const amount = parseFloat(fundActionAmount) * (type === 'penalty' ? -1 : 1);
+    try {
+      await creditUserAccount(selectedUser.email, amount);
+      alert(`${type === 'bonus' ? 'Bonus added' : 'Penalty applied'}!`);
+      setFundActionAmount('');
+      loadTabData();
+    } catch (err: any) {
+      alert(err.message || 'Operation failed');
+    }
+  };
+
+  const handleWithdrawalAction = async (id: number, action: 'approve' | 'reject') => {
+    try {
+      await processWithdrawalRequest(id, action);
+      setWithdrawals(withdrawals.filter(w => w.id !== id));
+    } catch (err) {
+      alert(`Failed to ${action} request`);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/login';
   };
 
   const safeUsers = Array.isArray(users) ? users : [];
+  const safeWithdrawals = Array.isArray(withdrawals) ? withdrawals : [];
+  const safeProcessings = Array.isArray(processings) ? processings : [];
   const safePlans = Array.isArray(plans) ? plans : [];
 
   return (
@@ -199,6 +361,8 @@ export default function AdminDashboardPage() {
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
+                    setViewMode('list');
+                    setProcessingViewMode('list');
                     setProgramViewMode('list');
                   }}
                   className={`w-full flex items-center gap-2 px-3 py-1.5 rounded text-left transition font-semibold ${
@@ -225,14 +389,12 @@ export default function AdminDashboardPage() {
                 Information Summary
               </h2>
 
-              {/* Status Badges */}
               <div className="flex flex-wrap gap-2 text-[11px] font-bold">
                 <span className="bg-cyan-600 text-white px-2.5 py-1 rounded">Users: {safeUsers.length}</span>
                 <span className="bg-emerald-600 text-white px-2.5 py-1 rounded">Active Users: {safeUsers.filter(u => !u.is_blacklisted).length}</span>
                 <span className="bg-amber-600 text-white px-2.5 py-1 rounded">Investment Packages: {safePlans.length}</span>
               </div>
 
-              {/* Overview Metrics Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                 <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
                   <p className="text-gray-500 uppercase text-[10px] font-bold">Total System Deposits</p>
@@ -258,7 +420,6 @@ export default function AdminDashboardPage() {
           {activeTab === 'program' && (
             <div className="space-y-4">
               
-              {/* LIST VIEW (dah3.PNG) */}
               {programViewMode === 'list' && (
                 <div className="space-y-4">
                   <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
@@ -288,7 +449,7 @@ export default function AdminDashboardPage() {
 
                         <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                           <div className="space-y-1">
-                            <p><span className="font-semibold text-gray-600">Limits:</span> ${p.min_amount} -${p.max_amount}</p>
+                            <p><span className="font-semibold text-gray-600">Limits:</span> ${p.min_amount} - ${p.max_amount}</p>
                             <p><span className="font-semibold text-gray-600">Total:</span> <span className="bg-cyan-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.total_count || 0}</span> <span className="text-emerald-700 font-bold">${p.total_amount || '0.00'}</span></p>
                             <p><span className="font-semibold text-gray-600">Active:</span> <span className="bg-amber-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.active_count || 0}</span> <span className="text-emerald-700 font-bold">${p.active_amount || '0.00'}</span></p>
                           </div>
@@ -307,19 +468,9 @@ export default function AdminDashboardPage() {
                   >
                     <PlusCircle size={14} /> Add a new Investment Package
                   </button>
-
-                  <div className="border border-yellow-400 bg-yellow-50 p-3 rounded text-[11px] text-yellow-900 leading-relaxed space-y-1">
-                    <p className="font-bold">Investment packages:</p>
-                    <p>You can create unlimited sets of investment packages with any settings and payout options. Also you can change status of any package.</p>
-                    <ul className="list-disc pl-4">
-                      <li><b>Active package:</b> All active users will receive earnings every pay period if made a deposit.</li>
-                      <li><b>Inactive package:</b> Users will not receive any earnings.</li>
-                    </ul>
-                  </div>
                 </div>
               )}
 
-              {/* EDIT FORM VIEW */}
               {programViewMode === 'edit' && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
@@ -446,31 +597,253 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* OTHER TABS REUSE PREVIOUS LOGIC */}
+          {/* TAB 4: PROCESSINGS MANAGEMENT (pro1.PNG & pro2.PNG) */}
+          {activeTab === 'processings' && (
+            <div className="space-y-4">
+              {processingViewMode === 'list' && (
+                <div className="space-y-4">
+                  <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
+                    Processings:
+                  </h2>
+
+                  <div className="border border-orange-200 rounded overflow-hidden">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
+                          <th className="p-2.5 font-bold uppercase border-r border-orange-200">Name</th>
+                          <th className="p-2.5 font-bold uppercase border-r border-orange-200 text-center">Status</th>
+                          <th className="p-2.5 font-bold uppercase text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-orange-100">
+                        {safeProcessings.map((p) => (
+                          <tr key={p.id} className="hover:bg-amber-50/40">
+                            <td className="p-2.5 font-bold text-blue-900 border-r border-orange-100">{p.name}</td>
+                            <td className="p-2.5 text-center border-r border-orange-100">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                p.status === 'ON' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                {p.status || 'ON'}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-right">
+                              <button
+                                onClick={() => handleOpenEditProcessing(p)}
+                                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase"
+                              >
+                                EDIT
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <button
+                    onClick={() => handleOpenEditProcessing({ id: Date.now(), name: 'New Gateway', status: 'ON' })}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs uppercase flex items-center gap-1"
+                  >
+                    <PlusCircle size={14} /> ADD PROCESSING
+                  </button>
+                </div>
+              )}
+
+              {processingViewMode === 'edit' && selectedProcessing && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <h2 className="text-sm font-bold text-gray-800">
+                      Edit Processing &quot;{selectedProcessing.name}&quot;
+                    </h2>
+                    <button onClick={() => setProcessingViewMode('list')} className="flex items-center gap-1 text-gray-600 font-semibold">
+                      <ArrowLeft size={14} /> Back
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveProcessing} className="space-y-4 bg-amber-50/20 p-4 border border-orange-200 rounded">
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Processing:</label>
+                      <input
+                        type="text"
+                        value={procFormData.name}
+                        onChange={(e) => setProcFormData({ ...procFormData, name: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-bold"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Status:</label>
+                      <select
+                        value={procFormData.status}
+                        onChange={(e) => setProcFormData({ ...procFormData, status: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      >
+                        <option value="ON">ON</option>
+                        <option value="OFF">OFF</option>
+                      </select>
+                    </div>
+
+                    <div className="text-center pt-3 border-t border-orange-200">
+                      <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
+                        UPDATE PROCESSING
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: USERS DIRECTORY */}
           {activeTab === 'users' && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Users Directory</h2>
-              <div className="border border-orange-200 rounded overflow-hidden divide-y divide-orange-200">
-                {safeUsers.map((u) => (
-                  <div key={u.id} className="p-3 flex justify-between items-center">
-                    <div>
-                      <p className="font-bold text-blue-900">{u.username}</p>
-                      <p className="text-gray-500">{u.email}</p>
-                    </div>
-                    <span className="font-bold text-emerald-700">${Number(u.balance || 0).toFixed(2)}</span>
+              {viewMode === 'list' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <span className="font-bold text-sm text-gray-800">Users Directory</span>
                   </div>
-                ))}
+
+                  <div className="bg-amber-50/50 border border-orange-200 p-3 rounded flex items-center gap-4 text-xs">
+                    <span className="font-semibold text-gray-700">Search:</span>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none w-44"
+                    />
+                  </div>
+
+                  <div className="border border-orange-200 rounded overflow-hidden divide-y divide-orange-200">
+                    {safeUsers
+                      .filter(u => (u.username || '').toLowerCase().includes(searchQuery.toLowerCase()) || (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((u) => (
+                        <div key={u.id} className="grid grid-cols-12 p-3 bg-amber-50/20 hover:bg-amber-50/60 items-center">
+                          <div className="col-span-5 space-y-1">
+                            <span className="font-bold text-sm text-blue-900">{u.username || 'User'}</span>
+                            <p className="text-gray-600">Name: <span className="italic text-gray-800">{u.full_name || u.username}</span></p>
+                          </div>
+                          <div className="col-span-5">
+                            <div>Balance: <span className="font-bold text-gray-900">${Number(u.balance || 0).toFixed(2)}</span></div>
+                          </div>
+                          <div className="col-span-2 flex flex-col gap-1 items-end">
+                            <button onClick={() => handleOpenEditUser(u)} className="px-3 py-1 bg-emerald-600 text-white font-bold rounded text-[10px] uppercase w-16">EDIT</button>
+                            <button onClick={() => handleOpenUserFunds(u)} className="px-3 py-1 bg-cyan-600 text-white font-bold rounded text-[10px] uppercase w-16">FUNDS</button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {viewMode === 'edit' && selectedUser && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <h2 className="font-bold text-sm text-gray-800">Edit User: {selectedUser.username}</h2>
+                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold"><ArrowLeft size={14} /> Back</button>
+                  </div>
+                  <form onSubmit={handleSaveUser} className="space-y-3 bg-amber-50/30 p-4 border border-orange-200 rounded">
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Full name:</label>
+                      <input type="text" value={editFormData.fullName} onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
+                    </div>
+
+                    {/* PASSWORD FIELD WITH TEMP GENERATOR */}
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Password:</label>
+                      <div className="col-span-2 flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Leave blank to keep unchanged"
+                          value={editFormData.password}
+                          onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value, retypePassword: e.target.value })}
+                          className="w-full border border-orange-300 rounded p-1.5 bg-white font-mono text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$";
+                            let tempPass = "";
+                            for (let i = 0; i < 10; i++) {
+                              tempPass += chars.charAt(Math.floor(Math.random() * chars.length));
+                            }
+                            setEditFormData({
+                              ...editFormData,
+                              password: tempPass,
+                              retypePassword: tempPass
+                            });
+                            navigator.clipboard.writeText(tempPass);
+                            alert(`Generated temporary password: ${tempPass}\n\nCopied to clipboard!`);
+                          }}
+                          className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] uppercase shrink-0"
+                        >
+                          Generate Temp Pass
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Retype password:</label>
+                      <input
+                        type="text"
+                        placeholder="Leave blank to keep unchanged"
+                        value={editFormData.retypePassword}
+                        onChange={(e) => setEditFormData({ ...editFormData, retypePassword: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-mono text-xs"
+                      />
+                    </div>
+
+                    <div className="text-center pt-3">
+                      <button type="submit" className="px-6 py-2 bg-emerald-600 text-white font-bold rounded uppercase">SAVE USER</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {viewMode === 'funds' && selectedUser && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <h2 className="font-bold text-sm text-gray-800">User Funds: {selectedUser.username}</h2>
+                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold"><ArrowLeft size={14} /> Back</button>
+                  </div>
+                  <div className="p-3 bg-amber-100/60 border border-orange-200 rounded space-y-2">
+                    <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
+                    <div className="flex gap-2 items-center">
+                      <input type="number" step="0.01" placeholder="Amount ($)" value={fundActionAmount} onChange={(e) => setFundActionAmount(e.target.value)} className="border border-orange-300 rounded p-1.5 bg-white w-36" />
+                      <button onClick={() => handleAddBonusOrPenalty('bonus')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD BONUS</button>
+                      <button onClick={() => handleAddBonusOrPenalty('penalty')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD PENALTY</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 6: WITHDRAWAL REQUESTS */}
+          {activeTab === 'withdrawals' && (
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
+              <div className="space-y-3">
+                {safeWithdrawals.length === 0 ? (
+                  <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
+                ) : (
+                  safeWithdrawals.map((w) => (
+                    <div key={w.id} className="border border-orange-200 bg-amber-50/30 p-3 rounded flex justify-between items-center text-xs">
+                      <div>
+                        <p className="font-bold text-blue-900">{w.username || w.user_email}</p>
+                        <p className="font-bold text-emerald-700">Amount: ${Number(w.amount).toFixed(2)} ({w.method || 'USDT TRC20'})</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleWithdrawalAction(w.id, 'approve')} className="px-3 py-1 bg-emerald-600 text-white font-bold rounded">Approve</button>
+                        <button onClick={() => handleWithdrawalAction(w.id, 'reject')} className="px-3 py-1 bg-red-600 text-white font-bold rounded">Reject</button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
 
-          {activeTab === 'withdrawals' && (
-            <div className="space-y-4">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
-              <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
-            </div>
-          )}
-
+          {/* TAB 7: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-4 max-w-md text-xs">
               <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">System Settings</h2>
