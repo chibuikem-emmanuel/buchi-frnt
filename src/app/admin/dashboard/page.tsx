@@ -25,9 +25,9 @@ import {
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
-  // Default tab set to Overview (dah1.PNG)
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   
   // Dynamic State Arrays
   const [users, setUsers] = useState<any[]>([]);
@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
   const [expiringDeposits, setExpiringDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Selected User view modes
+  // Selected User View Modes
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'edit' | 'funds'>('list');
 
@@ -89,6 +89,9 @@ export default function AdminDashboardPage() {
     bnbAddress: '',
     status: 'Active',
     autoWithdraw: 'Yes',
+    payEarningsAuto: 'No',
+    maxDailyWithdraw: '0.00000000',
+    demoAccount: false,
     adminNote: ''
   });
 
@@ -151,7 +154,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Program Handlers
+  // Investment Program Handlers
   const handleOpenEditPlan = (plan?: any) => {
     if (plan) {
       setEditingPlan(plan);
@@ -252,6 +255,9 @@ export default function AdminDashboardPage() {
       bnbAddress: user.bnb_address || '',
       status: user.is_blacklisted ? 'Disabled' : 'Active',
       autoWithdraw: 'Yes',
+      payEarningsAuto: 'No',
+      maxDailyWithdraw: '0.00000000',
+      demoAccount: false,
       adminNote: user.admin_note || ''
     });
     setViewMode('edit');
@@ -419,7 +425,6 @@ export default function AdminDashboardPage() {
           {/* TAB 2: INVESTMENT PROGRAMS (dah3.PNG) */}
           {activeTab === 'program' && (
             <div className="space-y-4">
-              
               {programViewMode === 'list' && (
                 <div className="space-y-4">
                   <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
@@ -549,7 +554,6 @@ export default function AdminDashboardPage() {
                   </form>
                 </div>
               )}
-
             </div>
           )}
 
@@ -683,9 +687,96 @@ export default function AdminDashboardPage() {
                       </select>
                     </div>
 
-                    <div className="text-center pt-3 border-t border-orange-200">
+                    {/* Deposit Section */}
+                    <div className="border-t border-orange-200 pt-3 space-y-3">
+                      <p className="font-bold text-orange-900 uppercase">Deposit:</p>
+                      
+                      <div className="grid grid-cols-3 items-start gap-2">
+                        <label className="font-bold text-gray-700 text-right pt-1">Payment Instructions for Users:</label>
+                        <textarea
+                          rows={4}
+                          value={procFormData.instructions}
+                          onChange={(e) => setProcFormData({ ...procFormData, instructions: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                        ></textarea>
+                      </div>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">User Transaction Fields:</label>
+                        <input
+                          type="text"
+                          value={procFormData.accountField}
+                          onChange={(e) => setProcFormData({ ...procFormData, accountField: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">Deposit Limits ($):</label>
+                        <div className="col-span-2 flex items-center gap-3">
+                          <span className="text-gray-500 font-semibold">Min ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.minDeposit}
+                            onChange={(e) => setProcFormData({ ...procFormData, minDeposit: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                          <span className="text-gray-500 font-semibold">Max ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.maxDeposit}
+                            onChange={(e) => setProcFormData({ ...procFormData, maxDeposit: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Withdraw Section */}
+                    <div className="border-t border-orange-200 pt-3 space-y-3">
+                      <p className="font-bold text-orange-900 uppercase">Withdraw:</p>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">Withdraw Limits ($):</label>
+                        <div className="col-span-2 flex items-center gap-3">
+                          <span className="text-gray-500 font-semibold">Min ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.minWithdraw}
+                            onChange={(e) => setProcFormData({ ...procFormData, minWithdraw: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                          <span className="text-gray-500 font-semibold">Max ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.maxWithdraw}
+                            onChange={(e) => setProcFormData({ ...procFormData, maxWithdraw: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">User Account Fields:</label>
+                        <input
+                          type="text"
+                          value={procFormData.withdrawAccountField}
+                          onChange={(e) => setProcFormData({ ...procFormData, withdrawAccountField: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-center pt-3 border-t border-orange-200">
                       <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
-                        UPDATE PROCESSING
+                        UPDATE
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProcessingViewMode('list')}
+                        className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded uppercase"
+                      >
+                        RETURN
                       </button>
                     </div>
                   </form>
@@ -694,7 +785,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 5: USERS DIRECTORY */}
+          {/* TAB 5: USERS DIRECTORY (userp.PNG, userp2.PNG, userp3.PNG) */}
           {activeTab === 'users' && (
             <div className="space-y-4">
               {viewMode === 'list' && (
@@ -703,31 +794,59 @@ export default function AdminDashboardPage() {
                     <span className="font-bold text-sm text-gray-800">Users Directory</span>
                   </div>
 
-                  <div className="bg-amber-50/50 border border-orange-200 p-3 rounded flex items-center gap-4 text-xs">
-                    <span className="font-semibold text-gray-700">Search:</span>
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none w-44"
-                    />
+                  <div className="bg-amber-50/50 border border-orange-200 p-3 rounded flex flex-wrap items-center gap-4 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Search:</span>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none w-44"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Status:</span>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none"
+                      >
+                        <option value="All">--All--</option>
+                        <option value="Active">Active</option>
+                        <option value="Disabled">Disabled</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="border border-orange-200 rounded overflow-hidden divide-y divide-orange-200">
+                    <div className="grid grid-cols-12 bg-amber-100 p-2 font-bold text-gray-800 border-b border-orange-200">
+                      <div className="col-span-5">User</div>
+                      <div className="col-span-5">Amounts</div>
+                      <div className="col-span-2 text-right">Actions</div>
+                    </div>
+
                     {safeUsers
                       .filter(u => (u.username || '').toLowerCase().includes(searchQuery.toLowerCase()) || (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()))
                       .map((u) => (
-                        <div key={u.id} className="grid grid-cols-12 p-3 bg-amber-50/20 hover:bg-amber-50/60 items-center">
+                        <div key={u.id} className="grid grid-cols-12 p-3 bg-amber-50/20 hover:bg-amber-50/60 items-center border-b border-orange-100">
                           <div className="col-span-5 space-y-1">
-                            <span className="font-bold text-sm text-blue-900">{u.username || 'User'}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-blue-900">{u.username || 'User'}</span>
+                              <span className="bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded text-[9px] uppercase">
+                                {u.is_blacklisted ? 'Disabled' : 'Active'}
+                              </span>
+                            </div>
                             <p className="text-gray-600">Name: <span className="italic text-gray-800">{u.full_name || u.username}</span></p>
                           </div>
-                          <div className="col-span-5">
+
+                          <div className="col-span-5 grid grid-cols-2 gap-y-0.5 text-[11px] text-gray-700">
                             <div>Balance: <span className="font-bold text-gray-900">${Number(u.balance || 0).toFixed(2)}</span></div>
+                            <div>Funded: <span className="font-bold text-gray-900">${Number(u.balance || 0).toFixed(2)}</span></div>
                           </div>
+
                           <div className="col-span-2 flex flex-col gap-1 items-end">
-                            <button onClick={() => handleOpenEditUser(u)} className="px-3 py-1 bg-emerald-600 text-white font-bold rounded text-[10px] uppercase w-16">EDIT</button>
-                            <button onClick={() => handleOpenUserFunds(u)} className="px-3 py-1 bg-cyan-600 text-white font-bold rounded text-[10px] uppercase w-16">FUNDS</button>
+                            <button onClick={() => handleOpenEditUser(u)} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase w-16">EDIT</button>
+                            <button onClick={() => handleOpenUserFunds(u)} className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase w-16">FUNDS</button>
                           </div>
                         </div>
                       ))}
@@ -735,16 +854,36 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
+              {/* VIEW 2: EDIT USER FORM */}
               {viewMode === 'edit' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
                     <h2 className="font-bold text-sm text-gray-800">Edit User: {selectedUser.username}</h2>
                     <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold"><ArrowLeft size={14} /> Back</button>
                   </div>
+
                   <form onSubmit={handleSaveUser} className="space-y-3 bg-amber-50/30 p-4 border border-orange-200 rounded">
                     <div className="grid grid-cols-3 items-center gap-2">
                       <label className="font-bold text-gray-700 text-right">Full name:</label>
                       <input type="text" value={editFormData.fullName} onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Status:</label>
+                      <select value={editFormData.status} onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white">
+                        <option value="Active">Active</option>
+                        <option value="Disabled">Disabled</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Username:</label>
+                      <input type="text" value={editFormData.username} onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">E-mail:</label>
+                      <input type="email" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
                     </div>
 
                     {/* PASSWORD FIELD WITH TEMP GENERATOR */}
@@ -792,6 +931,25 @@ export default function AdminDashboardPage() {
                       />
                     </div>
 
+                    {[
+                      { key: 'btcAddress', label: 'Address ₿', placeholder: 'Bitcoin Address' },
+                      { key: 'usdtTrc20Address', label: 'Address ₮', placeholder: 'USDT TRC20 Address' },
+                      { key: 'usdtErc20Address', label: 'Address ₮', placeholder: 'USDT ERC20 Address' },
+                      { key: 'ethAddress', label: 'Address Ξ', placeholder: 'Ethereum Address' },
+                      { key: 'bnbAddress', label: 'Address BNB', placeholder: 'BNB Address' },
+                    ].map((field) => (
+                      <div key={field.key} className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">{field.label}:</label>
+                        <input
+                          type="text"
+                          placeholder={field.placeholder}
+                          value={(editFormData as any)[field.key]}
+                          onChange={(e) => setEditFormData({ ...editFormData, [field.key]: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-mono"
+                        />
+                      </div>
+                    ))}
+
                     <div className="text-center pt-3">
                       <button type="submit" className="px-6 py-2 bg-emerald-600 text-white font-bold rounded uppercase">SAVE USER</button>
                     </div>
@@ -799,12 +957,20 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
+              {/* VIEW 3: USER DETAILS & FUNDS PAGE */}
               {viewMode === 'funds' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
                     <h2 className="font-bold text-sm text-gray-800">User Funds: {selectedUser.username}</h2>
                     <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold"><ArrowLeft size={14} /> Back</button>
                   </div>
+
+                  <div className="bg-amber-100 border border-orange-200 p-3 rounded space-y-1 text-xs">
+                    <div className="grid grid-cols-3"><span className="font-bold">Username:</span> <span>{selectedUser.username}</span></div>
+                    <div className="grid grid-cols-3"><span className="font-bold">Full Name:</span> <span>{selectedUser.full_name || selectedUser.username}</span></div>
+                    <div className="grid grid-cols-3"><span className="font-bold">E-mail:</span> <span className="text-blue-900">{selectedUser.email}</span></div>
+                  </div>
+
                   <div className="p-3 bg-amber-100/60 border border-orange-200 rounded space-y-2">
                     <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
                     <div className="flex gap-2 items-center">
@@ -818,7 +984,43 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 6: WITHDRAWAL REQUESTS */}
+          {/* TAB 6: ACCOUNTS BLACKLIST */}
+          {activeTab === 'blacklist' && (
+            <div className="space-y-4">
+              <h2 className="text-base font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Accounts Blacklist</h2>
+              <div className="border border-orange-200 rounded overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
+                      <th className="p-2 border-r border-orange-200 font-bold uppercase">UserName</th>
+                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Email</th>
+                      <th className="p-2 font-bold uppercase text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-orange-100">
+                    {safeUsers
+                      .filter(u => u && u.is_blacklisted)
+                      .map((user, idx) => (
+                        <tr key={user.id || idx} className="bg-white">
+                          <td className="p-2 border-r border-orange-100 font-bold text-blue-900">{user.username || 'User'}</td>
+                          <td className="p-2 border-r border-orange-100 text-gray-600">{user.email}</td>
+                          <td className="p-2 text-right">
+                            <button
+                              onClick={() => toggleUserBlacklist(user.id, true)}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[11px]"
+                            >
+                              Restore Access
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: WITHDRAWAL REQUESTS */}
           {activeTab === 'withdrawals' && (
             <div className="space-y-4">
               <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
@@ -843,7 +1045,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 7: SYSTEM SETTINGS */}
+          {/* TAB 8: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-4 max-w-md text-xs">
               <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">System Settings</h2>
