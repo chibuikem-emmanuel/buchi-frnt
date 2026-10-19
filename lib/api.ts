@@ -212,3 +212,23 @@ export async function updateAdminUserProfile(userId: number, payload: any) {
   }
   return data;
 }
+
+
+// src/lib/api.ts
+
+export async function fetchAdminProcessings() {
+  const res = await fetch(`${API_URL}/admin/processings/`, { headers: getAuthHeaders() });
+  if (!res.ok) throw new Error('Failed to fetch processing gateways');
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+export async function updateAdminProcessing(id: number, payload: any) {
+  const res = await fetch(`${API_URL}/admin/processings/${id}/`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to update processing gateway');
+  return res.json();
+}

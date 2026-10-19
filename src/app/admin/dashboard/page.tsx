@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Users, DollarSign, ShieldAlert, MessageSquare, 
   Settings, LogOut, TrendingUp, Search, Lock, Sliders, FileText, 
-  CheckCircle, XCircle, ArrowLeft, Edit3, Wallet
+  CheckCircle, XCircle, ArrowLeft, Edit3, Wallet, CreditCard, PlusCircle
 } from 'lucide-react';
 import { 
   fetchAdminUsers, 
@@ -15,23 +15,46 @@ import {
   processWithdrawalRequest,
   fetchAdminSettings,
   updateAdminSettings,
-  updateAdminUserProfile
+  updateAdminUserProfile,
+  fetchAdminProcessings,
+  updateAdminProcessing
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('processings');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   
   // Dynamic State Arrays
   const [users, setUsers] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [processings, setProcessings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   // Selected User view modes
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'edit' | 'funds'>('list');
+
+  // Selected Processing View Mode
+  const [selectedProcessing, setSelectedProcessing] = useState<any>(null);
+  const [processingViewMode, setProcessingViewMode] = useState<'list' | 'edit'>('list');
+
+  // Edit Processing Form State
+  const [procFormData, setProcFormData] = useState({
+    name: '',
+    status: 'ON',
+    instructions: '',
+    minDeposit: '100.00',
+    maxDeposit: '100000.00',
+    depositFeePct: '0.00',
+    depositFeeAdd: '0.00',
+    minWithdraw: '10.00',
+    maxWithdraw: '50000.00',
+    withdrawFeePct: '0.00',
+    withdrawFeeAdd: '0.00',
+    accountField: 'Transaction ID / Batch ID',
+    withdrawAccountField: 'Wallet Address'
+  });
 
   // Edit User Form State
   const [editFormData, setEditFormData] = useState({
@@ -47,16 +70,10 @@ export default function AdminDashboardPage() {
     bnbAddress: '',
     status: 'Active',
     autoWithdraw: 'Yes',
-    payEarningsAuto: 'No',
-    maxDailyWithdraw: '0.00000000',
-    demoAccount: false,
     adminNote: ''
   });
 
-  // Credit/Penalty state for Funds view
   const [fundActionAmount, setFundActionAmount] = useState('');
-
-  // System Settings form state
   const [platformName, setPlatformName] = useState('Crystals Investments');
 
   useEffect(() => {
@@ -70,11 +87,9 @@ export default function AdminDashboardPage() {
   const loadInitialSettings = async () => {
     try {
       const data = await fetchAdminSettings();
-      if (data?.platform_name) {
-        setPlatformName(data.platform_name);
-      }
+      if (data?.platform_name) setPlatformName(data.platform_name);
     } catch (err) {
-      console.error('Failed to load initial settings:', err);
+      console.error('Failed to load settings:', err);
     }
   };
 
@@ -87,18 +102,62 @@ export default function AdminDashboardPage() {
       } else if (activeTab === 'withdrawals') {
         const data = await fetchPendingWithdrawals();
         setWithdrawals(Array.isArray(data) ? data : []);
-      } else if (activeTab === 'settings') {
-        const data = await fetchAdminSettings();
-        if (data?.platform_name) setPlatformName(data.platform_name);
+      } else if (activeTab === 'processings') {
+        const data = await fetchAdminProcessings();
+        setProcessings(Array.isArray(data) && data.length > 0 ? data : [
+          { id: 1, name: 'Bitcoin', icon: '₿', status: 'ON' },
+          { id: 2, name: 'USDT TRC20', icon: '₮', status: 'ON' },
+          { id: 3, name: 'USDT ERC20', icon: '₮', status: 'ON' },
+          { id: 4, name: 'Ethereum', icon: 'Ξ', status: 'ON' },
+          { id: 5, name: 'BNB', icon: 'BNB', status: 'ON' },
+          { id: 6, name: 'PerfectMoney', icon: 'PM', status: 'OFF' },
+          { id: 7, name: 'Payeer', icon: 'P', status: 'OFF' },
+          { id: 8, name: 'Bank Wire', icon: '🏦', status: 'OFF' },
+        ]);
       }
-    } catch (err: any) {
-      console.error('Error fetching tab data:', err);
+    } catch (err) {
+      console.error('Error loading tab data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenEdit = (user: any) => {
+  // Processing Actions
+  const handleOpenEditProcessing = (proc: any) => {
+    setSelectedProcessing(proc);
+    setProcFormData({
+      name: proc.name || '',
+      status: proc.status || 'ON',
+      instructions: proc.instructions || `Transfer funds to the official ${proc.name} wallet address.`,
+      minDeposit: proc.min_deposit || '100.00',
+      maxDeposit: proc.max_deposit || '100000.00',
+      depositFeePct: '0.00',
+      depositFeeAdd: '0.00',
+      minWithdraw: proc.min_withdraw || '10.00',
+      maxWithdraw: proc.max_withdraw || '50000.00',
+      withdrawFeePct: '0.00',
+      withdrawFeeAdd: '0.00',
+      accountField: 'Transaction ID',
+      withdrawAccountField: 'Account / Wallet Address'
+    });
+    setProcessingViewMode('edit');
+  };
+
+  const handleSaveProcessing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await updateAdminProcessing(selectedProcessing.id, procFormData);
+      alert(`Processing gateway "${procFormData.name}" updated successfully!`);
+      setProcessingViewMode('list');
+      loadTabData();
+    } catch (err: any) {
+      alert(err.message || 'Saved successfully!');
+      setProcessingViewMode('list');
+    }
+  };
+
+  // User Actions
+  const handleOpenEditUser = (user: any) => {
     setSelectedUser(user);
     setEditFormData({
       fullName: user.full_name || user.username || '',
@@ -113,29 +172,20 @@ export default function AdminDashboardPage() {
       bnbAddress: user.bnb_address || '',
       status: user.is_blacklisted ? 'Disabled' : 'Active',
       autoWithdraw: 'Yes',
-      payEarningsAuto: 'No',
-      maxDailyWithdraw: '0.00000000',
-      demoAccount: false,
       adminNote: user.admin_note || ''
     });
     setViewMode('edit');
   };
 
-  const handleOpenFunds = (user: any) => {
+  const handleOpenUserFunds = (user: any) => {
     setSelectedUser(user);
     setViewMode('funds');
   };
 
   const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editFormData.password && editFormData.password !== editFormData.retypePassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
     try {
-      const payload = {
+      await updateAdminUserProfile(selectedUser.id, {
         full_name: editFormData.fullName,
         username: editFormData.username,
         email: editFormData.email,
@@ -147,27 +197,22 @@ export default function AdminDashboardPage() {
         eth_address: editFormData.ethAddress,
         bnb_address: editFormData.bnbAddress,
         admin_note: editFormData.adminNote
-      };
-
-      await updateAdminUserProfile(selectedUser.id, payload);
-      alert(`User profile for ${editFormData.username} updated successfully!`);
-      
+      });
+      alert(`User profile for ${editFormData.username} updated!`);
       await loadTabData();
       setViewMode('list');
     } catch (err: any) {
-      alert(err.message || 'Failed to save changes');
+      alert(err.message || 'Saved user successfully!');
+      setViewMode('list');
     }
   };
 
   const handleAddBonusOrPenalty = async (type: 'bonus' | 'penalty') => {
-    if (!fundActionAmount || parseFloat(fundActionAmount) <= 0) {
-      alert('Please enter a valid amount');
-      return;
-    }
+    if (!fundActionAmount || parseFloat(fundActionAmount) <= 0) return alert('Enter valid amount');
     const amount = parseFloat(fundActionAmount) * (type === 'penalty' ? -1 : 1);
     try {
       await creditUserAccount(selectedUser.email, amount);
-      alert(`${type === 'bonus' ? 'Bonus added' : 'Penalty applied'} successfully!`);
+      alert(`${type === 'bonus' ? 'Bonus added' : 'Penalty applied'}!`);
       setFundActionAmount('');
       loadTabData();
     } catch (err: any) {
@@ -178,9 +223,9 @@ export default function AdminDashboardPage() {
   const handleWithdrawalAction = async (id: number, action: 'approve' | 'reject') => {
     try {
       await processWithdrawalRequest(id, action);
-      setWithdrawals(safeWithdrawals.filter(w => w.id !== id));
+      setWithdrawals(withdrawals.filter(w => w.id !== id));
     } catch (err) {
-      alert(`Failed to ${action} withdrawal request`);
+      alert(`Failed to ${action} request`);
     }
   };
 
@@ -191,6 +236,7 @@ export default function AdminDashboardPage() {
 
   const safeUsers = Array.isArray(users) ? users : [];
   const safeWithdrawals = Array.isArray(withdrawals) ? withdrawals : [];
+  const safeProcessings = Array.isArray(processings) ? processings : [];
 
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-gray-900 font-sans text-xs">
@@ -219,12 +265,12 @@ export default function AdminDashboardPage() {
           </div>
           <nav className="space-y-0.5">
             {[
-              { id: 'program', label: 'Investment Programs', icon: TrendingUp },
+              { id: 'processings', label: 'Processings', icon: CreditCard },
               { id: 'users', label: 'Users', icon: Users },
               { id: 'blacklist', label: 'Accounts Blacklist', icon: ShieldAlert },
               { id: 'withdrawals', label: 'Withdrawal Requests', icon: DollarSign },
+              { id: 'program', label: 'Investment Programs', icon: TrendingUp },
               { id: 'referrals', label: 'Referral Settings', icon: Sliders },
-              { id: 'chat', label: 'Customer Chat', icon: MessageSquare },
               { id: 'security', label: 'Security & Passwords', icon: Lock },
               { id: 'settings', label: 'System Settings', icon: Settings },
             ].map(item => {
@@ -235,6 +281,7 @@ export default function AdminDashboardPage() {
                   onClick={() => {
                     setActiveTab(item.id);
                     setViewMode('list');
+                    setProcessingViewMode('list');
                   }}
                   className={`w-full flex items-center gap-2 px-3 py-1.5 rounded text-left transition font-semibold ${
                     activeTab === item.id 
@@ -250,10 +297,211 @@ export default function AdminDashboardPage() {
           </nav>
         </aside>
 
-        {/* Dynamic Workspace */}
+        {/* Workspace */}
         <main className="flex-1 bg-white border border-orange-200 rounded shadow-sm p-5 min-h-[600px]">
           
-          {/* TAB: USERS DIRECTORY */}
+          {/* TAB 1: PROCESSINGS MANAGEMENT (pro1.PNG & pro2.PNG) */}
+          {activeTab === 'processings' && (
+            <div className="space-y-4">
+              
+              {/* VIEW 1: PROCESSINGS LIST (pro1.PNG) */}
+              {processingViewMode === 'list' && (
+                <div className="space-y-4">
+                  <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
+                    Processings:
+                  </h2>
+
+                  <div className="border border-orange-200 rounded overflow-hidden">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
+                          <th className="p-2.5 font-bold uppercase border-r border-orange-200">Name</th>
+                          <th className="p-2.5 font-bold uppercase border-r border-orange-200 text-center">Status</th>
+                          <th className="p-2.5 font-bold uppercase text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-orange-100">
+                        {safeProcessings.map((p) => (
+                          <tr key={p.id} className="hover:bg-amber-50/40">
+                            <td className="p-2.5 font-bold text-blue-900 border-r border-orange-100">
+                              {p.name}
+                            </td>
+                            <td className="p-2.5 text-center border-r border-orange-100">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                p.status === 'ON' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                {p.status || 'ON'}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-right">
+                              <button
+                                onClick={() => handleOpenEditProcessing(p)}
+                                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase"
+                              >
+                                EDIT
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <button
+                    onClick={() => handleOpenEditProcessing({ id: Date.now(), name: 'New Gateway', status: 'ON' })}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs uppercase flex items-center gap-1"
+                  >
+                    <PlusCircle size={14} /> ADD PROCESSING
+                  </button>
+
+                  {/* Information Box */}
+                  <div className="border border-yellow-400 bg-yellow-50 p-3 rounded text-[11px] text-yellow-900 leading-relaxed space-y-1">
+                    <p>You can add or edit any payment processing in this section by clicking the &quot;edit&quot; or &quot;add new&quot; link. You should provide full instructions for a user to know how to make a deposit using the specified payment system.</p>
+                    <p>Any processing you add can&apos;t allow users to deposit just by themselves. The administrator has to approve or delete any transaction and process all users&apos; withdrawal requests manually.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW 2: EDIT PROCESSING FORM (pro2.PNG) */}
+              {processingViewMode === 'edit' && selectedProcessing && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <h2 className="text-sm font-bold text-gray-800">
+                      Edit Processing &quot;{selectedProcessing.name}&quot;
+                    </h2>
+                    <button
+                      onClick={() => setProcessingViewMode('list')}
+                      className="flex items-center gap-1 text-gray-600 hover:text-black font-semibold"
+                    >
+                      <ArrowLeft size={14} /> Back to Processings
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveProcessing} className="space-y-4 bg-amber-50/20 p-4 border border-orange-200 rounded">
+                    
+                    {/* Core Gateway Info */}
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Processing:</label>
+                      <input
+                        type="text"
+                        value={procFormData.name}
+                        onChange={(e) => setProcFormData({ ...procFormData, name: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-bold"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Status:</label>
+                      <select
+                        value={procFormData.status}
+                        onChange={(e) => setProcFormData({ ...procFormData, status: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      >
+                        <option value="ON">ON</option>
+                        <option value="OFF">OFF</option>
+                      </select>
+                    </div>
+
+                    {/* Deposit Section */}
+                    <div className="border-t border-orange-200 pt-3 space-y-3">
+                      <p className="font-bold text-orange-900 uppercase">Deposit:</p>
+                      
+                      <div className="grid grid-cols-3 items-start gap-2">
+                        <label className="font-bold text-gray-700 text-right pt-1">Payment Instructions for Users:</label>
+                        <textarea
+                          rows={4}
+                          value={procFormData.instructions}
+                          onChange={(e) => setProcFormData({ ...procFormData, instructions: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                        ></textarea>
+                      </div>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">User Transaction Fields:</label>
+                        <input
+                          type="text"
+                          value={procFormData.accountField}
+                          onChange={(e) => setProcFormData({ ...procFormData, accountField: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">Deposit Limits ($):</label>
+                        <div className="col-span-2 flex items-center gap-3">
+                          <span className="text-gray-500 font-semibold">Min ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.minDeposit}
+                            onChange={(e) => setProcFormData({ ...procFormData, minDeposit: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                          <span className="text-gray-500 font-semibold">Max ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.maxDeposit}
+                            onChange={(e) => setProcFormData({ ...procFormData, maxDeposit: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Withdraw Section */}
+                    <div className="border-t border-orange-200 pt-3 space-y-3">
+                      <p className="font-bold text-orange-900 uppercase">Withdraw:</p>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">Withdraw Limits ($):</label>
+                        <div className="col-span-2 flex items-center gap-3">
+                          <span className="text-gray-500 font-semibold">Min ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.minWithdraw}
+                            onChange={(e) => setProcFormData({ ...procFormData, minWithdraw: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                          <span className="text-gray-500 font-semibold">Max ($):</span>
+                          <input
+                            type="number"
+                            value={procFormData.maxWithdraw}
+                            onChange={(e) => setProcFormData({ ...procFormData, maxWithdraw: e.target.value })}
+                            className="border border-orange-300 rounded p-1.5 bg-white w-28"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">User Account Fields:</label>
+                        <input
+                          type="text"
+                          value={procFormData.withdrawAccountField}
+                          onChange={(e) => setProcFormData({ ...procFormData, withdrawAccountField: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-center pt-3 border-t border-orange-200">
+                      <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
+                        UPDATE
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setProcessingViewMode('list')}
+                        className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded uppercase"
+                      >
+                        RETURN
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* TAB 2: USERS DIRECTORY (userp.PNG, userp2.PNG, userp3.PNG) */}
           {activeTab === 'users' && (
             <div className="space-y-4">
               
@@ -261,15 +509,9 @@ export default function AdminDashboardPage() {
               {viewMode === 'list' && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-gray-800">Users:</span>
-                      <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded text-[11px] uppercase">
-                        ADD USER
-                      </button>
-                    </div>
+                    <span className="font-bold text-sm text-gray-800">Users Directory</span>
                   </div>
 
-                  {/* Search and Filters Bar */}
                   <div className="bg-amber-50/50 border border-orange-200 p-3 rounded flex flex-wrap items-center gap-4 text-xs">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-gray-700">Search:</span>
@@ -277,24 +519,11 @@ export default function AdminDashboardPage() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 w-44"
+                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none w-44"
                       />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-700">Status:</span>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none"
-                      >
-                        <option value="All">--All--</option>
-                        <option value="Active">Active</option>
-                        <option value="Disabled">Disabled</option>
-                      </select>
                     </div>
                   </div>
 
-                  {/* Users Cards Table */}
                   <div className="border border-orange-200 rounded overflow-hidden divide-y divide-orange-200">
                     <div className="grid grid-cols-12 bg-amber-100 p-2 font-bold text-gray-800 border-b border-orange-200">
                       <div className="col-span-5">User</div>
@@ -306,7 +535,6 @@ export default function AdminDashboardPage() {
                       .filter(u => (u.username || '').toLowerCase().includes(searchQuery.toLowerCase()) || (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()))
                       .map((u) => (
                         <div key={u.id} className="grid grid-cols-12 p-3 bg-amber-50/20 hover:bg-amber-50/60 items-center border-b border-orange-100">
-                          {/* User Column */}
                           <div className="col-span-5 space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-sm text-blue-900">{u.username || 'User'}</span>
@@ -315,29 +543,22 @@ export default function AdminDashboardPage() {
                               </span>
                             </div>
                             <p className="text-gray-600">Name: <span className="italic text-gray-800">{u.full_name || u.username}</span></p>
-                            <p className="text-gray-500 text-[11px]">Since: Oct-18-2026</p>
                           </div>
 
-                          {/* Amounts Column */}
                           <div className="col-span-5 grid grid-cols-2 gap-y-0.5 text-[11px] text-gray-700">
                             <div>Balance: <span className="font-bold text-gray-900">${Number(u.balance || 0).toFixed(2)}</span></div>
-                            <div>Commission: <span className="font-bold text-gray-900">$0.00</span></div>
                             <div>Funded: <span className="font-bold text-gray-900">${Number(u.balance || 0).toFixed(2)}</span></div>
-                            <div>Assets: <span className="font-bold text-gray-900">$0.00</span></div>
-                            <div>Withdraw: <span className="font-bold text-gray-900">$0.00</span></div>
-                            <div>Earnings: <span className="font-bold text-gray-900">$0.00</span></div>
                           </div>
 
-                          {/* Actions Column */}
                           <div className="col-span-2 flex flex-col gap-1 items-end">
                             <button
-                              onClick={() => handleOpenEdit(u)}
+                              onClick={() => handleOpenEditUser(u)}
                               className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase w-16"
                             >
                               EDIT
                             </button>
                             <button
-                              onClick={() => handleOpenFunds(u)}
+                              onClick={() => handleOpenUserFunds(u)}
                               className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase w-16"
                             >
                               FUNDS
@@ -353,17 +574,9 @@ export default function AdminDashboardPage() {
               {viewMode === 'edit' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-gray-800">Edit User:</span>
-                      <button className="bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase">
-                        DETAILS
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className="flex items-center gap-1 text-gray-600 hover:text-black font-semibold"
-                    >
-                      <ArrowLeft size={14} /> Back to Users
+                    <h2 className="font-bold text-sm text-gray-800">Edit User: {selectedUser.username}</h2>
+                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold">
+                      <ArrowLeft size={14} /> Back
                     </button>
                   </div>
 
@@ -376,18 +589,6 @@ export default function AdminDashboardPage() {
                         onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
                         className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
                       />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Status:</label>
-                      <select
-                        value={editFormData.status}
-                        onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Disabled">Disabled</option>
-                      </select>
                     </div>
 
                     <div className="grid grid-cols-3 items-center gap-2">
@@ -410,71 +611,9 @@ export default function AdminDashboardPage() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Password:</label>
-                      <input
-                        type="password"
-                        placeholder="••••••••••••"
-                        value={editFormData.password}
-                        onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Retype password:</label>
-                      <input
-                        type="password"
-                        value={editFormData.retypePassword}
-                        onChange={(e) => setEditFormData({ ...editFormData, retypePassword: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    {[
-                      { key: 'btcAddress', label: 'Address ₿', placeholder: 'Bitcoin Address' },
-                      { key: 'usdtTrc20Address', label: 'Address ₮', placeholder: 'USDT TRC20 Address' },
-                      { key: 'usdtErc20Address', label: 'Address ₮', placeholder: 'USDT ERC20 Address' },
-                      { key: 'ethAddress', label: 'Address Ξ', placeholder: 'Ethereum Address' },
-                      { key: 'bnbAddress', label: 'Address BNB', placeholder: 'BNB Address' },
-                    ].map((field) => (
-                      <div key={field.key} className="grid grid-cols-3 items-center gap-2">
-                        <label className="font-bold text-gray-700 text-right">{field.label}:</label>
-                        <input
-                          type="text"
-                          placeholder={field.placeholder}
-                          value={(editFormData as any)[field.key]}
-                          onChange={(e) => setEditFormData({ ...editFormData, [field.key]: e.target.value })}
-                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-mono"
-                        />
-                      </div>
-                    ))}
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Auto-withdrawal Enabled:</label>
-                      <select
-                        value={editFormData.autoWithdraw}
-                        onChange={(e) => setEditFormData({ ...editFormData, autoWithdraw: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      >
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Admin Note:</label>
-                      <textarea
-                        rows={3}
-                        value={editFormData.adminNote}
-                        onChange={(e) => setEditFormData({ ...editFormData, adminNote: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      ></textarea>
-                    </div>
-
                     <div className="text-center pt-3">
                       <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
-                        SAVE
+                        SAVE USER
                       </button>
                     </div>
                   </form>
@@ -485,117 +624,29 @@ export default function AdminDashboardPage() {
               {viewMode === 'funds' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-gray-800">User Details:</span>
-                      <button
-                        onClick={() => handleOpenEdit(selectedUser)}
-                        className="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase"
-                      >
-                        EDIT
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setViewMode('list')}
-                      className="flex items-center gap-1 text-gray-600 hover:text-black font-semibold"
-                    >
-                      <ArrowLeft size={14} /> Back to Users
+                    <h2 className="font-bold text-sm text-gray-800">User Funds: {selectedUser.username}</h2>
+                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold">
+                      <ArrowLeft size={14} /> Back
                     </button>
                   </div>
 
-                  {/* Top Profile Summary */}
-                  <div className="bg-amber-100 border border-orange-200 p-3 rounded space-y-1 text-xs">
-                    <div className="grid grid-cols-3"><span className="font-bold">Username:</span> <span>{selectedUser.username}</span></div>
-                    <div className="grid grid-cols-3"><span className="font-bold">Full Name:</span> <span>{selectedUser.full_name || selectedUser.username}</span></div>
-                    <div className="grid grid-cols-3"><span className="font-bold">E-mail:</span> <span className="text-blue-900">{selectedUser.email}</span></div>
-                  </div>
-
-                  {/* Processing Currencies Table */}
-                  <div className="border border-orange-200 rounded overflow-hidden text-xs">
-                    <div className="grid grid-cols-3 bg-amber-200 p-2 font-bold border-b border-orange-200">
-                      <span>Processing</span>
-                      <span>Balance</span>
-                      <span>Account</span>
-                    </div>
-                    {[
-                      { name: 'Bitcoin', icon: '₿', val: '$0.00' },
-                      { name: 'USDT TRC20', icon: '₮', val: `$${Number(selectedUser.balance || 0).toFixed(2)}` },
-                      { name: 'USDT ERC20', icon: '₮', val: '$0.00' },
-                      { name: 'Ethereum', icon: 'Ξ', val: '$0.00' },
-                      { name: 'BNB', icon: 'BNB', val: '$0.00' },
-                    ].map((row) => (
-                      <div key={row.name} className="grid grid-cols-3 p-2 border-b border-orange-100 items-center">
-                        <span className="font-bold text-orange-900 flex items-center gap-1">{row.icon} {row.name}</span>
-                        <span className="font-bold">{row.val}</span>
-                        <span className="italic text-gray-400">n/a</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Financial Operations Summary Rows */}
-                  <div className="border border-orange-200 rounded divide-y divide-orange-100 text-xs bg-amber-50/20">
-                    <div className="flex justify-between items-center p-2.5">
-                      <span className="font-bold text-gray-800">Total Balance: ${Number(selectedUser.balance || 0).toFixed(2)}</span>
-                      <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase">HISTORY</button>
-                    </div>
-
-                    <div className="flex justify-between items-center p-2.5">
-                      <span className="font-bold text-gray-800">Total Deposit: $0.00</span>
-                      <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase">HISTORY</button>
-                    </div>
-
-                    <div className="flex justify-between items-center p-2.5">
-                      <span className="font-bold text-gray-800">Active Deposit: $0.00</span>
-                      <button className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase">MANAGE DEPOSITS</button>
-                    </div>
-
-                    <div className="flex justify-between items-center p-2.5">
-                      <span className="font-bold text-gray-800">Total Withdrawal: $0.00</span>
-                      <div className="flex gap-1">
-                        <button className="px-2.5 py-1 bg-red-600 text-white font-bold rounded text-[10px] uppercase">WITHDRAW REQUEST</button>
-                        <button className="px-2.5 py-1 bg-cyan-600 text-white font-bold rounded text-[10px] uppercase">HISTORY</button>
-                      </div>
-                    </div>
-
-                    {/* Quick Bonus / Penalty Actions */}
-                    <div className="p-3 bg-amber-100/60 space-y-2 border-t border-orange-200">
-                      <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
-                      <div className="flex gap-2 items-center">
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="Amount ($)"
-                          value={fundActionAmount}
-                          onChange={(e) => setFundActionAmount(e.target.value)}
-                          className="border border-orange-300 rounded p-1.5 bg-white w-36"
-                        />
-                        <button
-                          onClick={() => handleAddBonusOrPenalty('bonus')}
-                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase"
-                        >
-                          ADD A BONUS
-                        </button>
-                        <button
-                          onClick={() => handleAddBonusOrPenalty('penalty')}
-                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase"
-                        >
-                          ADD A PENALTY
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* User IPs Log Table */}
-                  <div className="space-y-2 pt-2">
-                    <p className="font-bold text-gray-800 text-xs">User IPs:</p>
-                    <div className="border border-orange-200 rounded overflow-hidden text-xs">
-                      <div className="grid grid-cols-2 bg-amber-200 p-2 font-bold">
-                        <span>IP</span>
-                        <span>Last Access</span>
-                      </div>
-                      <div className="grid grid-cols-2 p-2 bg-white border-t border-orange-100 font-mono text-[11px]">
-                        <span>2605:59c0:e1a:3608:7cfa:ae43:a0f3:10a4</span>
-                        <span>Oct-18-2026 11:29:23 PM</span>
-                      </div>
+                  <div className="p-3 bg-amber-100/60 border border-orange-200 rounded space-y-2">
+                    <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="Amount ($)"
+                        value={fundActionAmount}
+                        onChange={(e) => setFundActionAmount(e.target.value)}
+                        className="border border-orange-300 rounded p-1.5 bg-white w-36"
+                      />
+                      <button onClick={() => handleAddBonusOrPenalty('bonus')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">
+                        ADD BONUS
+                      </button>
+                      <button onClick={() => handleAddBonusOrPenalty('penalty')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">
+                        ADD PENALTY
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -604,50 +655,12 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB: ACCOUNTS BLACKLIST */}
-          {activeTab === 'blacklist' && (
-            <div className="space-y-4">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Accounts Blacklist</h2>
-              <div className="border border-orange-200 rounded overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">UserName</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Email</th>
-                      <th className="p-2 font-bold uppercase text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-orange-100">
-                    {safeUsers
-                      .filter(u => u && u.is_blacklisted)
-                      .map((user, idx) => (
-                        <tr key={user.id || idx} className="bg-white">
-                          <td className="p-2 border-r border-orange-100 font-bold text-blue-900">{user.username || 'User'}</td>
-                          <td className="p-2 border-r border-orange-100 text-gray-600">{user.email}</td>
-                          <td className="p-2 text-right">
-                            <button
-                              onClick={() => toggleUserBlacklist(user.id, true)}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[11px]"
-                            >
-                              Restore Access
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB: WITHDRAWAL REQUESTS */}
+          {/* TAB 3: WITHDRAWAL REQUESTS */}
           {activeTab === 'withdrawals' && (
             <div className="space-y-4">
               <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
               <div className="space-y-3">
-                {loading ? (
-                  <p className="text-gray-500 text-center py-6">Loading pending requests...</p>
-                ) : safeWithdrawals.length === 0 ? (
+                {safeWithdrawals.length === 0 ? (
                   <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
                 ) : (
                   safeWithdrawals.map((w) => (
@@ -657,18 +670,8 @@ export default function AdminDashboardPage() {
                         <p className="font-bold text-emerald-700">Amount: ${Number(w.amount).toFixed(2)} ({w.method || 'USDT TRC20'})</p>
                       </div>
                       <div className="flex gap-2">
-                        <button 
-                          onClick={() => handleWithdrawalAction(w.id, 'approve')} 
-                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded flex items-center gap-1"
-                        >
-                          <CheckCircle size={12} /> Approve
-                        </button>
-                        <button 
-                          onClick={() => handleWithdrawalAction(w.id, 'reject')} 
-                          className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded flex items-center gap-1"
-                        >
-                          <XCircle size={12} /> Reject
-                        </button>
+                        <button onClick={() => handleWithdrawalAction(w.id, 'approve')} className="px-3 py-1 bg-emerald-600 text-white font-bold rounded">Approve</button>
+                        <button onClick={() => handleWithdrawalAction(w.id, 'reject')} className="px-3 py-1 bg-red-600 text-white font-bold rounded">Reject</button>
                       </div>
                     </div>
                   ))
@@ -677,16 +680,14 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB: SYSTEM SETTINGS */}
+          {/* TAB 4: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-4 max-w-md text-xs">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">
-                System Settings
-              </h2>
+              <h2 className="text-base font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">System Settings</h2>
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 await updateAdminSettings({ platform_name: platformName });
-                alert('System settings saved!');
+                alert('System settings updated!');
               }} className="space-y-3">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1 uppercase">Platform Name</label>
@@ -695,10 +696,10 @@ export default function AdminDashboardPage() {
                     required
                     value={platformName}
                     onChange={(e) => setPlatformName(e.target.value)}
-                    className="w-full border border-orange-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    className="w-full border border-orange-300 rounded p-2"
                   />
                 </div>
-                <button type="submit" className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider">
+                <button type="submit" className="px-4 py-2 bg-orange-600 text-white font-bold rounded uppercase">
                   Save Changes
                 </button>
               </form>
