@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  Users, CreditCard, DollarSign, ShieldAlert, MessageSquare, 
+  Users, DollarSign, ShieldAlert, MessageSquare, 
   Settings, LogOut, TrendingUp, Search, Lock, Sliders, FileText, 
   CheckCircle, XCircle 
 } from 'lucide-react';
@@ -31,13 +31,16 @@ export default function AdminDashboardPage() {
   const [creditEmail, setCreditEmail] = useState('');
   const [creditAmount, setCreditAmount] = useState('');
 
-  // System Settings form state (Loaded automatically on mount)
+  // System Settings form state
   const [platformName, setPlatformName] = useState('Crystals Investments');
   const [settingsStatus, setSettingsStatus] = useState({ type: '', text: '' });
 
-  // Fetch initial settings and default tab data on mount
+  // Load initial system settings and current tab data
   useEffect(() => {
     loadInitialSettings();
+  }, []);
+
+  useEffect(() => {
     loadTabData();
   }, [activeTab]);
 
@@ -108,7 +111,9 @@ export default function AdminDashboardPage() {
     setSettingsStatus({ type: '', text: '' });
     try {
       const res = await updateAdminSettings({ platform_name: platformName });
-      setPlatformName(res.platform_name); // Immediately updates the navbar state
+      if (res?.platform_name) {
+        setPlatformName(res.platform_name);
+      }
       setSettingsStatus({ type: 'success', text: res.message || 'Settings updated successfully!' });
     } catch (err: any) {
       setSettingsStatus({ type: 'error', text: err.message || 'Failed to update settings.' });
@@ -126,7 +131,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-gray-900 font-sans text-xs">
       
-      {/* Header Banner dynamically tracking platformName state */}
+      {/* Dynamic Header Banner */}
       <header className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700 text-white shadow-md p-3 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <span className="font-bold text-base tracking-wide uppercase">{platformName} Admin Portal</span>
@@ -304,7 +309,9 @@ export default function AdminDashboardPage() {
             <div className="space-y-4">
               <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
               <div className="space-y-3">
-                {safeWithdrawals.length === 0 ? (
+                {loading ? (
+                  <p className="text-gray-500 text-center py-6">Loading pending requests...</p>
+                ) : safeWithdrawals.length === 0 ? (
                   <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
                 ) : (
                   safeWithdrawals.map((w) => (
