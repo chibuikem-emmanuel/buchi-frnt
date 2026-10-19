@@ -9,12 +9,14 @@ import {
 import { 
   fetchUserProfile, 
   createWithdrawal, 
-  createDeposit 
+  createDeposit,
+  fetchUserTransactions
 } from '@/lib/api';
 
 export default function UserDashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<any>({ balance: 0, username: 'User', email: '' });
+  const [userTransactions, setUserTransactions] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   // Accordion Sidebar Toggles
@@ -22,15 +24,17 @@ export default function UserDashboardPage() {
   const [depWithOpen, setDepWithOpen] = useState(true);
   const [packagesOpen, setPackagesOpen] = useState(false);
 
-  // Form States
+  // Deposit Form States
   const [depositAmount, setDepositAmount] = useState('');
   const [selectedPlan, setSelectedPlan] = useState('BASIC PLAN');
   const [depositMethod, setDepositMethod] = useState('USDT TRC20');
   const [copied, setCopied] = useState(false);
 
+  // Withdrawal Form States
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawMethod, setWithdrawMethod] = useState('USDT TRC20');
 
+  // Edit Account Form States
   const [fullName, setFullName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [usdtTrc20Address, setUsdtTrc20Address] = useState('');
@@ -39,6 +43,9 @@ export default function UserDashboardPage() {
 
   useEffect(() => {
     loadUserData();
+    if (activeTab === 'transactions') {
+      loadTransactions();
+    }
   }, [activeTab]);
 
   const loadUserData = async () => {
@@ -52,12 +59,21 @@ export default function UserDashboardPage() {
     }
   };
 
+  const loadTransactions = async () => {
+    try {
+      const data = await fetchUserTransactions();
+      setUserTransactions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load transactions:', err);
+    }
+  };
+
   const handleDepositSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatusMessage({ type: '', text: '' });
     try {
       await createDeposit(parseFloat(depositAmount));
-      setStatusMessage({ type: 'success', text: 'Deposit request submitted successfully! Pending confirmation.' });
+      setStatusMessage({ type: 'success', text: 'Deposit request submitted successfully! Awaiting admin confirmation.' });
       setDepositAmount('');
       loadUserData();
     } catch (err: any) {
@@ -111,7 +127,7 @@ export default function UserDashboardPage() {
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-56 bg-[#111827] border-r border-gray-800 p-3 space-y-1 shrink-0">
           <div className="text-gray-400 font-semibold px-2 py-1 mb-2 text-[11px] truncate">
-            {user.username || 'mre'}
+            {user.username || 'User'}
           </div>
 
           <nav className="space-y-1">
@@ -150,7 +166,7 @@ export default function UserDashboardPage() {
               )}
             </div>
 
-            {/* Support Redirect to Homepage */}
+            {/* Support Redirects to Homepage */}
             <Link
               href="/"
               className="w-full flex items-center gap-2 px-3 py-2 rounded font-medium text-gray-300 hover:bg-gray-800 transition"
@@ -159,7 +175,7 @@ export default function UserDashboardPage() {
               <span>Support</span>
             </Link>
 
-            {/* Transactions History */}
+            {/* Transactions History Link */}
             <button
               onClick={() => setActiveTab('transactions')}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded font-medium transition ${
@@ -511,23 +527,52 @@ export default function UserDashboardPage() {
             </div>
           )}
 
-          {/* TRANSACTIONS HISTORY */}
+          {/* TRANSACTIONS HISTORY MODULE */}
           {activeTab === 'transactions' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
-                Earnings History
+                Transactions History
               </div>
-              <div className="bg-[#161f33] border border-gray-800 p-4 rounded flex flex-wrap gap-4 items-center">
-                <select className="bg-[#111827] border border-gray-700 rounded p-2 text-white">
-                  <option>All transactions</option>
-                </select>
-                <select className="bg-[#111827] border border-gray-700 rounded p-2 text-white">
-                  <option>All eCurrencies</option>
-                </select>
-                <button className="px-4 py-2 bg-orange-500 text-gray-900 font-bold rounded">Go</button>
-              </div>
-              <div className="bg-[#161f33] border border-gray-800 rounded p-6 text-center text-gray-400">
-                No transactions found
+
+              <div className="overflow-x-auto bg-[#161f33] border border-gray-800 rounded">
+                {userTransactions.length === 0 ? (
+                  <div className="p-6 text-center text-gray-400">
+                    No transactions found
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#1f2937] text-gray-300 border-b border-gray-800">
+                        <th className="p-3 font-bold uppercase">Type</th>
+                        <th className="p-3 font-bold uppercase">Amount</th>
+                        <th className="p-3 font-bold uppercase">Method</th>
+                        <th className="p-3 font-bold uppercase">Status</th>
+                        <th className="p-3 font-bold uppercase text-right">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800 text-gray-300">
+                      {userTransactions.map((tx) => (
+                        <tr key={tx.id} className="hover:bg-gray-800/40">
+                          <td className="p-3 font-semibold text-white">{tx.type}</td>
+                          <td className={`p-3 font-bold ${tx.type === 'WITHDRAWAL' ? 'text-red-400' : 'text-emerald-400'}`}>
+                            ${Number(tx.amount).toFixed(2)}
+                          </td>
+                          <td className="p-3 text-gray-400">{tx.method || 'USDT TRC20'}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              tx.status === 'APPROVED' ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700' :
+                              tx.status === 'REJECTED' ? 'bg-red-900/50 text-red-300 border border-red-700' :
+                              'bg-amber-900/50 text-amber-300 border border-amber-700'
+                            }`}>
+                              {tx.status}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right text-gray-400">{tx.date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           )}

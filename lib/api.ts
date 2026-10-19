@@ -179,3 +179,18 @@ export async function updateAdminSettings(settings: { platform_name: string }) {
   if (!res.ok) throw new Error(data.error || 'Failed to update system settings');
   return data;
 }
+
+
+export async function fetchUserTransactions() {
+  const res = await fetch(`${API_URL}/transactions/`, { 
+    headers: getAuthHeaders() 
+  });
+  
+  if (!res.ok) throw new Error('Failed to load transaction history');
+  
+  const data = await res.json();
+  if (data && Array.isArray(data.results)) {
+    return data.results;
+  }
+  return Array.isArray(data) ? data : [];
+}
