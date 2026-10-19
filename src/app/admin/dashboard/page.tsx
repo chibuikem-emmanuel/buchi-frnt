@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Users, DollarSign, ShieldAlert, MessageSquare, 
   Settings, LogOut, TrendingUp, Search, Lock, Sliders, FileText, 
-  CheckCircle, XCircle 
+  CheckCircle, XCircle, ArrowLeft, Edit3, Wallet
 } from 'lucide-react';
 import { 
   fetchAdminUsers, 
@@ -18,8 +18,9 @@ import {
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState('program');
+  const [activeTab, setActiveTab] = useState('users');
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   
   // Dynamic State Arrays
   const [users, setUsers] = useState<any[]>([]);
@@ -27,20 +28,42 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
-  // Credit user form state
-  const [creditEmail, setCreditEmail] = useState('');
-  const [creditAmount, setCreditAmount] = useState('');
+  // Selected User view modes
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'edit' | 'funds'>('list');
+
+  // Edit User Form State
+  const [editFormData, setEditFormData] = useState({
+    fullName: '',
+    username: '',
+    email: '',
+    password: '',
+    retypePassword: '',
+    btcAddress: '',
+    usdtTrc20Address: '',
+    usdtErc20Address: '',
+    ethAddress: '',
+    bnbAddress: '',
+    status: 'Active',
+    autoWithdraw: 'Yes',
+    payEarningsAuto: 'No',
+    maxDailyWithdraw: '0.00000000',
+    demoAccount: false,
+    adminNote: ''
+  });
+
+  // Credit/Penalty state for Funds view
+  const [fundActionAmount, setFundActionAmount] = useState('');
+  const [fundActionType, setFundActionType] = useState<'bonus' | 'penalty'>('bonus');
 
   // System Settings form state
   const [platformName, setPlatformName] = useState('Crystals Investments');
   const [settingsStatus, setSettingsStatus] = useState({ type: '', text: '' });
 
-  // Load initial settings on mount
   useEffect(() => {
     loadInitialSettings();
   }, []);
 
-  // Fetch data whenever active tab changes
   useEffect(() => {
     loadTabData();
   }, [activeTab]);
@@ -76,25 +99,53 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleBlacklistToggle = async (userId: number, currentStatus: boolean) => {
-    try {
-      await toggleUserBlacklist(userId, !currentStatus);
-      setUsers(safeUsers.map(u => u.id === userId ? { ...u, is_blacklisted: !currentStatus } : u));
-    } catch (err) {
-      alert('Failed to update user status');
-    }
+  const handleOpenEdit = (user: any) => {
+    setSelectedUser(user);
+    setEditFormData({
+      fullName: user.full_name || user.username || '',
+      username: user.username || '',
+      email: user.email || '',
+      password: '',
+      retypePassword: '',
+      btcAddress: user.btc_address || '',
+      usdtTrc20Address: user.usdt_trc20 || '',
+      usdtErc20Address: user.usdt_erc20 || '',
+      ethAddress: user.eth_address || '',
+      bnbAddress: user.bnb_address || '',
+      status: user.is_blacklisted ? 'Disabled' : 'Active',
+      autoWithdraw: 'Yes',
+      payEarningsAuto: 'No',
+      maxDailyWithdraw: '0.00000000',
+      demoAccount: false,
+      adminNote: user.admin_note || ''
+    });
+    setViewMode('edit');
   };
 
-  const handleCreditUser = async (e: React.FormEvent) => {
+  const handleOpenFunds = (user: any) => {
+    setSelectedUser(user);
+    setViewMode('funds');
+  };
+
+  const handleSaveUser = (e: React.FormEvent) => {
     e.preventDefault();
-    setStatusMessage({ type: '', text: '' });
+    alert(`User profile for ${selectedUser?.username} updated successfully!`);
+    setViewMode('list');
+  };
+
+  const handleAddBonusOrPenalty = async (type: 'bonus' | 'penalty') => {
+    if (!fundActionAmount || parseFloat(fundActionAmount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+    const amount = parseFloat(fundActionAmount) * (type === 'penalty' ? -1 : 1);
     try {
-      const res = await creditUserAccount(creditEmail, parseFloat(creditAmount));
-      setStatusMessage({ type: 'success', text: res.message || 'Successfully credited account!' });
-      setCreditEmail('');
-      setCreditAmount('');
+      await creditUserAccount(selectedUser.email, amount);
+      alert(`${type === 'bonus' ? 'Bonus added' : 'Penalty applied'} successfully!`);
+      setFundActionAmount('');
+      loadTabData();
     } catch (err: any) {
-      setStatusMessage({ type: 'error', text: err.message || 'Error crediting account.' });
+      alert(err.message || 'Operation failed');
     }
   };
 
@@ -104,20 +155,6 @@ export default function AdminDashboardPage() {
       setWithdrawals(safeWithdrawals.filter(w => w.id !== id));
     } catch (err) {
       alert(`Failed to ${action} withdrawal request`);
-    }
-  };
-
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSettingsStatus({ type: '', text: '' });
-    try {
-      const res = await updateAdminSettings({ platform_name: platformName });
-      if (res?.platform_name) {
-        setPlatformName(res.platform_name);
-      }
-      setSettingsStatus({ type: 'success', text: res.message || 'Settings updated successfully!' });
-    } catch (err: any) {
-      setSettingsStatus({ type: 'error', text: err.message || 'Failed to update settings.' });
     }
   };
 
@@ -132,10 +169,10 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-gray-900 font-sans text-xs">
       
-      {/* Dynamic Header Banner */}
+      {/* Header Banner */}
       <header className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-700 text-white shadow-md p-3 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <span className="font-bold text-base tracking-wide uppercase">{platformName} Admin Portal</span>
+          <span className="font-bold text-base tracking-wide uppercase">{platformName} ADMIN PORTAL</span>
           <div className="flex items-center space-x-4">
             <Link href="/admin/dashboard" className="hover:underline text-white font-medium">Home</Link>
             <span>|</span>
@@ -149,18 +186,17 @@ export default function AdminDashboardPage() {
       {/* Main Workspace Layout */}
       <div className="max-w-7xl mx-auto p-4 flex flex-col md:flex-row gap-6">
         
-        {/* Left Sidebar Navigation */}
-        <aside className="w-full md:w-64 bg-white border border-orange-200 rounded shadow-sm p-3 shrink-0 h-fit space-y-1">
+        {/* Sidebar */}
+        <aside className="w-full md:w-60 bg-white border border-orange-200 rounded shadow-sm p-3 shrink-0 h-fit space-y-1">
           <div className="bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold uppercase text-[11px] px-3 py-1.5 rounded mb-2">
             Menu
           </div>
           <nav className="space-y-0.5">
             {[
               { id: 'program', label: 'Investment Programs', icon: TrendingUp },
-              { id: 'users', label: 'Users Directory', icon: Users },
+              { id: 'users', label: 'Users', icon: Users },
               { id: 'blacklist', label: 'Accounts Blacklist', icon: ShieldAlert },
               { id: 'withdrawals', label: 'Withdrawal Requests', icon: DollarSign },
-              { id: 'add_funds', label: 'Add Funds to User', icon: FileText },
               { id: 'referrals', label: 'Referral Settings', icon: Sliders },
               { id: 'chat', label: 'Customer Chat', icon: MessageSquare },
               { id: 'security', label: 'Security & Passwords', icon: Lock },
@@ -170,7 +206,10 @@ export default function AdminDashboardPage() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setViewMode('list');
+                  }}
                   className={`w-full flex items-center gap-2 px-3 py-1.5 rounded text-left transition font-semibold ${
                     activeTab === item.id 
                       ? 'bg-amber-500 text-white shadow-sm' 
@@ -185,113 +224,394 @@ export default function AdminDashboardPage() {
           </nav>
         </aside>
 
-        {/* Dynamic Content Workspace */}
-        <main className="flex-1 bg-white border border-gray-200 rounded shadow-sm p-5 min-h-[550px]">
+        {/* Dynamic Workspace */}
+        <main className="flex-1 bg-white border border-orange-200 rounded shadow-sm p-5 min-h-[600px]">
           
-          {/* TAB 1: INVESTMENT PROGRAMS */}
-          {activeTab === 'program' && (
-            <div className="space-y-5">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">
-                Investment Programs
-              </h2>
-              <div className="space-y-3">
-                {[
-                  { name: 'BASIC PLAN', min: '$100.00', max: '$4,999.00', profit: '4.00% daily for 5 days', duration: '5 days' },
-                  { name: 'TARGET PLAN', min: '$5,000.00', max: '$20,000.00', profit: '6.00% daily for 5 days', duration: '5 days' },
-                  { name: 'REAL ESTATE PLAN', min: '$20,000.00', max: 'Unlimited', profit: '8.00% daily for 10 days', duration: '10 days' },
-                ].map((prog) => (
-                  <div key={prog.name} className="border border-orange-200 bg-amber-50/30 p-4 rounded text-xs space-y-2">
-                    <div className="flex justify-between items-center border-b border-orange-100 pb-1.5">
-                      <span className="font-bold text-orange-800">{prog.name}</span>
-                      <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded text-[10px]">Active</span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-gray-700">
-                      <div><span className="font-semibold text-gray-500">Min:</span> {prog.min}</div>
-                      <div><span className="font-semibold text-gray-500">Max:</span> {prog.max}</div>
-                      <div><span className="font-semibold text-gray-500">Profit Rate:</span> {prog.profit}</div>
-                      <div><span className="font-semibold text-gray-500">Duration:</span> {prog.duration}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: USERS DIRECTORY */}
+          {/* TAB: USERS DIRECTORY */}
           {activeTab === 'users' && (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-orange-200 pb-2 gap-2">
-                <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide">Users Directory</h2>
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2 text-gray-400" size={13} />
-                  <input
-                    type="text"
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 pr-3 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 w-full sm:w-64"
-                  />
-                </div>
-              </div>
+              
+              {/* VIEW 1: USER LIST */}
+              {viewMode === 'list' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-gray-800">Users:</span>
+                      <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded text-[11px] uppercase">
+                        ADD USER
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="overflow-x-auto border border-gray-300 rounded">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-amber-100/90 text-gray-900 border-b border-gray-300">
-                      <th className="p-2 border-r border-gray-300 font-bold uppercase">UserName</th>
-                      <th className="p-2 border-r border-gray-300 font-bold uppercase">Email</th>
-                      <th className="p-2 border-r border-gray-300 font-bold uppercase">Balance</th>
-                      <th className="p-2 font-bold uppercase text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  {/* Search and Filters Bar */}
+                  <div className="bg-amber-50/50 border border-orange-200 p-3 rounded flex flex-wrap items-center gap-4 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Search:</span>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 w-44"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Status:</span>
+                      <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none"
+                      >
+                        <option value="All">--All--</option>
+                        <option value="Active">Active</option>
+                        <option value="Disabled">Disabled</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Users Cards Table */}
+                  <div className="border border-orange-200 rounded overflow-hidden divide-y divide-orange-200">
+                    <div className="grid grid-cols-12 bg-amber-100 p-2 font-bold text-gray-800 border-b border-orange-200">
+                      <div className="col-span-5">User</div>
+                      <div className="col-span-5">Amounts</div>
+                      <div className="col-span-2 text-right">Actions</div>
+                    </div>
+
                     {safeUsers
-                      .filter(u => u && !u.is_blacklisted)
                       .filter(u => (u.username || '').toLowerCase().includes(searchQuery.toLowerCase()) || (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((user, idx) => (
-                        <tr key={user.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50/30'}>
-                          <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{user.username || 'User'}</td>
-                          <td className="p-2 border-r border-gray-200 text-gray-600">{user.email}</td>
-                          <td className="p-2 border-r border-gray-200 font-bold text-emerald-700">${Number(user.balance || 0).toFixed(2)}</td>
-                          <td className="p-2 text-right">
+                      .map((u) => (
+                        <div key={u.id} className="grid grid-cols-12 p-3 bg-amber-50/20 hover:bg-amber-50/60 items-center border-b border-orange-100">
+                          {/* User Column */}
+                          <div className="col-span-5 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-blue-900">{u.username || 'User'}</span>
+                              <span className="bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded text-[9px] uppercase">
+                                {u.is_blacklisted ? 'Disabled' : 'Active'}
+                              </span>
+                            </div>
+                            <p className="text-gray-600">Name: <span className="italic text-gray-800">{u.full_name || u.username}</span></p>
+                            <p className="text-gray-500 text-[11px]">Since: Oct-18-2026</p>
+                          </div>
+
+                          {/* Amounts Column */}
+                          <div className="col-span-5 grid grid-cols-2 gap-y-0.5 text-[11px] text-gray-700">
+                            <div>Balance: <span className="font-bold text-gray-900">${Number(u.balance || 0).toFixed(2)}</span></div>
+                            <div>Commission: <span className="font-bold text-gray-900">$0.00</span></div>
+                            <div>Funded: <span className="font-bold text-gray-900">${Number(u.balance || 0).toFixed(2)}</span></div>
+                            <div>Assets: <span className="font-bold text-gray-900">$0.00</span></div>
+                            <div>Withdraw: <span className="font-bold text-gray-900">$0.00</span></div>
+                            <div>Earnings: <span className="font-bold text-gray-900">$0.00</span></div>
+                          </div>
+
+                          {/* Actions Column */}
+                          <div className="col-span-2 flex flex-col gap-1 items-end">
                             <button
-                              onClick={() => handleBlacklistToggle(user.id, user.is_blacklisted)}
-                              className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[11px]"
+                              onClick={() => handleOpenEdit(u)}
+                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase w-16"
                             >
-                              Blacklist
+                              EDIT
                             </button>
-                          </td>
-                        </tr>
+                            <button
+                              onClick={() => handleOpenFunds(u)}
+                              className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase w-16"
+                            >
+                              FUNDS
+                            </button>
+                          </div>
+                        </div>
                       ))}
-                  </tbody>
-                </table>
-              </div>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW 2: EDIT USER PAGE (userp2.PNG) */}
+              {viewMode === 'edit' && selectedUser && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-gray-800">Edit User:</span>
+                      <button className="bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase">
+                        DETAILS
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className="flex items-center gap-1 text-gray-600 hover:text-black font-semibold"
+                    >
+                      <ArrowLeft size={14} /> Back to Users
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveUser} className="space-y-3 bg-amber-50/30 p-4 border border-orange-200 rounded">
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Full name:</label>
+                      <input
+                        type="text"
+                        value={editFormData.fullName}
+                        onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Status:</label>
+                      <select
+                        value={editFormData.status}
+                        onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Disabled">Disabled</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Username:</label>
+                      <input
+                        type="text"
+                        value={editFormData.username}
+                        onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">E-mail:</label>
+                      <input
+                        type="email"
+                        value={editFormData.email}
+                        onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Password:</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••••••"
+                        value={editFormData.password}
+                        onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Retype password:</label>
+                      <input
+                        type="password"
+                        value={editFormData.retypePassword}
+                        onChange={(e) => setEditFormData({ ...editFormData, retypePassword: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      />
+                    </div>
+
+                    {/* Crypto Address Fields */}
+                    {[
+                      { key: 'btcAddress', label: 'Address ₿', placeholder: 'Bitcoin Address' },
+                      { key: 'usdtTrc20Address', label: 'Address ₮', placeholder: 'USDT TRC20 Address' },
+                      { key: 'usdtErc20Address', label: 'Address ₮', placeholder: 'USDT ERC20 Address' },
+                      { key: 'ethAddress', label: 'Address Ξ', placeholder: 'Ethereum Address' },
+                      { key: 'bnbAddress', label: 'Address BNB', placeholder: 'BNB Address' },
+                    ].map((field) => (
+                      <div key={field.key} className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">{field.label}:</label>
+                        <input
+                          type="text"
+                          placeholder={field.placeholder}
+                          value={(editFormData as any)[field.key]}
+                          onChange={(e) => setEditFormData({ ...editFormData, [field.key]: e.target.value })}
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-mono"
+                        />
+                      </div>
+                    ))}
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Auto-withdrawal Enabled:</label>
+                      <select
+                        value={editFormData.autoWithdraw}
+                        onChange={(e) => setEditFormData({ ...editFormData, autoWithdraw: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      >
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-3 items-center gap-2">
+                      <label className="font-bold text-gray-700 text-right">Admin Note:</label>
+                      <textarea
+                        rows={3}
+                        value={editFormData.adminNote}
+                        onChange={(e) => setEditFormData({ ...editFormData, adminNote: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      ></textarea>
+                    </div>
+
+                    <div className="text-center pt-3">
+                      <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
+                        SAVE
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* VIEW 3: USER DETAILS & FUNDS PAGE (userp3.PNG) */}
+              {viewMode === 'funds' && selectedUser && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-gray-800">User Details:</span>
+                      <button
+                        onClick={() => handleOpenEdit(selectedUser)}
+                        className="bg-emerald-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase"
+                      >
+                        EDIT
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className="flex items-center gap-1 text-gray-600 hover:text-black font-semibold"
+                    >
+                      <ArrowLeft size={14} /> Back to Users
+                    </button>
+                  </div>
+
+                  {/* Top Profile Summary */}
+                  <div className="bg-amber-100 border border-orange-200 p-3 rounded space-y-1 text-xs">
+                    <div className="grid grid-cols-3"><span className="font-bold">Username:</span> <span>{selectedUser.username}</span></div>
+                    <div className="grid grid-cols-3"><span className="font-bold">Full Name:</span> <span>{selectedUser.full_name || selectedUser.username}</span></div>
+                    <div className="grid grid-cols-3"><span className="font-bold">E-mail:</span> <span className="text-blue-900">{selectedUser.email}</span></div>
+                  </div>
+
+                  {/* Processing Currencies Table */}
+                  <div className="border border-orange-200 rounded overflow-hidden text-xs">
+                    <div className="grid grid-cols-3 bg-amber-200 p-2 font-bold border-b border-orange-200">
+                      <span>Processing</span>
+                      <span>Balance</span>
+                      <span>Account</span>
+                    </div>
+                    {[
+                      { name: 'Bitcoin', icon: '₿', val: '$0.00' },
+                      { name: 'USDT TRC20', icon: '₮', val: `$${Number(selectedUser.balance || 0).toFixed(2)}` },
+                      { name: 'USDT ERC20', icon: '₮', val: '$0.00' },
+                      { name: 'Ethereum', icon: 'Ξ', val: '$0.00' },
+                      { name: 'BNB', icon: 'BNB', val: '$0.00' },
+                    ].map((row) => (
+                      <div key={row.name} className="grid grid-cols-3 p-2 border-b border-orange-100 items-center">
+                        <span className="font-bold text-orange-900 flex items-center gap-1">{row.icon} {row.name}</span>
+                        <span className="font-bold">{row.val}</span>
+                        <span className="italic text-gray-400">n/a</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Financial Operations Summary Rows */}
+                  <div className="border border-orange-200 rounded divide-y divide-orange-100 text-xs bg-amber-50/20">
+                    <div className="flex justify-between items-center p-2.5">
+                      <span className="font-bold text-gray-800">Total Balance: ${Number(selectedUser.balance || 0).toFixed(2)}</span>
+                      <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase">HISTORY</button>
+                    </div>
+
+                    <div className="flex justify-between items-center p-2.5">
+                      <span className="font-bold text-gray-800">Total Deposit: $0.00</span>
+                      <button className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase">HISTORY</button>
+                    </div>
+
+                    <div className="flex justify-between items-center p-2.5">
+                      <span className="font-bold text-gray-800">Active Deposit: $0.00</span>
+                      <button className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase">MANAGE DEPOSITS</button>
+                    </div>
+
+                    <div className="flex justify-between items-center p-2.5">
+                      <span className="font-bold text-gray-800">Total Withdrawal: $0.00</span>
+                      <div className="flex gap-1">
+                        <button className="px-2.5 py-1 bg-red-600 text-white font-bold rounded text-[10px] uppercase">WITHDRAW REQUEST</button>
+                        <button className="px-2.5 py-1 bg-cyan-600 text-white font-bold rounded text-[10px] uppercase">HISTORY</button>
+                      </div>
+                    </div>
+
+                    {/* Quick Bonus / Penalty Actions */}
+                    <div className="p-3 bg-amber-100/60 space-y-2 border-t border-orange-200">
+                      <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="Amount ($)"
+                          value={fundActionAmount}
+                          onChange={(e) => setFundActionAmount(e.target.value)}
+                          className="border border-orange-300 rounded p-1.5 bg-white w-36"
+                        />
+                        <button
+                          onClick={() => handleAddBonusOrPenalty('bonus')}
+                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase"
+                        >
+                          ADD A BONUS
+                        </button>
+                        <button
+                          onClick={() => handleAddBonusOrPenalty('penalty')}
+                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase"
+                        >
+                          ADD A PENALTY
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* User IPs Log Table */}
+                  <div className="space-y-2 pt-2">
+                    <p className="font-bold text-gray-800 text-xs">User IPs:</p>
+                    <div className="border border-orange-200 rounded overflow-hidden text-xs">
+                      <div className="grid grid-cols-2 bg-amber-200 p-2 font-bold">
+                        <span>IP</span>
+                        <span>Last Access</span>
+                      </div>
+                      <div className="grid grid-cols-2 p-2 bg-white border-t border-orange-100 font-mono text-[11px]">
+                        <span>2605:59c0:e1a:3608:7cfa:ae43:a0f3:10a4</span>
+                        <span>Oct-18-2026 11:29:23 PM</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Instruction Notes Box */}
+                  <div className="border border-yellow-400 bg-yellow-50 p-3 rounded text-[11px] text-yellow-900 leading-relaxed">
+                    <p className="font-bold mb-1">Manage user funds:</p>
+                    <p><b>Account balance:</b> how many funds can the user deposit to any investment package or withdraw from the system.</p>
+                    <p><b>Total deposit:</b> how many funds has the user ever deposited to your system.</p>
+                    <p><b>Total active deposit:</b> the whole current deposit of this user.</p>
+                    <p><b>Total earnings:</b> how many funds has the user ever earned with your system.</p>
+                    <p><b>Total withdrawals:</b> how many funds has the user ever withdrawn from system.</p>
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
-          {/* TAB 3: ACCOUNTS BLACKLIST */}
+          {/* TAB: ACCOUNTS BLACKLIST */}
           {activeTab === 'blacklist' && (
             <div className="space-y-4">
               <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Accounts Blacklist</h2>
-              <div className="overflow-x-auto border border-gray-300 rounded">
+              <div className="border border-orange-200 rounded overflow-hidden">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-amber-100/90 text-gray-900 border-b border-gray-300">
-                      <th className="p-2 border-r border-gray-300 font-bold uppercase">UserName</th>
-                      <th className="p-2 border-r border-gray-300 font-bold uppercase">Email</th>
+                    <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
+                      <th className="p-2 border-r border-orange-200 font-bold uppercase">UserName</th>
+                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Email</th>
                       <th className="p-2 font-bold uppercase text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-orange-100">
                     {safeUsers
                       .filter(u => u && u.is_blacklisted)
                       .map((user, idx) => (
-                        <tr key={user.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50/30'}>
-                          <td className="p-2 border-r border-gray-200 font-bold text-blue-900">{user.username || 'User'}</td>
-                          <td className="p-2 border-r border-gray-200 text-gray-600">{user.email}</td>
+                        <tr key={user.id || idx} className="bg-white">
+                          <td className="p-2 border-r border-orange-100 font-bold text-blue-900">{user.username || 'User'}</td>
+                          <td className="p-2 border-r border-orange-100 text-gray-600">{user.email}</td>
                           <td className="p-2 text-right">
                             <button
-                              onClick={() => handleBlacklistToggle(user.id, true)}
+                              onClick={() => toggleUserBlacklist(user.id, true)}
                               className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[11px]"
                             >
                               Restore Access
@@ -305,7 +625,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 4: WITHDRAWAL REQUESTS */}
+          {/* TAB: WITHDRAWAL REQUESTS */}
           {activeTab === 'withdrawals' && (
             <div className="space-y-4">
               <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
@@ -342,114 +662,17 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 5: ADD / CREDIT FUNDS */}
-          {activeTab === 'add_funds' && (
-            <div className="space-y-4 max-w-md">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Credit User Account Balance</h2>
-              {statusMessage.text && (
-                <div className={`p-2.5 rounded font-semibold text-xs ${statusMessage.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'bg-red-50 text-red-800 border border-red-300'}`}>
-                  {statusMessage.text}
-                </div>
-              )}
-              <form onSubmit={handleCreditUser} className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1 uppercase">User Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={creditEmail}
-                    onChange={(e) => setCreditEmail(e.target.value)}
-                    placeholder="user@example.com"
-                    className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1 uppercase">Amount ($)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={creditAmount}
-                    onChange={(e) => setCreditAmount(e.target.value)}
-                    placeholder="100.00"
-                    className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500"
-                  />
-                </div>
-                <button type="submit" className="w-full py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider transition">
-                  Credit Account Balance
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* TAB 6: REFERRAL SETTINGS */}
-          {activeTab === 'referrals' && (
-            <div className="space-y-4 max-w-md text-xs">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Referral Program Settings</h2>
-              <div className="space-y-3">
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1 uppercase">Referral Commission Rate (%)</label>
-                  <input type="number" defaultValue="5.00" className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                </div>
-                <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider">
-                  Save Referral Settings
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 7: CUSTOMER CHAT */}
-          {activeTab === 'chat' && (
-            <div className="space-y-4 text-xs">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Live Customer Chat Messages</h2>
-              <div className="border border-orange-200 bg-amber-50/20 p-3 rounded space-y-2">
-                <div className="flex justify-between font-bold text-blue-900 border-b border-orange-100 pb-1">
-                  <span>User: paulyman7711@gmail.com</span>
-                  <span className="text-gray-500 font-normal">Just now</span>
-                </div>
-                <p className="text-gray-700">Hello Admin, I just submitted my deposit for the Basic Plan via USDT TRC20.</p>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 8: SECURITY */}
-          {activeTab === 'security' && (
-            <div className="space-y-4 max-w-md text-xs">
-              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Security & Administrator Password</h2>
-              <form className="space-y-3">
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1 uppercase">Current Password</label>
-                  <input type="password" placeholder="Current Password" className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                </div>
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1 uppercase">New Password</label>
-                  <input type="password" placeholder="New Password" className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500" />
-                </div>
-                <button type="button" className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider">
-                  Update Password
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* TAB 9: SYSTEM SETTINGS */}
+          {/* TAB: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-4 max-w-md text-xs">
               <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">
                 System Settings
               </h2>
-
-              {settingsStatus.text && (
-                <div className={`p-2.5 rounded font-semibold text-xs ${
-                  settingsStatus.type === 'success' 
-                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' 
-                    : 'bg-red-50 text-red-800 border border-red-300'
-                }`}>
-                  {settingsStatus.text}
-                </div>
-              )}
-
-              <form onSubmit={handleSaveSettings} className="space-y-3">
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                await updateAdminSettings({ platform_name: platformName });
+                alert('System settings saved!');
+              }} className="space-y-3">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1 uppercase">Platform Name</label>
                   <input
@@ -457,13 +680,10 @@ export default function AdminDashboardPage() {
                     required
                     value={platformName}
                     onChange={(e) => setPlatformName(e.target.value)}
-                    className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    className="w-full border border-orange-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-orange-500"
                   />
                 </div>
-                <button 
-                  type="submit" 
-                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider transition"
-                >
+                <button type="submit" className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded uppercase tracking-wider">
                   Save Changes
                 </button>
               </form>
