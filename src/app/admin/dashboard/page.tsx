@@ -190,7 +190,7 @@ export default function AdminDashboardPage() {
       setProgramViewMode('list');
       loadTabData();
     } catch (err: any) {
-      alert('Plan saved successfully!');
+      alert(err.message || 'Plan saved successfully!');
       setProgramViewMode('list');
     }
   };
@@ -388,7 +388,7 @@ export default function AdminDashboardPage() {
         {/* Workspace */}
         <main className="flex-1 bg-white border border-orange-200 rounded shadow-sm p-5 min-h-[600px]">
           
-          {/* TAB 1: SYSTEM OVERVIEW (dah1.PNG) */}
+          {/* TAB 1: SYSTEM OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-5">
               <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
@@ -422,7 +422,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 2: INVESTMENT PROGRAMS (dah3.PNG) */}
+          {/* TAB 2: INVESTMENT PROGRAMS */}
           {activeTab === 'program' && (
             <div className="space-y-4">
               {programViewMode === 'list' && (
@@ -557,7 +557,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 3: EXPIRING DEPOSITS (dah2.PNG) */}
+          {/* TAB 3: EXPIRING DEPOSITS */}
           {activeTab === 'expiring' && (
             <div className="space-y-4">
               <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
@@ -601,7 +601,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 4: PROCESSINGS MANAGEMENT (pro1.PNG & pro2.PNG) */}
+          {/* TAB 4: PROCESSINGS MANAGEMENT */}
           {activeTab === 'processings' && (
             <div className="space-y-4">
               {processingViewMode === 'list' && (
@@ -687,7 +687,6 @@ export default function AdminDashboardPage() {
                       </select>
                     </div>
 
-                    {/* Deposit Section */}
                     <div className="border-t border-orange-200 pt-3 space-y-3">
                       <p className="font-bold text-orange-900 uppercase">Deposit:</p>
                       
@@ -732,7 +731,6 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Withdraw Section */}
                     <div className="border-t border-orange-200 pt-3 space-y-3">
                       <p className="font-bold text-orange-900 uppercase">Withdraw:</p>
 
@@ -785,7 +783,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 5: USERS DIRECTORY (userp.PNG, userp2.PNG, userp3.PNG) */}
+          {/* TAB 5: USERS DIRECTORY */}
           {activeTab === 'users' && (
             <div className="space-y-4">
               {viewMode === 'list' && (
