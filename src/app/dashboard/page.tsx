@@ -150,16 +150,14 @@ export default function UserDashboardPage() {
               )}
             </div>
 
-            {/* Support Link */}
-            <button
-              onClick={() => setActiveTab('support')}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded font-medium transition ${
-                activeTab === 'support' ? 'bg-white text-gray-900 font-bold' : 'text-gray-300 hover:bg-gray-800'
-              }`}
+            {/* Support Redirect to Homepage */}
+            <Link
+              href="/"
+              className="w-full flex items-center gap-2 px-3 py-2 rounded font-medium text-gray-300 hover:bg-gray-800 transition"
             >
               <Headphones size={14} />
               <span>Support</span>
-            </button>
+            </Link>
 
             {/* Transactions History */}
             <button
@@ -553,20 +551,6 @@ export default function UserDashboardPage() {
                   <span className="text-gray-400">Total referral commission:</span>
                   <span className="font-bold text-emerald-400">$0.00</span>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* SUPPORT MODULE */}
-          {activeTab === 'support' && (
-            <div className="space-y-4">
-              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
-                Customer Support
-              </div>
-              <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-3">
-                <p className="text-gray-300">Need help? Send a message directly to our support team.</p>
-                <textarea rows={4} placeholder="Type your message here..." className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white"></textarea>
-                <button className="px-4 py-2 bg-orange-500 text-gray-900 font-bold rounded uppercase">Send Message</button>
               </div>
             </div>
           )}
