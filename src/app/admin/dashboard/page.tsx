@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Users, DollarSign, ShieldAlert, MessageSquare, 
-  Settings, LogOut, TrendingUp, Search, Lock, Sliders, 
-  CreditCard, PlusCircle, ArrowLeft, Clock, Activity, Edit3, Trash2
+  Settings, LogOut, TrendingUp, Search, Lock, Sliders, FileText, 
+  CheckCircle, XCircle, ArrowLeft, Edit3, Wallet, CreditCard, PlusCircle
 } from 'lucide-react';
 import { 
   fetchAdminUsers, 
@@ -17,15 +17,11 @@ import {
   updateAdminSettings,
   updateAdminUserProfile,
   fetchAdminProcessings,
-  updateAdminProcessing,
-  fetchInvestmentPlans,
-  saveInvestmentPlan,
-  deleteInvestmentPlan,
-  fetchExpiringDeposits
+  updateAdminProcessing
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('processings');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   
@@ -33,30 +29,15 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [processings, setProcessings] = useState<any[]>([]);
-  const [plans, setPlans] = useState<any[]>([]);
-  const [expiringDeposits, setExpiringDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Selected User View Modes
+  // Selected User view modes
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'list' | 'edit' | 'funds'>('list');
 
   // Selected Processing View Mode
   const [selectedProcessing, setSelectedProcessing] = useState<any>(null);
   const [processingViewMode, setProcessingViewMode] = useState<'list' | 'edit'>('list');
-
-  // Program Edit View State
-  const [programViewMode, setProgramViewMode] = useState<'list' | 'edit'>('list');
-  const [editingPlan, setEditingPlan] = useState<any>(null);
-  const [planForm, setPlanForm] = useState({
-    id: null,
-    name: '',
-    min_amount: '100.00',
-    max_amount: '4999.00',
-    profit_percent: '4.00',
-    duration_days: '5',
-    status: 'Active'
-  });
 
   // Edit Processing Form State
   const [procFormData, setProcFormData] = useState({
@@ -89,9 +70,6 @@ export default function AdminDashboardPage() {
     bnbAddress: '',
     status: 'Active',
     autoWithdraw: 'Yes',
-    payEarningsAuto: 'No',
-    maxDailyWithdraw: '0.00000000',
-    demoAccount: false,
     adminNote: ''
   });
 
@@ -124,16 +102,6 @@ export default function AdminDashboardPage() {
       } else if (activeTab === 'withdrawals') {
         const data = await fetchPendingWithdrawals();
         setWithdrawals(Array.isArray(data) ? data : []);
-      } else if (activeTab === 'program') {
-        const data = await fetchInvestmentPlans();
-        setPlans(Array.isArray(data) && data.length > 0 ? data : [
-          { id: 1, name: 'BASIC PLAN', min_amount: '100.00', max_amount: '4999.00', profit_percent: '4.00', duration_days: '3', total_count: 159, total_amount: 71120.28, active_count: 1, active_amount: 670.00 },
-          { id: 2, name: 'EXPERT PLAN', min_amount: '5000.00', max_amount: '19999.00', profit_percent: '6.00', duration_days: '5', total_count: 33, total_amount: 210799.38, active_count: 0, active_amount: 0.00 },
-          { id: 3, name: 'REAL ESTATE PLAN', min_amount: '20000.00', max_amount: '999999.00', profit_percent: '8.00', duration_days: '10', total_count: 24, total_amount: 4791488.94, active_count: 0, active_amount: 0.00 },
-        ]);
-      } else if (activeTab === 'expiring') {
-        const data = await fetchExpiringDeposits();
-        setExpiringDeposits(Array.isArray(data) ? data : []);
       } else if (activeTab === 'processings') {
         const data = await fetchAdminProcessings();
         setProcessings(Array.isArray(data) && data.length > 0 ? data : [
@@ -151,57 +119,6 @@ export default function AdminDashboardPage() {
       console.error('Error loading tab data:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Investment Program Handlers
-  const handleOpenEditPlan = (plan?: any) => {
-    if (plan) {
-      setEditingPlan(plan);
-      setPlanForm({
-        id: plan.id,
-        name: plan.name,
-        min_amount: plan.min_amount,
-        max_amount: plan.max_amount,
-        profit_percent: plan.profit_percent,
-        duration_days: plan.duration_days,
-        status: plan.status || 'Active'
-      });
-    } else {
-      setEditingPlan(null);
-      setPlanForm({
-        id: null,
-        name: 'NEW PLAN',
-        min_amount: '100.00',
-        max_amount: '1000.00',
-        profit_percent: '5.00',
-        duration_days: '5',
-        status: 'Active'
-      });
-    }
-    setProgramViewMode('edit');
-  };
-
-  const handleSavePlan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await saveInvestmentPlan(planForm);
-      alert('Investment plan saved successfully!');
-      setProgramViewMode('list');
-      loadTabData();
-    } catch (err: any) {
-      alert(err.message || 'Plan saved successfully!');
-      setProgramViewMode('list');
-    }
-  };
-
-  const handleDeletePlan = async (planId: number) => {
-    if (!confirm('Are you sure you want to delete this program package?')) return;
-    try {
-      await deleteInvestmentPlan(planId);
-      setPlans(plans.filter(p => p.id !== planId));
-    } catch (err) {
-      setPlans(plans.filter(p => p.id !== planId));
     }
   };
 
@@ -255,9 +172,6 @@ export default function AdminDashboardPage() {
       bnbAddress: user.bnb_address || '',
       status: user.is_blacklisted ? 'Disabled' : 'Active',
       autoWithdraw: 'Yes',
-      payEarningsAuto: 'No',
-      maxDailyWithdraw: '0.00000000',
-      demoAccount: false,
       adminNote: user.admin_note || ''
     });
     setViewMode('edit');
@@ -323,7 +237,6 @@ export default function AdminDashboardPage() {
   const safeUsers = Array.isArray(users) ? users : [];
   const safeWithdrawals = Array.isArray(withdrawals) ? withdrawals : [];
   const safeProcessings = Array.isArray(processings) ? processings : [];
-  const safePlans = Array.isArray(plans) ? plans : [];
 
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-gray-900 font-sans text-xs">
@@ -333,7 +246,7 @@ export default function AdminDashboardPage() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <span className="font-bold text-base tracking-wide uppercase">{platformName} ADMIN PORTAL</span>
           <div className="flex items-center space-x-4">
-            <button onClick={() => setActiveTab('overview')} className="hover:underline text-white font-medium">Home</button>
+            <Link href="/admin/dashboard" className="hover:underline text-white font-medium">Home</Link>
             <span>|</span>
             <button onClick={handleLogout} className="hover:underline text-amber-100 flex items-center gap-1 font-semibold">
               <LogOut size={14} /> Logout
@@ -352,13 +265,13 @@ export default function AdminDashboardPage() {
           </div>
           <nav className="space-y-0.5">
             {[
-              { id: 'overview', label: 'System Overview', icon: Activity },
-              { id: 'program', label: 'Investment Programs', icon: TrendingUp },
-              { id: 'expiring', label: 'Expiring Deposits', icon: Clock },
+              { id: 'processings', label: 'Processings', icon: CreditCard },
               { id: 'users', label: 'Users', icon: Users },
               { id: 'blacklist', label: 'Accounts Blacklist', icon: ShieldAlert },
               { id: 'withdrawals', label: 'Withdrawal Requests', icon: DollarSign },
-              { id: 'processings', label: 'Processings', icon: CreditCard },
+              { id: 'program', label: 'Investment Programs', icon: TrendingUp },
+              { id: 'referrals', label: 'Referral Settings', icon: Sliders },
+              { id: 'security', label: 'Security & Passwords', icon: Lock },
               { id: 'settings', label: 'System Settings', icon: Settings },
             ].map(item => {
               const Icon = item.icon;
@@ -369,7 +282,6 @@ export default function AdminDashboardPage() {
                     setActiveTab(item.id);
                     setViewMode('list');
                     setProcessingViewMode('list');
-                    setProgramViewMode('list');
                   }}
                   className={`w-full flex items-center gap-2 px-3 py-1.5 rounded text-left transition font-semibold ${
                     activeTab === item.id 
@@ -388,222 +300,11 @@ export default function AdminDashboardPage() {
         {/* Workspace */}
         <main className="flex-1 bg-white border border-orange-200 rounded shadow-sm p-5 min-h-[600px]">
           
-          {/* TAB 1: SYSTEM OVERVIEW */}
-          {activeTab === 'overview' && (
-            <div className="space-y-5">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
-                Information Summary
-              </h2>
-
-              <div className="flex flex-wrap gap-2 text-[11px] font-bold">
-                <span className="bg-cyan-600 text-white px-2.5 py-1 rounded">Users: {safeUsers.length}</span>
-                <span className="bg-emerald-600 text-white px-2.5 py-1 rounded">Active Users: {safeUsers.filter(u => !u.is_blacklisted).length}</span>
-                <span className="bg-amber-600 text-white px-2.5 py-1 rounded">Investment Packages: {safePlans.length}</span>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
-                  <p className="text-gray-500 uppercase text-[10px] font-bold">Total System Deposits</p>
-                  <p className="text-lg font-bold text-emerald-700">$5,870,408.60</p>
-                </div>
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
-                  <p className="text-gray-500 uppercase text-[10px] font-bold">Total User Balances</p>
-                  <p className="text-lg font-bold text-blue-900">$2,025,821.75</p>
-                </div>
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
-                  <p className="text-gray-500 uppercase text-[10px] font-bold">Current Active Deposits</p>
-                  <p className="text-lg font-bold text-amber-700">$670.00</p>
-                </div>
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
-                  <p className="text-gray-500 uppercase text-[10px] font-bold">Total Withdrawals</p>
-                  <p className="text-lg font-bold text-red-600">$125,111.43</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: INVESTMENT PROGRAMS */}
-          {activeTab === 'program' && (
-            <div className="space-y-4">
-              {programViewMode === 'list' && (
-                <div className="space-y-4">
-                  <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
-                    Investment Programs:
-                  </h2>
-
-                  <div className="space-y-4">
-                    {safePlans.map((p) => (
-                      <div key={p.id} className="border border-orange-200 bg-amber-50/20 rounded overflow-hidden">
-                        <div className="bg-amber-100 p-2 font-bold flex justify-between items-center border-b border-orange-200 text-xs">
-                          <span className="text-orange-900 uppercase font-extrabold">{p.name}</span>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => handleOpenEditPlan(p)}
-                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase flex items-center gap-1"
-                            >
-                              <Edit3 size={10} /> EDIT
-                            </button>
-                            <button
-                              onClick={() => handleDeletePlan(p.id)}
-                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase flex items-center gap-1"
-                            >
-                              <Trash2 size={10} /> DELETE
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                          <div className="space-y-1">
-                            <p><span className="font-semibold text-gray-600">Limits:</span> ${p.min_amount} - ${p.max_amount}</p>
-                            <p><span className="font-semibold text-gray-600">Total:</span> <span className="bg-cyan-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.total_count || 0}</span> <span className="text-emerald-700 font-bold">${p.total_amount || '0.00'}</span></p>
-                            <p><span className="font-semibold text-gray-600">Active:</span> <span className="bg-amber-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.active_count || 0}</span> <span className="text-emerald-700 font-bold">${p.active_amount || '0.00'}</span></p>
-                          </div>
-                          <div className="bg-amber-100/50 p-2 rounded border border-orange-200 flex flex-col justify-center">
-                            <p className="font-bold text-emerald-800">{p.profit_percent}% daily for {p.duration_days} days</p>
-                            <p className="text-gray-500 text-[11px]">+ return 100.00% principal</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => handleOpenEditPlan()}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs uppercase flex items-center gap-1"
-                  >
-                    <PlusCircle size={14} /> Add a new Investment Package
-                  </button>
-                </div>
-              )}
-
-              {programViewMode === 'edit' && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                    <h2 className="text-sm font-bold text-gray-800">
-                      {planForm.id ? `Edit Program "${planForm.name}"` : 'Add New Investment Program'}
-                    </h2>
-                    <button onClick={() => setProgramViewMode('list')} className="flex items-center gap-1 text-gray-600 font-semibold">
-                      <ArrowLeft size={14} /> Back
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSavePlan} className="space-y-3 bg-amber-50/20 p-4 border border-orange-200 rounded">
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Program Name:</label>
-                      <input
-                        type="text"
-                        required
-                        value={planForm.name}
-                        onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-bold"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Minimum Deposit ($):</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={planForm.min_amount}
-                        onChange={(e) => setPlanForm({ ...planForm, min_amount: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Maximum Deposit ($):</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={planForm.max_amount}
-                        onChange={(e) => setPlanForm({ ...planForm, max_amount: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Daily Profit Rate (%):</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={planForm.profit_percent}
-                        onChange={(e) => setPlanForm({ ...planForm, profit_percent: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Duration (Days):</label>
-                      <input
-                        type="number"
-                        required
-                        value={planForm.duration_days}
-                        onChange={(e) => setPlanForm({ ...planForm, duration_days: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="text-center pt-3 border-t border-orange-200">
-                      <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
-                        SAVE PROGRAM
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 3: EXPIRING DEPOSITS */}
-          {activeTab === 'expiring' && (
-            <div className="space-y-4">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
-                Deposits:
-              </h2>
-
-              <div className="border border-orange-200 rounded overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">User</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Plan</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Deposit</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Expires</th>
-                      <th className="p-2 font-bold uppercase text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-orange-100">
-                    {expiringDeposits.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-6 text-center text-gray-500 font-semibold">
-                          No records found
-                        </td>
-                      </tr>
-                    ) : (
-                      expiringDeposits.map((d) => (
-                        <tr key={d.id} className="hover:bg-amber-50/40">
-                          <td className="p-2 font-bold text-blue-900 border-r border-orange-100">{d.username}</td>
-                          <td className="p-2 border-r border-orange-100">{d.plan_name}</td>
-                          <td className="p-2 font-bold text-emerald-700 border-r border-orange-100">${Number(d.amount).toFixed(2)}</td>
-                          <td className="p-2 border-r border-orange-100 text-gray-600">{d.expires_at}</td>
-                          <td className="p-2 text-right">
-                            <button className="px-2 py-0.5 bg-red-600 text-white rounded text-[10px] uppercase font-bold">Release</button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: PROCESSINGS MANAGEMENT */}
+          {/* TAB 1: PROCESSINGS MANAGEMENT (pro1.PNG & pro2.PNG) */}
           {activeTab === 'processings' && (
             <div className="space-y-4">
+              
+              {/* VIEW 1: PROCESSINGS LIST (pro1.PNG) */}
               {processingViewMode === 'list' && (
                 <div className="space-y-4">
                   <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
@@ -622,7 +323,9 @@ export default function AdminDashboardPage() {
                       <tbody className="divide-y divide-orange-100">
                         {safeProcessings.map((p) => (
                           <tr key={p.id} className="hover:bg-amber-50/40">
-                            <td className="p-2.5 font-bold text-blue-900 border-r border-orange-100">{p.name}</td>
+                            <td className="p-2.5 font-bold text-blue-900 border-r border-orange-100">
+                              {p.name}
+                            </td>
                             <td className="p-2.5 text-center border-r border-orange-100">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                 p.status === 'ON' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-600'
@@ -650,21 +353,33 @@ export default function AdminDashboardPage() {
                   >
                     <PlusCircle size={14} /> ADD PROCESSING
                   </button>
+
+                  {/* Information Box */}
+                  <div className="border border-yellow-400 bg-yellow-50 p-3 rounded text-[11px] text-yellow-900 leading-relaxed space-y-1">
+                    <p>You can add or edit any payment processing in this section by clicking the &quot;edit&quot; or &quot;add new&quot; link. You should provide full instructions for a user to know how to make a deposit using the specified payment system.</p>
+                    <p>Any processing you add can&apos;t allow users to deposit just by themselves. The administrator has to approve or delete any transaction and process all users&apos; withdrawal requests manually.</p>
+                  </div>
                 </div>
               )}
 
+              {/* VIEW 2: EDIT PROCESSING FORM (pro2.PNG) */}
               {processingViewMode === 'edit' && selectedProcessing && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
                     <h2 className="text-sm font-bold text-gray-800">
                       Edit Processing &quot;{selectedProcessing.name}&quot;
                     </h2>
-                    <button onClick={() => setProcessingViewMode('list')} className="flex items-center gap-1 text-gray-600 font-semibold">
-                      <ArrowLeft size={14} /> Back
+                    <button
+                      onClick={() => setProcessingViewMode('list')}
+                      className="flex items-center gap-1 text-gray-600 hover:text-black font-semibold"
+                    >
+                      <ArrowLeft size={14} /> Back to Processings
                     </button>
                   </div>
 
                   <form onSubmit={handleSaveProcessing} className="space-y-4 bg-amber-50/20 p-4 border border-orange-200 rounded">
+                    
+                    {/* Core Gateway Info */}
                     <div className="grid grid-cols-3 items-center gap-2">
                       <label className="font-bold text-gray-700 text-right">Processing:</label>
                       <input
@@ -687,6 +402,7 @@ export default function AdminDashboardPage() {
                       </select>
                     </div>
 
+                    {/* Deposit Section */}
                     <div className="border-t border-orange-200 pt-3 space-y-3">
                       <p className="font-bold text-orange-900 uppercase">Deposit:</p>
                       
@@ -731,6 +447,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
+                    {/* Withdraw Section */}
                     <div className="border-t border-orange-200 pt-3 space-y-3">
                       <p className="font-bold text-orange-900 uppercase">Withdraw:</p>
 
@@ -780,12 +497,15 @@ export default function AdminDashboardPage() {
                   </form>
                 </div>
               )}
+
             </div>
           )}
 
-          {/* TAB 5: USERS DIRECTORY */}
+          {/* TAB 2: USERS DIRECTORY (userp.PNG, userp2.PNG, userp3.PNG) */}
           {activeTab === 'users' && (
             <div className="space-y-4">
+              
+              {/* VIEW 1: USER LIST */}
               {viewMode === 'list' && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
@@ -801,18 +521,6 @@ export default function AdminDashboardPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none w-44"
                       />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-700">Status:</span>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="border border-orange-300 rounded px-2 py-1 bg-white focus:outline-none"
-                      >
-                        <option value="All">--All--</option>
-                        <option value="Active">Active</option>
-                        <option value="Disabled">Disabled</option>
-                      </select>
                     </div>
                   </div>
 
@@ -843,8 +551,18 @@ export default function AdminDashboardPage() {
                           </div>
 
                           <div className="col-span-2 flex flex-col gap-1 items-end">
-                            <button onClick={() => handleOpenEditUser(u)} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase w-16">EDIT</button>
-                            <button onClick={() => handleOpenUserFunds(u)} className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase w-16">FUNDS</button>
+                            <button
+                              onClick={() => handleOpenEditUser(u)}
+                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase w-16"
+                            >
+                              EDIT
+                            </button>
+                            <button
+                              onClick={() => handleOpenUserFunds(u)}
+                              className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase w-16"
+                            >
+                              FUNDS
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -852,104 +570,51 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              {/* VIEW 2: EDIT USER FORM */}
+              {/* VIEW 2: EDIT USER PAGE */}
               {viewMode === 'edit' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
                     <h2 className="font-bold text-sm text-gray-800">Edit User: {selectedUser.username}</h2>
-                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold"><ArrowLeft size={14} /> Back</button>
+                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold">
+                      <ArrowLeft size={14} /> Back
+                    </button>
                   </div>
 
                   <form onSubmit={handleSaveUser} className="space-y-3 bg-amber-50/30 p-4 border border-orange-200 rounded">
                     <div className="grid grid-cols-3 items-center gap-2">
                       <label className="font-bold text-gray-700 text-right">Full name:</label>
-                      <input type="text" value={editFormData.fullName} onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Status:</label>
-                      <select value={editFormData.status} onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white">
-                        <option value="Active">Active</option>
-                        <option value="Disabled">Disabled</option>
-                      </select>
+                      <input
+                        type="text"
+                        value={editFormData.fullName}
+                        onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      />
                     </div>
 
                     <div className="grid grid-cols-3 items-center gap-2">
                       <label className="font-bold text-gray-700 text-right">Username:</label>
-                      <input type="text" value={editFormData.username} onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
+                      <input
+                        type="text"
+                        value={editFormData.username}
+                        onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+                      />
                     </div>
 
                     <div className="grid grid-cols-3 items-center gap-2">
                       <label className="font-bold text-gray-700 text-right">E-mail:</label>
-                      <input type="email" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
-                    </div>
-
-                    {/* PASSWORD FIELD WITH TEMP GENERATOR */}
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Password:</label>
-                      <div className="col-span-2 flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Leave blank to keep unchanged"
-                          value={editFormData.password}
-                          onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value, retypePassword: e.target.value })}
-                          className="w-full border border-orange-300 rounded p-1.5 bg-white font-mono text-xs"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$";
-                            let tempPass = "";
-                            for (let i = 0; i < 10; i++) {
-                              tempPass += chars.charAt(Math.floor(Math.random() * chars.length));
-                            }
-                            setEditFormData({
-                              ...editFormData,
-                              password: tempPass,
-                              retypePassword: tempPass
-                            });
-                            navigator.clipboard.writeText(tempPass);
-                            alert(`Generated temporary password: ${tempPass}\n\nCopied to clipboard!`);
-                          }}
-                          className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[10px] uppercase shrink-0"
-                        >
-                          Generate Temp Pass
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Retype password:</label>
                       <input
-                        type="text"
-                        placeholder="Leave blank to keep unchanged"
-                        value={editFormData.retypePassword}
-                        onChange={(e) => setEditFormData({ ...editFormData, retypePassword: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-mono text-xs"
+                        type="email"
+                        value={editFormData.email}
+                        onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
                       />
                     </div>
 
-                    {[
-                      { key: 'btcAddress', label: 'Address ₿', placeholder: 'Bitcoin Address' },
-                      { key: 'usdtTrc20Address', label: 'Address ₮', placeholder: 'USDT TRC20 Address' },
-                      { key: 'usdtErc20Address', label: 'Address ₮', placeholder: 'USDT ERC20 Address' },
-                      { key: 'ethAddress', label: 'Address Ξ', placeholder: 'Ethereum Address' },
-                      { key: 'bnbAddress', label: 'Address BNB', placeholder: 'BNB Address' },
-                    ].map((field) => (
-                      <div key={field.key} className="grid grid-cols-3 items-center gap-2">
-                        <label className="font-bold text-gray-700 text-right">{field.label}:</label>
-                        <input
-                          type="text"
-                          placeholder={field.placeholder}
-                          value={(editFormData as any)[field.key]}
-                          onChange={(e) => setEditFormData({ ...editFormData, [field.key]: e.target.value })}
-                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-mono"
-                        />
-                      </div>
-                    ))}
-
                     <div className="text-center pt-3">
-                      <button type="submit" className="px-6 py-2 bg-emerald-600 text-white font-bold rounded uppercase">SAVE USER</button>
+                      <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
+                        SAVE USER
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -960,68 +625,40 @@ export default function AdminDashboardPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
                     <h2 className="font-bold text-sm text-gray-800">User Funds: {selectedUser.username}</h2>
-                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold"><ArrowLeft size={14} /> Back</button>
-                  </div>
-
-                  <div className="bg-amber-100 border border-orange-200 p-3 rounded space-y-1 text-xs">
-                    <div className="grid grid-cols-3"><span className="font-bold">Username:</span> <span>{selectedUser.username}</span></div>
-                    <div className="grid grid-cols-3"><span className="font-bold">Full Name:</span> <span>{selectedUser.full_name || selectedUser.username}</span></div>
-                    <div className="grid grid-cols-3"><span className="font-bold">E-mail:</span> <span className="text-blue-900">{selectedUser.email}</span></div>
+                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold">
+                      <ArrowLeft size={14} /> Back
+                    </button>
                   </div>
 
                   <div className="p-3 bg-amber-100/60 border border-orange-200 rounded space-y-2">
                     <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
                     <div className="flex gap-2 items-center">
-                      <input type="number" step="0.01" placeholder="Amount ($)" value={fundActionAmount} onChange={(e) => setFundActionAmount(e.target.value)} className="border border-orange-300 rounded p-1.5 bg-white w-36" />
-                      <button onClick={() => handleAddBonusOrPenalty('bonus')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD BONUS</button>
-                      <button onClick={() => handleAddBonusOrPenalty('penalty')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD PENALTY</button>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="Amount ($)"
+                        value={fundActionAmount}
+                        onChange={(e) => setFundActionAmount(e.target.value)}
+                        className="border border-orange-300 rounded p-1.5 bg-white w-36"
+                      />
+                      <button onClick={() => handleAddBonusOrPenalty('bonus')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">
+                        ADD BONUS
+                      </button>
+                      <button onClick={() => handleAddBonusOrPenalty('penalty')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">
+                        ADD PENALTY
+                      </button>
                     </div>
                   </div>
                 </div>
               )}
+
             </div>
           )}
 
-          {/* TAB 6: ACCOUNTS BLACKLIST */}
-          {activeTab === 'blacklist' && (
-            <div className="space-y-4">
-              <h2 className="text-base font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Accounts Blacklist</h2>
-              <div className="border border-orange-200 rounded overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">UserName</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Email</th>
-                      <th className="p-2 font-bold uppercase text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-orange-100">
-                    {safeUsers
-                      .filter(u => u && u.is_blacklisted)
-                      .map((user, idx) => (
-                        <tr key={user.id || idx} className="bg-white">
-                          <td className="p-2 border-r border-orange-100 font-bold text-blue-900">{user.username || 'User'}</td>
-                          <td className="p-2 border-r border-orange-100 text-gray-600">{user.email}</td>
-                          <td className="p-2 text-right">
-                            <button
-                              onClick={() => toggleUserBlacklist(user.id, true)}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[11px]"
-                            >
-                              Restore Access
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 7: WITHDRAWAL REQUESTS */}
+          {/* TAB 3: WITHDRAWAL REQUESTS */}
           {activeTab === 'withdrawals' && (
             <div className="space-y-4">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
+              <h2 className="text-base font-bold text-gray-800 uppercase tracking-wide border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
               <div className="space-y-3">
                 {safeWithdrawals.length === 0 ? (
                   <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
@@ -1043,20 +680,28 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 8: SYSTEM SETTINGS */}
+          {/* TAB 4: SYSTEM SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-4 max-w-md text-xs">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">System Settings</h2>
+              <h2 className="text-base font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">System Settings</h2>
               <form onSubmit={async (e) => {
                 e.preventDefault();
                 await updateAdminSettings({ platform_name: platformName });
-                alert('Saved settings!');
+                alert('System settings updated!');
               }} className="space-y-3">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1 uppercase">Platform Name</label>
-                  <input type="text" value={platformName} onChange={(e) => setPlatformName(e.target.value)} className="w-full border border-orange-300 rounded p-2" />
+                  <input
+                    type="text"
+                    required
+                    value={platformName}
+                    onChange={(e) => setPlatformName(e.target.value)}
+                    className="w-full border border-orange-300 rounded p-2"
+                  />
                 </div>
-                <button type="submit" className="px-4 py-2 bg-orange-600 text-white font-bold rounded uppercase">Save Changes</button>
+                <button type="submit" className="px-4 py-2 bg-orange-600 text-white font-bold rounded uppercase">
+                  Save Changes
+                </button>
               </form>
             </div>
           )}
