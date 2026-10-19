@@ -10,13 +10,15 @@ import {
   fetchUserProfile, 
   createWithdrawal, 
   createDeposit,
-  fetchUserTransactions
+  fetchUserTransactions,
+  fetchInvestmentPlans
 } from '@/lib/api';
 
 export default function UserDashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<any>({ balance: 0, username: 'User', email: '' });
   const [userTransactions, setUserTransactions] = useState<any[]>([]);
+  const [investmentPlans, setInvestmentPlans] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   // Accordion Sidebar Toggles
@@ -26,7 +28,7 @@ export default function UserDashboardPage() {
 
   // Deposit Form States
   const [depositAmount, setDepositAmount] = useState('');
-  const [selectedPlan, setSelectedPlan] = useState('BASIC PLAN');
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [depositMethod, setDepositMethod] = useState('USDT TRC20');
   const [copied, setCopied] = useState(false);
 
@@ -43,6 +45,10 @@ export default function UserDashboardPage() {
 
   useEffect(() => {
     loadUserData();
+    loadPlans();
+  }, []);
+
+  useEffect(() => {
     if (activeTab === 'transactions') {
       loadTransactions();
     }
@@ -56,6 +62,27 @@ export default function UserDashboardPage() {
       if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
     } catch (err) {
       console.error('Failed to load user profile:', err);
+    }
+  };
+
+  const loadPlans = async () => {
+    try {
+      const data = await fetchInvestmentPlans();
+      if (Array.isArray(data) && data.length > 0) {
+        setInvestmentPlans(data);
+        setSelectedPlan(data[0]);
+      } else {
+        // Fallback default plans
+        const fallback = [
+          { id: 1, name: 'BASIC PLAN', min_amount: '100.00', max_amount: '4999.00', profit_percent: '4.00', duration_days: '3' },
+          { id: 2, name: 'EXPERT PLAN', min_amount: '5000.00', max_amount: '19999.00', profit_percent: '6.00', duration_days: '5' },
+          { id: 3, name: 'REAL ESTATE PLAN', min_amount: '20000.00', max_amount: '999999.00', profit_percent: '8.00', duration_days: '10' },
+        ];
+        setInvestmentPlans(fallback);
+        setSelectedPlan(fallback[0]);
+      }
+    } catch (err) {
+      console.error('Failed to load dynamic plans:', err);
     }
   };
 
@@ -131,7 +158,6 @@ export default function UserDashboardPage() {
           </div>
 
           <nav className="space-y-1">
-            {/* Dashboard Link */}
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded font-medium transition ${
@@ -166,7 +192,6 @@ export default function UserDashboardPage() {
               )}
             </div>
 
-            {/* Support Redirects to Homepage */}
             <Link
               href="/"
               className="w-full flex items-center gap-2 px-3 py-2 rounded font-medium text-gray-300 hover:bg-gray-800 transition"
@@ -175,7 +200,6 @@ export default function UserDashboardPage() {
               <span>Support</span>
             </Link>
 
-            {/* Transactions History Link */}
             <button
               onClick={() => setActiveTab('transactions')}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded font-medium transition ${
@@ -231,7 +255,6 @@ export default function UserDashboardPage() {
               )}
             </div>
 
-            {/* Refer Users */}
             <button
               onClick={() => setActiveTab('referrals')}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded font-medium transition ${
@@ -244,7 +267,7 @@ export default function UserDashboardPage() {
           </nav>
         </aside>
 
-        {/* Main Content Workspace */}
+        {/* Main Workspace */}
         <main className="flex-1 p-6 space-y-6">
           
           {/* DASHBOARD HOME */}
@@ -270,7 +293,7 @@ export default function UserDashboardPage() {
             </div>
           )}
 
-          {/* MAKE DEPOSIT MODULE */}
+          {/* MAKE DEPOSIT MODULE (DYNAMIC PLANS FROM ADMIN) */}
           {activeTab === 'make_deposit' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
@@ -283,31 +306,27 @@ export default function UserDashboardPage() {
                 </div>
               )}
 
-              {/* Step 1: Select Plan */}
+              {/* Step 1: Dynamic Investment Plans */}
               <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
                 <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {[
-                    { name: 'BASIC PLAN', range: '$100 - $4,999', profit: '4.00% daily' },
-                    { name: 'TARGET PLAN', range: '$5,000 - $20,000', profit: '6.00% daily' },
-                    { name: 'REAL ESTATE PLAN', range: '$20,000+', profit: '8.00% daily' },
-                  ].map((p) => (
+                  {investmentPlans.map((p) => (
                     <div
-                      key={p.name}
-                      onClick={() => setSelectedPlan(p.name)}
+                      key={p.id}
+                      onClick={() => setSelectedPlan(p)}
                       className={`border p-3 rounded cursor-pointer transition ${
-                        selectedPlan === p.name ? 'border-orange-500 bg-orange-500/10' : 'border-gray-800 hover:border-gray-700'
+                        selectedPlan?.id === p.id ? 'border-orange-500 bg-orange-500/10' : 'border-gray-800 hover:border-gray-700'
                       }`}
                     >
-                      <p className="font-bold text-white">{p.name}</p>
-                      <p className="text-emerald-400">{p.profit}</p>
-                      <p className="text-gray-400">{p.range}</p>
+                      <p className="font-bold text-white uppercase">{p.name}</p>
+                      <p className="text-emerald-400 font-bold">{p.profit_percent}% daily for {p.duration_days} days</p>
+                      <p className="text-gray-400">${p.min_amount} -${p.max_amount}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Step 2: Deposit Form */}
+              {/* Step 2: Deposit Amount & Address */}
               <form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
                 <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
                 <div className="space-y-3">
@@ -319,7 +338,7 @@ export default function UserDashboardPage() {
                       required
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
-                      placeholder="100.00"
+                      placeholder={selectedPlan?.min_amount || "100.00"}
                       className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white"
                     />
                   </div>
@@ -412,49 +431,21 @@ export default function UserDashboardPage() {
                   </button>
                 </form>
               </div>
-
-              {/* Payment Methods Table */}
-              <div className="bg-[#161f33] border border-gray-800 rounded overflow-hidden">
-                <div className="grid grid-cols-4 bg-[#1f2937] p-3 font-bold text-gray-300 border-b border-gray-800">
-                  <span>Processing</span>
-                  <span>Available</span>
-                  <span>Pending</span>
-                  <span className="text-right">Account</span>
-                </div>
-                {[
-                  { name: 'Bitcoin', icon: '₿' },
-                  { name: 'USDT TRC20', icon: '₮' },
-                  { name: 'USDT ERC20', icon: 'Ξ' },
-                  { name: 'Ethereum', icon: 'Ξ' },
-                  { name: 'BNB', icon: 'BNB' },
-                ].map((m) => (
-                  <div key={m.name} className="grid grid-cols-4 p-3 border-b border-gray-800/60 items-center">
-                    <span className="flex items-center gap-2 font-medium">{m.icon} {m.name}</span>
-                    <span className="text-emerald-400">$0.00</span>
-                    <span className="text-red-400">$0.00</span>
-                    <span className="text-right text-red-400 italic">not set</span>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
-          {/* MY PACKAGES MODULE */}
+          {/* MY PACKAGES MODULE (DYNAMIC ADMIN PLANS) */}
           {activeTab === 'packages' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
-                Your deposits
+                Your deposit options
               </div>
-              {[
-                { name: 'BASIC PLAN', range: '$100.00 - $4,999.00', profit: '4.00% daily for 5 days' },
-                { name: 'TARGET PLAN', range: '$5,000.00 - $20,000.00', profit: '6.00% daily for 5 days' },
-                { name: 'REAL ESTATE PLAN', range: '$20,000.00 - Unlimited', profit: '8.00% daily for 10 days' },
-              ].map((p) => (
-                <div key={p.name} className="bg-[#161f33] border border-gray-800 rounded overflow-hidden">
-                  <div className="bg-orange-500 text-gray-900 font-bold px-4 py-1.5 text-center">{p.name}</div>
+              {investmentPlans.map((p) => (
+                <div key={p.id} className="bg-[#161f33] border border-gray-800 rounded overflow-hidden">
+                  <div className="bg-orange-500 text-gray-900 font-bold px-4 py-1.5 text-center uppercase">{p.name}</div>
                   <div className="p-4 flex justify-between items-center bg-[#111827]">
-                    <span>{p.profit}</span>
-                    <span className="text-gray-400">{p.range}</span>
+                    <span className="text-emerald-400 font-bold">{p.profit_percent}% daily for {p.duration_days} days</span>
+                    <span className="text-gray-400">${p.min_amount} -${p.max_amount}</span>
                   </div>
                   <div className="p-3 bg-[#161f33] text-center">
                     <button onClick={() => setActiveTab('make_deposit')} className="text-red-400 hover:underline font-semibold">
@@ -477,10 +468,6 @@ export default function UserDashboardPage() {
                   <span className="text-gray-400">Account Name:</span>
                   <span className="font-bold text-white">{user.username}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-800 pb-2">
-                  <span className="text-gray-400">Registration date:</span>
-                  <span className="text-white">Oct-18-2026 07:51:58 PM</span>
-                </div>
                 <div className="space-y-3">
                   <div>
                     <label className="block text-gray-400 mb-1">Your Full Name:</label>
@@ -491,38 +478,13 @@ export default function UserDashboardPage() {
                     <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white" placeholder="••••••••" />
                   </div>
                   <div>
-                    <label className="block text-gray-400 mb-1">Your USDT TRC20:</label>
+                    <label className="block text-gray-400 mb-1">Your USDT TRC20 Address:</label>
                     <input type="text" value={usdtTrc20Address} onChange={(e) => setUsdtTrc20Address(e.target.value)} className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white" placeholder="TRC20 Wallet Address" />
                   </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">Your E-mail address:</label>
-                    <input type="email" readOnly value={user.email || ''} className="w-full bg-[#111827]/50 border border-gray-800 rounded p-2 text-gray-400 cursor-not-allowed" />
-                  </div>
-                  <button onClick={() => alert('Account data updated successfully!')} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase">
+                  <button onClick={() => alert('Account updated successfully!')} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase">
                     Change Account data
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* SECURITY SETTINGS MODULE */}
-          {activeTab === 'security' && (
-            <div className="space-y-4">
-              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
-                Advanced login security settings
-              </div>
-              <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-4">
-                <div>
-                  <p className="font-bold text-gray-300 mb-2">Detect IP Address Change Sensitivity</p>
-                  <div className="space-y-1 text-gray-400">
-                    <label className="flex items-center gap-2"><input type="radio" name="ip_sens" defaultChecked /> Disabled</label>
-                    <label className="flex items-center gap-2"><input type="radio" name="ip_sens" /> Medium</label>
-                    <label className="flex items-center gap-2"><input type="radio" name="ip_sens" /> High</label>
-                    <label className="flex items-center gap-2"><input type="radio" name="ip_sens" /> Paranoic</label>
-                  </div>
-                </div>
-                <button className="px-4 py-1.5 bg-orange-500 text-gray-900 font-bold rounded">Set</button>
               </div>
             </div>
           )}
@@ -586,10 +548,6 @@ export default function UserDashboardPage() {
               <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-3">
                 <div className="flex justify-between border-b border-gray-800 pb-2">
                   <span className="text-gray-400">Referrals:</span>
-                  <span className="font-bold text-white">0</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-800 pb-2">
-                  <span className="text-gray-400">Active referrals:</span>
                   <span className="font-bold text-white">0</span>
                 </div>
                 <div className="flex justify-between border-b border-gray-800 pb-2">

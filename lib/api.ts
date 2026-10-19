@@ -232,3 +232,47 @@ export async function updateAdminProcessing(id: number, payload: any) {
   if (!res.ok) throw new Error('Failed to update processing gateway');
   return res.json();
 }
+
+
+
+
+
+// src/lib/api.ts
+
+export async function fetchInvestmentPlans() {
+  const res = await fetch(`${API_URL}/investment-plans/`, { headers: getAuthHeaders() });
+  if (!res.ok) throw new Error('Failed to load investment plans');
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+export async function saveInvestmentPlan(planData: any) {
+  const method = planData.id ? 'PUT' : 'POST';
+  const url = planData.id 
+    ? `${API_URL}/admin/investment-plans/${planData.id}/` 
+    : `${API_URL}/admin/investment-plans/`;
+
+  const res = await fetch(url, {
+    method,
+    headers: getAuthHeaders(),
+    body: JSON.stringify(planData),
+  });
+  if (!res.ok) throw new Error('Failed to save investment plan');
+  return res.json();
+}
+
+export async function deleteInvestmentPlan(planId: number) {
+  const res = await fetch(`${API_URL}/admin/investment-plans/${planId}/`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to delete investment plan');
+  return res.json();
+}
+
+export async function fetchExpiringDeposits() {
+  const res = await fetch(`${API_URL}/admin/expiring-deposits/`, { headers: getAuthHeaders() });
+  if (!res.ok) throw new Error('Failed to load expiring deposits');
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
