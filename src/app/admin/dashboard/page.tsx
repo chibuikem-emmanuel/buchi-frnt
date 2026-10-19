@@ -89,9 +89,6 @@ export default function AdminDashboardPage() {
     bnbAddress: '',
     status: 'Active',
     autoWithdraw: 'Yes',
-    payEarningsAuto: 'No',
-    maxDailyWithdraw: '0.00000000',
-    demoAccount: false,
     adminNote: ''
   });
 
@@ -190,8 +187,7 @@ export default function AdminDashboardPage() {
       setProgramViewMode('list');
       loadTabData();
     } catch (err: any) {
-      alert(err.message || 'Plan saved successfully!');
-      setProgramViewMode('list');
+      alert(err.message || 'Failed to save investment plan');
     }
   };
 
@@ -255,9 +251,6 @@ export default function AdminDashboardPage() {
       bnbAddress: user.bnb_address || '',
       status: user.is_blacklisted ? 'Disabled' : 'Active',
       autoWithdraw: 'Yes',
-      payEarningsAuto: 'No',
-      maxDailyWithdraw: '0.00000000',
-      demoAccount: false,
       adminNote: user.admin_note || ''
     });
     setViewMode('edit');
@@ -884,7 +877,6 @@ export default function AdminDashboardPage() {
                       <input type="email" value={editFormData.email} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} className="col-span-2 border border-orange-300 rounded p-1.5 bg-white" />
                     </div>
 
-                    {/* PASSWORD FIELD WITH TEMP GENERATOR */}
                     <div className="grid grid-cols-3 items-center gap-2">
                       <label className="font-bold text-gray-700 text-right">Password:</label>
                       <div className="col-span-2 flex gap-2">
@@ -955,27 +947,105 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              {/* VIEW 3: USER DETAILS & FUNDS PAGE */}
+              {/* VIEW 3: USER DETAILS & FUNDS PAGE (Matches userp3_2.PNG) */}
               {viewMode === 'funds' && selectedUser && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                    <h2 className="font-bold text-sm text-gray-800">User Funds: {selectedUser.username}</h2>
-                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold"><ArrowLeft size={14} /> Back</button>
+                    <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                      User Details: <span className="bg-amber-200 px-2 py-0.5 rounded text-xs text-orange-900 border border-orange-300">EDIT</span>
+                    </h2>
+                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold flex items-center gap-1"><ArrowLeft size={14} /> Back</button>
                   </div>
 
-                  <div className="bg-amber-100 border border-orange-200 p-3 rounded space-y-1 text-xs">
-                    <div className="grid grid-cols-3"><span className="font-bold">Username:</span> <span>{selectedUser.username}</span></div>
-                    <div className="grid grid-cols-3"><span className="font-bold">Full Name:</span> <span>{selectedUser.full_name || selectedUser.username}</span></div>
-                    <div className="grid grid-cols-3"><span className="font-bold">E-mail:</span> <span className="text-blue-900">{selectedUser.email}</span></div>
+                  {/* Top user identification box */}
+                  <div className="border border-orange-200 rounded overflow-hidden text-xs">
+                    <div className="grid grid-cols-2 p-2 bg-amber-50/50 border-b border-orange-100">
+                      <span className="font-bold text-gray-700">Username:</span>
+                      <span className="font-bold text-blue-900">{selectedUser.username}</span>
+                    </div>
+                    <div className="grid grid-cols-2 p-2 bg-amber-50/50 border-b border-orange-100">
+                      <span className="font-bold text-gray-700">Full Name:</span>
+                      <span>{selectedUser.full_name || selectedUser.username}</span>
+                    </div>
+                    <div className="grid grid-cols-2 p-2 bg-amber-50/50">
+                      <span className="font-bold text-gray-700">E-mail:</span>
+                      <span className="text-blue-900 underline">{selectedUser.email}</span>
+                    </div>
                   </div>
 
-                  <div className="p-3 bg-amber-100/60 border border-orange-200 rounded space-y-2">
+                  {/* Processing Balances Table */}
+                  <div className="border border-orange-200 rounded overflow-hidden text-xs">
+                    <div className="grid grid-cols-3 bg-orange-500 p-2 font-bold text-white border-b border-orange-600">
+                      <span>Processing</span>
+                      <span>Balance</span>
+                      <span className="text-right">Account</span>
+                    </div>
+                    {[
+                      { name: 'Bitcoin', icon: '₿', balance: '0.00', account: selectedUser.btc_address || 'n/a' },
+                      { name: 'USDT TRC20', icon: '₮', balance: '0.00', account: selectedUser.usdt_trc20 || 'n/a' },
+                      { name: 'USDT ERC20', icon: '₮', balance: '0.00', account: selectedUser.usdt_erc20 || 'n/a' },
+                      { name: 'Ethereum', icon: 'Ξ', balance: '0.00', account: selectedUser.eth_address || 'n/a' },
+                      { name: 'BNB', icon: 'BNB', balance: '0.00', account: selectedUser.bnb_address || 'n/a' },
+                    ].map((p, idx) => (
+                      <div key={idx} className="grid grid-cols-3 p-2 bg-amber-50/30 border-b border-orange-100 items-center">
+                        <span className="font-bold text-blue-900 flex items-center gap-1.5"><span>{p.icon}</span> {p.name}</span>
+                        <span className="text-emerald-700 font-bold">${p.balance}</span>
+                        <span className="text-right text-gray-600 font-mono">{p.account}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Summary Statistics Rows with Action Buttons */}
+                  <div className="border border-orange-200 rounded overflow-hidden text-xs divide-y divide-orange-100 bg-amber-50/20">
+                    {[
+                      { label: 'Total Balance', val: `$${Number(selectedUser.balance || 0).toFixed(2)}`, btn1: 'HISTORY' },
+                      { label: 'Total Deposit', val: '$0.00', btn1: 'HISTORY' },
+                      { label: 'Active Deposit', val: '$0.00', btn1: 'MANAGE DEPOSITS', btn2: 'HISTORY' },
+                      { label: 'Total Earning', val: '$0.00', btn1: 'HISTORY' },
+                      { label: 'Total Withdrawal', val: '$0.00', btn1: 'WITHDRAW REQUEST', btn2: 'HISTORY' },
+                      { label: 'Pending Withdrawals', val: '$0.00', btn1: 'PROCESS WITHDRAWALS', btn2: 'HISTORY' },
+                      { label: 'Total Bonus', val: '$0.00', btn1: 'ADD A BONUS', btn2: 'HISTORY' },
+                      { label: 'Total Penalty', val: '$0.00', btn1: 'ADD A PENALTY', btn2: 'HISTORY' },
+                      { label: 'Referrals 1st Level', val: '0', btn1: 'REFERRALS', btn2: 'TRAFFIC' },
+                      { label: 'Referral Commissions', val: '$0.00', btn1: 'HISTORY' },
+                    ].map((row, idx) => (
+                      <div key={idx} className="grid grid-cols-12 p-2 items-center">
+                        <div className="col-span-4 font-bold text-gray-700">{row.label}:</div>
+                        <div className="col-span-3 font-bold text-emerald-700">{row.val}</div>
+                        <div className="col-span-5 flex justify-end gap-1">
+                          {row.btn1 && <button className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[9px] uppercase">{row.btn1}</button>}
+                          {row.btn2 && <button className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[9px] uppercase">{row.btn2}</button>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Manage Bonus & Penalty Action box */}
+                  <div className="p-3 bg-amber-100 border border-orange-200 rounded space-y-2">
                     <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
                     <div className="flex gap-2 items-center">
-                      <input type="number" step="0.01" placeholder="Amount ($)" value={fundActionAmount} onChange={(e) => setFundActionAmount(e.target.value)} className="border border-orange-300 rounded p-1.5 bg-white w-36" />
-                      <button onClick={() => handleAddBonusOrPenalty('bonus')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD BONUS</button>
-                      <button onClick={() => handleAddBonusOrPenalty('penalty')} className="px-3 py-1.5 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD PENALTY</button>
+                      <input type="number" step="0.01" placeholder="Amount ($)" value={fundActionAmount} onChange={(e) => setFundActionAmount(e.target.value)} className="border border-orange-300 rounded p-1 bg-white w-32" />
+                      <button onClick={() => handleAddBonusOrPenalty('bonus')} className="px-3 py-1 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD BONUS</button>
+                      <button onClick={() => handleAddBonusOrPenalty('penalty')} className="px-3 py-1 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD PENALTY</button>
                     </div>
+                  </div>
+
+                  {/* User IPs */}
+                  <div className="border border-orange-200 rounded overflow-hidden text-xs">
+                    <div className="bg-orange-500 p-2 font-bold text-white border-b border-orange-600">User IPs:</div>
+                    <div className="grid grid-cols-2 bg-amber-100 p-1.5 font-bold text-gray-700 border-b border-orange-200">
+                      <span>IP</span>
+                      <span>Last Access</span>
+                    </div>
+                    <div className="p-2 bg-amber-50/30 text-gray-600 flex justify-between">
+                      <span className="font-mono">127.0.0.1</span>
+                      <span>Active Now</span>
+                    </div>
+                  </div>
+
+                  {/* Help text box */}
+                  <div className="border border-amber-400 bg-amber-50/50 p-3 rounded text-[11px] text-gray-700 space-y-1">
+                    <p><b>Manage user funds:</b> Account balance, total deposits, active deposits, earnings, withdrawals, bonus, and penalty tracking.</p>
                   </div>
                 </div>
               )}
