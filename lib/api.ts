@@ -256,8 +256,9 @@ export async function updateAdminProcessing(id: number, payload: any) {
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Failed to update processing gateway');
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to update processing gateway');
+  return data;
 }
 
 

@@ -21,7 +21,8 @@ import {
   fetchInvestmentPlans,
   saveInvestmentPlan,
   deleteInvestmentPlan,
-  fetchExpiringDeposits
+  fetchExpiringDeposits,
+  createAdminProcessing,
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
@@ -222,18 +223,41 @@ export default function AdminDashboardPage() {
     setProcessingViewMode('edit');
   };
 
-  const handleSaveProcessing = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await updateAdminProcessing(selectedProcessing.id, procFormData);
-      alert(`Processing gateway "${procFormData.name}" updated successfully!`);
-      setProcessingViewMode('list');
-      loadTabData();
-    } catch (err: any) {
-      alert(err.message || 'Saved successfully!');
-      setProcessingViewMode('list');
-    }
+const handleSaveProcessing = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const payload = {
+    name: procFormData.name,
+    status: procFormData.status,
+    instructions: procFormData.instructions,
+    min_deposit: procFormData.minDeposit,
+    max_deposit: procFormData.maxDeposit,
+    min_withdraw: procFormData.minWithdraw,
+    max_withdraw: procFormData.maxWithdraw,
   };
+
+  try {
+    const isNew = !selectedProcessing?.id || String(selectedProcessing.id).length > 10;
+
+    if (isNew) {
+      await createAdminProcessing(payload);
+      alert(`Processing gateway "${procFormData.name}" created successfully!`);
+    } else {
+      await updateAdminProcessing(Number(selectedProcessing.id), payload);
+      alert(`Processing gateway "${procFormData.name}" updated successfully!`);
+    }
+
+    setProcessingViewMode('list');
+    
+    // Refresh your table data
+    const updatedList = await fetchAdminProcessings();
+    setProcessings(updatedList);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Failed to save gateway settings.';
+    console.error("Save processing error:", err);
+    alert(errorMessage);
+  }
+};
 
   // User Actions
   const handleOpenEditUser = (user: any) => {
