@@ -948,31 +948,20 @@ export default function AdminDashboardPage() {
               )}
 
               {/* VIEW 3: USER DETAILS & FUNDS PAGE (Matches userp3_2.PNG) */}
-              {viewMode === 'funds' && selectedUser && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                    <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-                      User Details: <span className="bg-amber-200 px-2 py-0.5 rounded text-xs text-orange-900 border border-orange-300">EDIT</span>
-                    </h2>
-                    <button onClick={() => setViewMode('list')} className="text-gray-600 font-semibold flex items-center gap-1"><ArrowLeft size={14} /> Back</button>
-                  </div>
-
-                  {/* Top user identification box */}
-                  <div className="border border-orange-200 rounded overflow-hidden text-xs">
-                    <div className="grid grid-cols-2 p-2 bg-amber-50/50 border-b border-orange-100">
-                      <span className="font-bold text-gray-700">Username:</span>
-                      <span className="font-bold text-blue-900">{selectedUser.username}</span>
-                    </div>
-                    <div className="grid grid-cols-2 p-2 bg-amber-50/50 border-b border-orange-100">
-                      <span className="font-bold text-gray-700">Full Name:</span>
-                      <span>{selectedUser.full_name || selectedUser.username}</span>
-                    </div>
-                    <div className="grid grid-cols-2 p-2 bg-amber-50/50">
-                      <span className="font-bold text-gray-700">E-mail:</span>
-                      <span className="text-blue-900 underline">{selectedUser.email}</span>
-                    </div>
-                  </div>
-
+             {viewMode === 'funds' && selectedUser && (
+              <div className="space-y-4">
+                {/* Header & Back Button */}
+                <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                  <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                    User Funds & Account Summary: <span className="text-blue-900 font-extrabold">{selectedUser.username}</span>
+                  </h2>
+                  <button 
+                    onClick={() => setViewMode('list')} 
+                    className="text-gray-600 font-semibold flex items-center gap-1 hover:text-gray-900"
+                  >
+                    <ArrowLeft size={14} /> Back to Users Directory
+                  </button>
+                </div>
                   {/* Processing Balances Table */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs">
                     <div className="grid grid-cols-3 bg-orange-500 p-2 font-bold text-white border-b border-orange-600">
