@@ -322,3 +322,15 @@ export async function fetchExpiringDeposits() {
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
+
+
+export async function createAdminProcessing(payload: any) {
+  const res = await fetch(`${API_URL}/admin/processings/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to create processing gateway');
+  return data;
+}
