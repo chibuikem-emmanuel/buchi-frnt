@@ -949,19 +949,19 @@ export default function AdminDashboardPage() {
 
               {/* VIEW 3: USER DETAILS & FUNDS PAGE (Matches userp3_2.PNG) */}
              {viewMode === 'funds' && selectedUser && (
-              <div className="space-y-4">
-                {/* Header & Back Button */}
-                <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                  <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-                    User Funds & Account Summary: <span className="text-blue-900 font-extrabold">{selectedUser.username}</span>
-                  </h2>
-                  <button 
-                    onClick={() => setViewMode('list')} 
-                    className="text-gray-600 font-semibold flex items-center gap-1 hover:text-gray-900"
-                  >
-                    <ArrowLeft size={14} /> Back to Users Directory
-                  </button>
-                </div>
+            <div className="space-y-4">
+              {/* Header & Back Button */}
+              <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                  User Funds & Account Summary: <span className="text-blue-900 font-extrabold">{selectedUser.username}</span>
+                </h2>
+                <button 
+                  onClick={() => setViewMode('list')} 
+                  className="text-gray-600 font-semibold flex items-center gap-1 hover:text-gray-900"
+                >
+                  <ArrowLeft size={14} /> Back to Users Directory
+                </button>
+              </div>
                   {/* Processing Balances Table */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs">
                     <div className="grid grid-cols-3 bg-orange-500 p-2 font-bold text-white border-b border-orange-600">
@@ -1009,15 +1009,46 @@ export default function AdminDashboardPage() {
                     ))}
                   </div>
 
-                  {/* Manage Bonus & Penalty Action box */}
-                  <div className="p-3 bg-amber-100 border border-orange-200 rounded space-y-2">
-                    <p className="font-bold text-orange-900 uppercase">Manage Bonus & Penalty</p>
-                    <div className="flex gap-2 items-center">
-                      <input type="number" step="0.01" placeholder="Amount ($)" value={fundActionAmount} onChange={(e) => setFundActionAmount(e.target.value)} className="border border-orange-300 rounded p-1 bg-white w-32" />
-                      <button onClick={() => handleAddBonusOrPenalty('bonus')} className="px-3 py-1 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD BONUS</button>
-                      <button onClick={() => handleAddBonusOrPenalty('penalty')} className="px-3 py-1 bg-red-600 text-white font-bold rounded text-[10px] uppercase">ADD PENALTY</button>
+                  {/* Current Balance Overview Card */}
+                    <div className="bg-amber-50/50 border border-orange-200 p-3 rounded flex justify-between items-center text-xs">
+                      <div>
+                        <p className="text-gray-500 font-semibold uppercase text-[10px]">Total Balance</p>
+                        <p className="text-lg font-bold text-emerald-700">${Number(selectedUser.balance || 0).toFixed(2)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-gray-500 font-semibold uppercase text-[10px]">User Email</p>
+                        <p className="font-bold text-blue-900">{selectedUser.email}</p>
+                      </div>
                     </div>
-                  </div>
+
+                  {/* Manage Bonus & Penalty Action box */}
+                    <div className="p-3 bg-amber-100/80 border border-orange-200 rounded space-y-2">
+                      <p className="font-bold text-orange-900 uppercase text-xs">Manage Bonus & Penalty</p>
+                      <div className="flex gap-2 items-center">
+                        <input 
+                          type="number" 
+                          step="0.01" 
+                          placeholder="Amount ($)" 
+                          value={fundActionAmount} 
+                          onChange={(e) => setFundActionAmount(e.target.value)} 
+                          className="border border-orange-300 rounded p-1.5 bg-white w-32 font-bold text-xs focus:outline-none focus:border-orange-500" 
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => handleAddBonusOrPenalty('bonus')} 
+                          className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+                        >
+                          ADD BONUS
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => handleAddBonusOrPenalty('penalty')} 
+                          className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+                        >
+                          ADD PENALTY
+                        </button>
+                      </div>
+                    </div>
 
                   {/* User IPs */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs">
