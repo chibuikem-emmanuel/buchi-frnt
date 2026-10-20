@@ -247,18 +247,35 @@ export async function fetchInvestmentPlans() {
 }
 
 export async function saveInvestmentPlan(planData: any) {
-  const method = planData.id ? 'PUT' : 'POST';
-  const url = planData.id 
+  const isEdit = planData.id && typeof planData.id === 'number';
+  const method = isEdit ? 'PUT' : 'POST';
+  const url = isEdit
     ? `${API_URL}/admin/investment-plans/${planData.id}/` 
     : `${API_URL}/admin/investment-plans/`;
+
+  const payload = {
+    name: planData.name,
+    min_amount: planData.min_amount,
+    max_amount: planData.max_amount,
+    profit_percent: planData.profit_percent,
+    duration_days: planData.duration_days,
+    status: planData.status || 'Active'
+  };
 
   const res = await fetch(url, {
     method,
     headers: getAuthHeaders(),
-    body: JSON.stringify(planData),
+    body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('Failed to save investment plan');
-  return res.json();
+  
+  const data = await res.json();
+  if (!res.ok) {
+    // This logs the exact Django error object to your browser console
+    console.error("Django validation error:", data);
+    const errorMessage = typeof data === 'object' ? JSON.stringify(data) : (data.error || data.detail || 'Failed to save investment plan');
+    throw new Error(errorMessage);
+  }
+  return data;
 }
 
 export async function deleteInvestmentPlan(planId: number) {
