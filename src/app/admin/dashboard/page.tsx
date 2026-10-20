@@ -416,140 +416,139 @@ export default function AdminDashboardPage() {
           )}
 
           {/* TAB 2: INVESTMENT PROGRAMS */}
-          {activeTab === 'program' && (
-            <div className="space-y-4">
-              {programViewMode === 'list' && (
-                <div className="space-y-4">
-                  <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
-                    Investment Programs:
-                  </h2>
+{activeTab === 'program' && (
+  <div className="space-y-4">
+    {programViewMode === 'list' && (
+      <div className="space-y-4">
+        <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
+          Investment Programs:
+        </h2>
 
-                  <div className="space-y-4">
-                    {safePlans.map((p) => (
-                      <div key={p.id} className="border border-orange-200 bg-amber-50/20 rounded overflow-hidden">
-                        <div className="bg-amber-100 p-2 font-bold flex justify-between items-center border-b border-orange-200 text-xs">
-                          <span className="text-orange-900 uppercase font-extrabold">{p.name}</span>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => handleOpenEditPlan(p)}
-                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase flex items-center gap-1"
-                            >
-                              <Edit3 size={10} /> EDIT
-                            </button>
-                            <button
-                              onClick={() => handleDeletePlan(p.id)}
-                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase flex items-center gap-1"
-                            >
-                              <Trash2 size={10} /> DELETE
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                          <div className="space-y-1">
-                            <p><span className="font-semibold text-gray-600">Limits:</span> ${p.min_amount} - ${p.max_amount}</p>
-                            <p><span className="font-semibold text-gray-600">Total:</span> <span className="bg-cyan-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.total_count || 0}</span> <span className="text-emerald-700 font-bold">${p.total_amount || '0.00'}</span></p>
-                            <p><span className="font-semibold text-gray-600">Active:</span> <span className="bg-amber-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.active_count || 0}</span> <span className="text-emerald-700 font-bold">${p.active_amount || '0.00'}</span></p>
-                          </div>
-                          <div className="bg-amber-100/50 p-2 rounded border border-orange-200 flex flex-col justify-center">
-                            <p className="font-bold text-emerald-800">{p.profit_percent}% daily for {p.duration_days} days</p>
-                            <p className="text-gray-500 text-[11px]">+ return 100.00% principal</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
+        <div className="space-y-4">
+          {safePlans.map((p) => (
+            <div key={p.id} className="border border-orange-200 bg-amber-50/20 rounded overflow-hidden">
+              <div className="bg-amber-100 p-2 font-bold flex justify-between items-center border-b border-orange-200 text-xs">
+                <span className="text-orange-900 uppercase font-extrabold">{p.name}</span>
+                <div className="flex gap-1">
                   <button
-                    onClick={() => handleOpenEditPlan()}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs uppercase flex items-center gap-1"
+                    onClick={() => handleOpenEditPlan(p)}
+                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase flex items-center gap-1"
                   >
-                    <PlusCircle size={14} /> Add a new Investment Package
+                    <Edit3 size={10} /> EDIT
+                  </button>
+                  <button
+                    onClick={() => handleDeletePlan(p.id)}
+                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase flex items-center gap-1"
+                  >
+                    <Trash2 size={10} /> DELETE
                   </button>
                 </div>
-              )}
+              </div>
 
-              {programViewMode === 'edit' && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                    <h2 className="text-sm font-bold text-gray-800">
-                      {planForm.id ? `Edit Program "${planForm.name}"` : 'Add New Investment Program'}
-                    </h2>
-                    <button onClick={() => setProgramViewMode('list')} className="flex items-center gap-1 text-gray-600 font-semibold">
-                      <ArrowLeft size={14} /> Back
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSavePlan} className="space-y-3 bg-amber-50/20 p-4 border border-orange-200 rounded">
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Program Name:</label>
-                      <input
-                        type="text"
-                        required
-                        value={planForm.name}
-                        onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-bold"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Minimum Deposit ($):</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={planForm.min_amount}
-                        onChange={(e) => setPlanForm({ ...planForm, min_amount: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Maximum Deposit ($):</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={planForm.max_amount}
-                        onChange={(e) => setPlanForm({ ...planForm, max_amount: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Daily Profit Rate (%):</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={planForm.profit_percent}
-                        onChange={(e) => setPlanForm({ ...planForm, profit_percent: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 items-center gap-2">
-                      <label className="font-bold text-gray-700 text-right">Duration (Days):</label>
-                      <input
-                        type="number"
-                        required
-                        value={planForm.duration_days}
-                        onChange={(e) => setPlanForm({ ...planForm, duration_days: e.target.value })}
-                        className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
-                      />
-                    </div>
-
-                    <div className="text-center pt-3 border-t border-orange-200">
-                      <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
-                        SAVE PROGRAM
-                      </button>
-                    </div>
-                  </form>
+              <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="space-y-1">
+                  <p><span className="font-semibold text-gray-600">Limits:</span> ${p.min_amount} -${p.max_amount}</p>
+                  <p><span className="font-semibold text-gray-600">Total:</span> <span className="bg-cyan-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.total_count || 0}</span> <span className="text-emerald-700 font-bold">${p.total_amount || '0.00'}</span></p>
+                  <p><span className="font-semibold text-gray-600">Active:</span> <span className="bg-amber-600 text-white font-bold px-1 py-0.5 rounded text-[10px]">{p.active_count || 0}</span> <span className="text-emerald-700 font-bold">${p.active_amount || '0.00'}</span></p>
                 </div>
-              )}
+                <div className="bg-amber-100/50 p-2 rounded border border-orange-200 flex flex-col justify-center">
+                  <p className="font-bold text-emerald-800">{p.profit_percent}% daily for {p.duration_days} days</p>
+                  <p className="text-gray-500 text-[11px]">+ return 100.00% principal</p>
+                </div>
+              </div>
             </div>
-          )}
+          ))}
+        </div>
 
+        <button
+          onClick={() => handleOpenEditPlan()}
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs uppercase flex items-center gap-1"
+        >
+          <PlusCircle size={14} /> Add a new Investment Package
+        </button>
+      </div>
+    )}
+
+             {programViewMode === 'edit' && (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+          <h2 className="text-sm font-bold text-gray-800">
+            {planForm.id ? `Edit Program "${planForm.name}"` : 'Add New Investment Program'}
+          </h2>
+          <button onClick={() => setProgramViewMode('list')} className="flex items-center gap-1 text-gray-600 font-semibold">
+            <ArrowLeft size={14} /> Back
+          </button>
+        </div>
+
+        <form onSubmit={handleSavePlan} className="space-y-3 bg-amber-50/20 p-4 border border-orange-200 rounded">
+          <div className="grid grid-cols-3 items-center gap-2">
+            <label className="font-bold text-gray-700 text-right">Program Name:</label>
+            <input
+              type="text"
+              required
+              value={planForm.name}
+              onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+              className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-bold"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 items-center gap-2">
+            <label className="font-bold text-gray-700 text-right">Minimum Deposit ($):</label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={planForm.min_amount}
+              onChange={(e) => setPlanForm({ ...planForm, min_amount: e.target.value })}
+              className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 items-center gap-2">
+            <label className="font-bold text-gray-700 text-right">Maximum Deposit ($):</label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={planForm.max_amount}
+              onChange={(e) => setPlanForm({ ...planForm, max_amount: e.target.value })}
+              className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 items-center gap-2">
+            <label className="font-bold text-gray-700 text-right">Daily Profit Rate (%):</label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={planForm.profit_percent}
+              onChange={(e) => setPlanForm({ ...planForm, profit_percent: e.target.value })}
+              className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 items-center gap-2">
+            <label className="font-bold text-gray-700 text-right">Duration (Days):</label>
+            <input
+              type="number"
+              required
+              value={planForm.duration_days}
+              onChange={(e) => setPlanForm({ ...planForm, duration_days: e.target.value })}
+              className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
+            />
+          </div>
+
+          <div className="text-center pt-3 border-t border-orange-200">
+            <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded uppercase">
+              SAVE PROGRAM
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
+  </div>
+)}
           {/* TAB 3: EXPIRING DEPOSITS */}
           {activeTab === 'expiring' && (
             <div className="space-y-4">
