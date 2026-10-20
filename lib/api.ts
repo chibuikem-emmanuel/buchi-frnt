@@ -6,8 +6,8 @@ const getRawApiUrl = () => {
   }
   return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
 };
-
-const API_URL = getRawApiUrl();
+// Force the absolute Render backend URL so it NEVER hits Next.js routing
+const API_URL = 'https://buchi-bck.onrender.com/api';
 
 const getAuthHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
