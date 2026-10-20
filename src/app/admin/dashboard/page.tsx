@@ -262,29 +262,32 @@ export default function AdminDashboardPage() {
   };
 
   const handleSaveUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await updateAdminUserProfile(selectedUser.id, {
-        full_name: editFormData.fullName,
-        username: editFormData.username,
-        email: editFormData.email,
-        status: editFormData.status,
-        password: editFormData.password || undefined,
-        btc_address: editFormData.btcAddress,
-        usdt_trc20: editFormData.usdtTrc20Address,
-        usdt_erc20: editFormData.usdtErc20Address,
-        eth_address: editFormData.ethAddress,
-        bnb_address: editFormData.bnbAddress,
-        admin_note: editFormData.adminNote
-      });
-      alert(`User profile for ${editFormData.username} updated!`);
-      await loadTabData();
-      setViewMode('list');
-    } catch (err: any) {
-      alert(err.message || 'Saved user successfully!');
-      setViewMode('list');
-    }
-  };
+  e.preventDefault();
+  try {
+    const response = await updateAdminUserProfile(selectedUser.id, {
+      full_name: editFormData.fullName,
+      username: editFormData.username,
+      email: editFormData.email,
+      status: editFormData.status,
+      password: editFormData.password || undefined,
+      btc_address: editFormData.btcAddress,
+      usdt_trc20: editFormData.usdtTrc20Address,
+      usdt_erc20: editFormData.usdtErc20Address,
+      eth_address: editFormData.ethAddress,
+      bnb_address: editFormData.bnbAddress,
+      admin_note: editFormData.adminNote
+    });
+    
+    console.log("Update success response:", response);
+    alert(`User profile for ${editFormData.username} updated successfully!`);
+    await loadTabData();
+    setViewMode('list');
+  } catch (err: any) {
+    console.error("DETAILED UPDATE ERROR:", err);
+    alert(`Failed to update user: ${err.message || 'Unknown error'}`);
+    // Do NOT change viewMode here so you can see what failed and check console logs
+  }
+};
 
   const handleAddBonusOrPenalty = async (type: 'bonus' | 'penalty') => {
     if (!fundActionAmount || parseFloat(fundActionAmount) <= 0) return alert('Enter valid amount');
