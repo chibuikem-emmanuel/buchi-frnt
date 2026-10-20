@@ -119,6 +119,28 @@ export async function fetchAdminUsers() {
   return Array.isArray(data) ? data : [];
 }
 
+export async function updateAdminUser(userId: number, userData: {
+  username?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  is_active?: boolean;
+  is_staff?: boolean;
+  password?: string; // Optional temporary password
+}) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}/`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(userData),
+  });
+  
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to update user details');
+  }
+  return data;
+}
+
 export async function toggleUserBlacklist(userId: number, isBlacklisted: boolean) {
   const res = await fetch(`${API_URL}/admin/users/${userId}/`, {
     method: 'PATCH',
