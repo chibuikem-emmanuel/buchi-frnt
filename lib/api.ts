@@ -11,10 +11,15 @@ const API_URL = getRawApiUrl();
 
 const getAuthHeaders = () => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  return {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : ''
   };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
 };
 
 // --- AUTHENTICATION & USER PROFILE ---
