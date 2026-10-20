@@ -245,10 +245,12 @@ export async function updateAdminProcessing(id: number, payload: any) {
 // src/lib/api.ts
 
 export async function fetchInvestmentPlans() {
-  const res = await fetch(`${API_URL}/investment-plans/`, { headers: getAuthHeaders() });
+  const res = await fetch(`${API_URL}/admin/investment-plans/`, { 
+    headers: getAuthHeaders() 
+  });
   if (!res.ok) throw new Error('Failed to load investment plans');
   const data = await res.json();
-  return Array.isArray(data) ? data : [];
+  return Array.isArray(data) ? data : (data.results || []);
 }
 
 export async function saveInvestmentPlan(planData: any) {
