@@ -277,7 +277,8 @@ export async function fetchInvestmentPlans() {
 }
 
 export async function saveInvestmentPlan(planData: any) {
-  const isEdit = planData.id && typeof planData.id === 'number';
+  // Check if ID exists and is valid (whether number or string)
+  const isEdit = Boolean(planData.id) && planData.id !== 'undefined' && planData.id !== 'null';
   const method = isEdit ? 'PUT' : 'POST';
   const url = isEdit
     ? `${API_URL}/admin/investment-plans/${planData.id}/` 
@@ -300,9 +301,8 @@ export async function saveInvestmentPlan(planData: any) {
   
   const data = await res.json();
   if (!res.ok) {
-    // This logs the exact Django error object to your browser console
     console.error("Django validation error:", data);
-    const errorMessage = typeof data === 'object' ? JSON.stringify(data) : (data.error || data.detail || 'Failed to save investment plan');
+    const errorMessage = typeof data === 'object' ? (data.error || data.detail || JSON.stringify(data)) : 'Failed to save investment plan';
     throw new Error(errorMessage);
   }
   return data;
