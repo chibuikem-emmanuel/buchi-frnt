@@ -109,7 +109,6 @@ export async function loginUser(credentials: { email: string; password: string }
 
   return { ...data, is_staff: isAdminEmail };
 }
-
 export async function fetchUserProfile() {
   const res = await fetch(`${API_URL}/accounts/profile/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch profile (${res.status})`);
