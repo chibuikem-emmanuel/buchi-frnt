@@ -344,3 +344,33 @@ export async function fetchAdminAnalytics() {
   if (!res.ok) throw new Error('Failed to load system analytics');
   return res.json();
 }
+
+
+export async function fetchUserDeposits() {
+  const res = await fetch(`${API_URL}/user/deposits/`, { headers: getAuthHeaders() });
+  return res.json();
+}
+
+export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
+  const res = await fetch(`${API_URL}/user/deposits/`, {
+    method: 'POST',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+
+export async function fetchUserWithdrawals() {
+  const res = await fetch(`${API_URL}/user/withdrawals/`, { headers: getAuthHeaders() });
+  return res.json();
+}
+
+export async function submitUserWithdrawal(data: { gateway: string; amount: string; wallet_address: string }) {
+  const res = await fetch(`${API_URL}/user/withdrawals/`, {
+    method: 'POST',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
