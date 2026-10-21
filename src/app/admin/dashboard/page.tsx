@@ -126,6 +126,23 @@ const [analytics, setAnalytics] = useState<any>({
 
   const loadTabData = async () => {
     setLoading(true);
+
+    try {
+      if (activeTab === 'overview') {
+        const analyticsData = await fetchAdminAnalytics();
+        console.log("ANALYTICS RESPONSE FROM BACKEND:", analyticsData); // <-- CHECK F12 CONSOLE
+        if (analyticsData) {
+          setAnalytics(analyticsData);
+        }
+      }
+
+      // ... rest of your tab checks
+    } catch (err) {
+      console.error('Error loading tab data:', err);
+    } finally {
+      setLoading(false);
+    }
+    
     try {
       if (activeTab === 'users' || activeTab === 'blacklist') {
         const data = await fetchAdminUsers();
