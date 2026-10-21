@@ -142,7 +142,6 @@ const [analytics, setAnalytics] = useState<any>({
     } finally {
       setLoading(false);
     }
-    
     try {
       if (activeTab === 'users' || activeTab === 'blacklist') {
         const data = await fetchAdminUsers();

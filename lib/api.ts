@@ -6,6 +6,32 @@ const getRawApiUrl = () => {
   }
   return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
 };
+
+
+// Update your fetch helper wrapper to handle 401 errors automatically
+export async function apiRequest(endpoint: string, options: RequestInit = {}) {
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      ...getAuthHeaders(),
+      ...(options.headers || {}),
+    },
+  });
+
+  if (res.status === 401) {
+    // Token is expired or invalid — clear storage and send back to login
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      window.location.href = '/login'; // Adjust to your login route
+    }
+    throw new Error('Session expired. Please log in again.');
+  }
+
+  return res;
+}
+
+
 // Force the absolute Render backend URL so it NEVER hits Next.js routing
 const API_URL = 'https://buchi-bck.onrender.com/api';
 
