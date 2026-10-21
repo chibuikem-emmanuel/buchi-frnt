@@ -23,12 +23,20 @@ import {
   deleteInvestmentPlan,
   fetchExpiringDeposits,
   createAdminProcessing,
+  fetchAdminAnalytics
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+
+
+const [analytics, setAnalytics] = useState<any>({
+  overview: { totalUsers: 0, netPlatformVolume: '0.00', totalPlans: 0, activePlans: 0 },
+  deposits: { totalApproved: '0.00', pendingCount: 0, pendingAmount: '0.00' },
+  withdrawals: { totalApproved: '0.00', pendingCount: 0, pendingAmount: '0.00' }
+});
   
   // Dynamic State Arrays
   const [users, setUsers] = useState<any[]>([]);
@@ -58,6 +66,9 @@ export default function AdminDashboardPage() {
     duration_days: '5',
     status: 'Active'
   });
+
+
+  
 
   // Edit Processing Form State
   const [procFormData, setProcFormData] = useState({
@@ -150,6 +161,11 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
+
+
+
+
+    
   };
 
   // Investment Program Handlers
@@ -408,11 +424,12 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
         {/* Workspace */}
         <main className="flex-1 bg-white border border-orange-200 rounded shadow-sm p-5 min-h-[600px]">
           
-          {/* TAB 1: SYSTEM OVERVIEW */}
+{/* TAB 1: SYSTEM OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-5">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
-                Information Summary
+              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2 flex justify-between items-center">
+                <span>Information Summary</span>
+                <span className="text-[11px] font-normal text-gray-500">Live PostgreSQL Sync</span>
               </h2>
 
               <div className="flex flex-wrap gap-2 text-[11px] font-bold">
@@ -422,21 +439,32 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
+                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded shadow-sm">
                   <p className="text-gray-500 uppercase text-[10px] font-bold">Total System Deposits</p>
-                  <p className="text-lg font-bold text-emerald-700">$5,870,408.60</p>
+                  <p className="text-lg font-bold text-emerald-700 mt-1">
+                    ${analytics?.deposits?.totalApproved || '0.00'}
+                  </p>
                 </div>
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
-                  <p className="text-gray-500 uppercase text-[10px] font-bold">Total User Balances</p>
-                  <p className="text-lg font-bold text-blue-900">$2,025,821.75</p>
+
+                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded shadow-sm">
+                  <p className="text-gray-500 uppercase text-[10px] font-bold">Net Platform Volume</p>
+                  <p className="text-lg font-bold text-blue-900 mt-1">
+                    ${analytics?.overview?.netPlatformVolume || '0.00'}
+                  </p>
                 </div>
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
-                  <p className="text-gray-500 uppercase text-[10px] font-bold">Current Active Deposits</p>
-                  <p className="text-lg font-bold text-amber-700">$670.00</p>
+
+                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded shadow-sm">
+                  <p className="text-gray-500 uppercase text-[10px] font-bold">Pending Deposits</p>
+                  <p className="text-lg font-bold text-amber-700 mt-1">
+                    {analytics?.deposits?.pendingCount || 0} (${analytics?.deposits?.pendingAmount || '0.00'})
+                  </p>
                 </div>
-                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded">
+
+                <div className="bg-amber-50/50 border border-orange-200 p-3 rounded shadow-sm">
                   <p className="text-gray-500 uppercase text-[10px] font-bold">Total Withdrawals</p>
-                  <p className="text-lg font-bold text-red-600">$125,111.43</p>
+                  <p className="text-lg font-bold text-red-600 mt-1">
+                    ${analytics?.withdrawals?.totalApproved || '0.00'}
+                  </p>
                 </div>
               </div>
             </div>

@@ -335,3 +335,12 @@ export async function createAdminProcessing(payload: any) {
   if (!res.ok) throw new Error(data.error || 'Failed to create processing gateway');
   return data;
 }
+
+
+export async function fetchAdminAnalytics() {
+  const res = await fetch(`${API_URL}/admin/analytics/`, { 
+    headers: getAuthHeaders() 
+  });
+  if (!res.ok) throw new Error('Failed to load system analytics');
+  return res.json();
+}
