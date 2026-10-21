@@ -1,5 +1,13 @@
 'use client';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('access_token'); // Or wherever you store your auth token
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
@@ -11,8 +19,12 @@ import {
   createWithdrawal, 
   createDeposit,
   fetchUserTransactions,
-  fetchInvestmentPlans
+  fetchInvestmentPlans,
 } from '@/lib/api';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
+
+
 
 export default function UserDashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -20,6 +32,12 @@ export default function UserDashboardPage() {
   const [userTransactions, setUserTransactions] = useState<any[]>([]);
   const [investmentPlans, setInvestmentPlans] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
+
+
+
+
+
+  const [transactionId, setTransactionId] = useState('');
 
   // Accordion Sidebar Toggles
   const [accountOpen, setAccountOpen] = useState(true);
@@ -94,18 +112,34 @@ export default function UserDashboardPage() {
     }
   };
 
-  const handleDepositSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatusMessage({ type: '', text: '' });
-    try {
-      await createDeposit(parseFloat(depositAmount));
+const handleDepositSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setStatusMessage({ type: '', text: '' });
+  try {
+    const res = await fetch(`${API_URL}/user/deposits/`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gateway: depositMethod,
+        amount: parseFloat(depositAmount),
+        transaction_id: transactionId, // <-- Required by your Django model
+        plan_id: selectedPlan?.id
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
       setStatusMessage({ type: 'success', text: 'Deposit request submitted successfully! Awaiting admin confirmation.' });
       setDepositAmount('');
+      setTransactionId('');
       loadUserData();
-    } catch (err: any) {
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to submit deposit request.' });
+    } else {
+      setStatusMessage({ type: 'error', text: data.error || 'Failed to submit deposit request.' });
     }
-  };
+  } catch (err: any) {
+    setStatusMessage({ type: 'error', text: 'Network error submitting deposit.' });
+  }
+};
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,6 +386,18 @@ export default function UserDashboardPage() {
                     </select>
                   </div>
                   <div>
+
+                    <div>
+                      <label className="block text-gray-400 mb-1">Transaction ID / Hash</label>
+                      <input
+                        type="text"
+                        required
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        placeholder="Enter blockchain hash or transfer ID"
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono"
+                      />
+                    </div>
                     <label className="block text-gray-400 mb-1">Send payment to official address:</label>
                     <div className="flex gap-2">
                       <input
