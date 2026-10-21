@@ -8,6 +8,9 @@ const getRawApiUrl = () => {
 };
 
 
+
+
+
 // Update your fetch helper wrapper to handle 401 errors automatically
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const res = await fetch(`${API_URL}${endpoint}`, {
@@ -35,8 +38,9 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 // Force the absolute Render backend URL so it NEVER hits Next.js routing
 const API_URL = 'https://buchi-bck.onrender.com/api';
 
-const getAuthHeaders = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+export function getAuthHeaders() {
+  // FIX: Make sure the key matches ('access_token')
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -46,7 +50,7 @@ const getAuthHeaders = () => {
   }
   
   return headers;
-};
+}
 
 // --- AUTHENTICATION & USER PROFILE ---
 
@@ -81,8 +85,9 @@ export async function loginUser(credentials: { email: string; password: string }
 
   const data = await res.json();
   if (typeof window !== 'undefined') {
-    localStorage.setItem('accessToken', data.access);
-    localStorage.setItem('refreshToken', data.refresh);
+    // FIX: Add the underscore to match your deposit requests
+    localStorage.setItem('access_token', data.access);
+    localStorage.setItem('refresh_token', data.refresh);
   }
 
   const isAdminEmail = credentials.email.trim().toLowerCase() === 'admin@crystalsinvestments.org';
