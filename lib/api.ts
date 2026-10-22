@@ -14,14 +14,6 @@ const getRawApiUrl = () => {
 
 
 
-
-
-// Data States
-  const [usersList, setUsersList] = useState<any[]>([]);
-  const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
-  const [fundActionAmount, setFundActionAmount] = useState('');
-  const [loading, setLoading] = useState(false);
-
 // Update your fetch helper wrapper to handle 401 errors automatically
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const res = await fetch(`${API_URL}${endpoint}`, {
