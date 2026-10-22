@@ -381,19 +381,19 @@ export async function fetchAdminAnalytics() {
 
 
 export async function fetchUserDeposits(userId?: number) {
-  const url = userId
-    ? `/api/admin/deposits/?user_id=${userId}`
-    : `/api/admin/deposits/`;
+  const url = new URL('/api/admin/deposits/', API_URL);
 
-  const res = await fetch(url, {
+  if (userId !== undefined) {
+    url.searchParams.set('user_id', String(userId));
+  }
+
+  const res = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     },
   });
 
   if (!res.ok) {
-    const error = await res.text();
-    console.error('Failed to fetch deposits:', res.status, error);
     throw new Error(`Failed to fetch deposits: ${res.status}`);
   }
 
