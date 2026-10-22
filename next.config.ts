@@ -8,6 +8,20 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+
+
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*/",
+        destination: "https://your-django-backend.com/api/:path*/", // Your actual Django server URL
+      },
+      {
+        source: "/api/:path*",
+        destination: "https://your-django-backend.com/api/:path*",
+      },
+    ];
+  },
   
   turbopack: {
     rules: {
