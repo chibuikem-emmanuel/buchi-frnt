@@ -380,16 +380,23 @@ export async function fetchAdminAnalytics() {
 
 
 export async function fetchUserDeposits(userId?: number) {
-  const url = userId ? `/api/admin/deposits/?user_id=${userId}` : `/api/admin/deposits/`;
-  const res = await fetch(url, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
-  });
-  const data = await res.json();
-  
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data.results)) return data.results;
-  if (Array.isArray(data.deposits)) return data.deposits;
-  return [];
+  try {
+    // Note: Since API_URL already ends with '/api', your endpoint starts with '/admin/deposits/'
+    const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
+    
+    const res = await apiRequest(endpoint);
+    const data = await res.json();
+    
+    console.log("Django Deposits Data Received:", data);
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.deposits)) return data.deposits;
+    return [];
+  } catch (err) {
+    console.error('Failed to fetch user deposits:', err);
+    return [];
+  }
 }
 
 export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
