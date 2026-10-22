@@ -1,3 +1,8 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+
+
 const getRawApiUrl = () => {
   let url = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
   url = url.replace(/\[.*?\]\(.*?\)/g, '').replace(/[\[\]]/g, '').trim();
@@ -10,6 +15,12 @@ const getRawApiUrl = () => {
 
 
 
+
+// Data States
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
+  const [fundActionAmount, setFundActionAmount] = useState('');
+  const [loading, setLoading] = useState(false);
 
 // Update your fetch helper wrapper to handle 401 errors automatically
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
@@ -376,8 +387,13 @@ export async function fetchAdminAnalytics() {
 }
 
 
-export async function fetchUserDeposits() {
-  const res = await fetch(`${API_URL}/user/deposits/`, { headers: getAuthHeaders() });
+export async function fetchUserDeposits(userId: number) {
+  const res = await fetch(`${API_URL}/investments/admin/deposits/?user_id=${userId}`, { 
+    headers: getAuthHeaders() 
+  });
+  if (!res.ok) {
+    throw new Error('Failed to fetch user deposits');
+  }
   return res.json();
 }
 
@@ -404,3 +420,20 @@ export async function submitUserWithdrawal(data: { gateway: string; amount: stri
   });
   return res.json();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

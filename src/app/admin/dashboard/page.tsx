@@ -37,6 +37,9 @@ const [analytics, setAnalytics] = useState<any>({
   deposits: { totalApproved: '0.00', pendingCount: 0, pendingAmount: '0.00' },
   withdrawals: { totalApproved: '0.00', pendingCount: 0, pendingAmount: '0.00' }
 });
+
+
+
   
   // Dynamic State Arrays
   const [users, setUsers] = useState<any[]>([]);
@@ -1057,16 +1060,16 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                   {/* Summary Statistics Rows with Action Buttons */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs divide-y divide-orange-100 bg-amber-50/20">
                     {[
-                      { label: 'Total Balance', val: `$${Number(selectedUser.balance || 0).toFixed(2)}`, btn1: 'HISTORY' },
-                      { label: 'Total Deposit', val: '$0.00', btn1: 'HISTORY' },
-                      { label: 'Active Deposit', val: '$0.00', btn1: 'MANAGE DEPOSITS', btn2: 'HISTORY' },
-                      { label: 'Total Earning', val: '$0.00', btn1: 'HISTORY' },
-                      { label: 'Total Withdrawal', val: '$0.00', btn1: 'WITHDRAW REQUEST', btn2: 'HISTORY' },
-                      { label: 'Pending Withdrawals', val: '$0.00', btn1: 'PROCESS WITHDRAWALS', btn2: 'HISTORY' },
-                      { label: 'Total Bonus', val: '$0.00', btn1: 'ADD A BONUS', btn2: 'HISTORY' },
-                      { label: 'Total Penalty', val: '$0.00', btn1: 'ADD A PENALTY', btn2: 'HISTORY' },
-                      { label: 'Referrals 1st Level', val: '0', btn1: 'REFERRALS', btn2: 'TRAFFIC' },
-                      { label: 'Referral Commissions', val: '$0.00', btn1: 'HISTORY' },
+                  { label: 'Total Balance', val: `$${Number(selectedUser.balance || 0).toFixed(2)}`, btn1: 'HISTORY' },
+                  { label: 'Total Deposit', val: `$${Number(selectedUser.total_deposit || 0).toFixed(2)}`, btn1: 'HISTORY' },
+                  { label: 'Active Deposit', val: `$${Number(selectedUser.active_deposit || 0).toFixed(2)}`, btn1: 'MANAGE DEPOSITS', btn2: 'HISTORY' },
+                  { label: 'Total Earning', val: `$${Number(selectedUser.total_earning || 0).toFixed(2)}`, btn1: 'HISTORY' },
+                  { label: 'Total Withdrawal', val: `$${Number(selectedUser.total_withdrawal || 0).toFixed(2)}`, btn1: 'WITHDRAW REQUEST', btn2: 'HISTORY' },
+                  { label: 'Pending Withdrawals', val: `$${Number(selectedUser.pending_withdrawal || 0).toFixed(2)}`, btn1: 'PROCESS WITHDRAWALS', btn2: 'HISTORY' },
+                  { label: 'Total Bonus', val: `$${Number(selectedUser.total_bonus || 0).toFixed(2)}`, btn1: 'ADD A BONUS', btn2: 'HISTORY' },
+                  { label: 'Total Penalty', val: `$${Number(selectedUser.total_penalty || 0).toFixed(2)}`, btn1: 'ADD A PENALTY', btn2: 'HISTORY' },
+                  { label: 'Referrals 1st Level', val: `${selectedUser.referrals_count || 0}`, btn1: 'REFERRALS', btn2: 'TRAFFIC' },
+                  { label: 'Referral Commissions', val: `$${Number(selectedUser.referral_commission || 0).toFixed(2)}`, btn1: 'HISTORY' },
                     ].map((row, idx) => (
                       <div key={idx} className="grid grid-cols-12 p-2 items-center">
                         <div className="col-span-4 font-bold text-gray-700">{row.label}:</div>
@@ -1226,3 +1229,14 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
