@@ -379,13 +379,11 @@ export async function fetchAdminAnalytics() {
 }
 
 
-export async function fetchUserDeposits(userId: number) {
-  const res = await fetch(`${API_URL}/investments/admin/deposits/?user_id=${userId}`, { 
-    headers: getAuthHeaders() 
+export async function fetchUserDeposits(userId?: number) {
+  const url = userId ? `/api/admin/deposits/?user_id=${userId}` : `/api/admin/deposits/`;
+  const res = await fetch(url, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
   });
-  if (!res.ok) {
-    throw new Error('Failed to fetch user deposits');
-  }
   return res.json();
 }
 
@@ -409,6 +407,18 @@ export async function submitUserWithdrawal(data: { gateway: string; amount: stri
     method: 'POST',
     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function processDepositAction(depositId: number, action: 'approve' | 'reject') {
+  const res = await fetch(`/api/admin/deposits/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+    },
+    body: JSON.stringify({ deposit_id: depositId, action: action })
   });
   return res.json();
 }
