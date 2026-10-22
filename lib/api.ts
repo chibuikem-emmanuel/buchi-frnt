@@ -384,9 +384,14 @@ export async function fetchUserDeposits(userId?: number) {
   const res = await fetch(url, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
   });
-  return res.json();
+  const data = await res.json();
+  
+  // Safely handle flat arrays, DRF pagination (.results), or custom wrappers
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.results)) return data.results;
+  if (Array.isArray(data.deposits)) return data.deposits;
+  return [];
 }
-
 export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
   const res = await fetch(`${API_URL}/user/deposits/`, {
     method: 'POST',
