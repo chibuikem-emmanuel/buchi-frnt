@@ -379,18 +379,33 @@ export async function fetchAdminAnalytics() {
 }
 
 
+
 export async function fetchUserDeposits(userId?: number) {
-  const url = userId ? `/api/admin/deposits?user_id=${userId}` : `/api/admin/deposits`;
+  const url = userId
+    ? `/api/admin/deposits/?user_id=${userId}`
+    : `/api/admin/deposits/`;
+
   const res = await fetch(url, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+    },
   });
+
+  if (!res.ok) {
+    const error = await res.text();
+    console.error('Failed to fetch deposits:', res.status, error);
+    throw new Error(`Failed to fetch deposits: ${res.status}`);
+  }
+
   const data = await res.json();
-  
+
   if (Array.isArray(data)) return data;
   if (Array.isArray(data.results)) return data.results;
   if (Array.isArray(data.deposits)) return data.deposits;
+
   return [];
 }
+
 export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
   const res = await fetch(`${API_URL}/user/deposits/`, {
     method: 'POST',
