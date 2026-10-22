@@ -32,6 +32,42 @@ export default function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState('All');
 
 
+
+
+
+
+
+// Fetch user deposits from your backend
+const fetchUserDeposits = async (userId: number) => {
+  try {
+    const res = await fetch(`/api/admin/deposits/?user_id=${userId}`, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+    });
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.results || []);
+  } catch (err) {
+    console.error('Failed to fetch deposits:', err);
+    return [];
+  }
+};
+
+// Process approve/reject actions
+const processDepositAction = async (depositId: number, action: 'approve' | 'reject') => {
+  try {
+    await fetch('/api/admin/deposits/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+      body: JSON.stringify({ deposit_id: depositId, action: action })
+    });
+  } catch (err) {
+    console.error('Failed to process deposit action:', err);
+  }
+};
+
+
 const [analytics, setAnalytics] = useState<any>({
   overview: { totalUsers: 0, netPlatformVolume: '0.00', totalPlans: 0, activePlans: 0 },
   deposits: { totalApproved: '0.00', pendingCount: 0, pendingAmount: '0.00' },
@@ -49,9 +85,11 @@ const [analytics, setAnalytics] = useState<any>({
   const [expiringDeposits, setExpiringDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Selected User View Modes
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'edit' | 'funds'>('list');
+
+
+const [selectedUser, setSelectedUser] = useState<any>(null);
+const [viewMode, setViewMode] = useState<'list' | 'edit' | 'funds' | 'manage_deposits'>('list');
+const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
 
   // Selected Processing View Mode
   const [selectedProcessing, setSelectedProcessing] = useState<any>(null);
@@ -442,6 +480,10 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
 
         {/* Workspace */}
         <main className="flex-1 bg-white border border-orange-200 rounded shadow-sm p-5 min-h-[600px]">
+
+
+         
+
           
 {/* TAB 1: SYSTEM OVERVIEW */}
           {activeTab === 'overview' && (
@@ -1058,8 +1100,20 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
 
 
 
+
+
+                    
+
                     
                   </div>
+
+
+
+
+
+
+
+                  
 
                   {/* Summary Statistics Rows with Action Buttons */}
                   <div className="border border-orange-200 rounded overflow-hidden text-xs divide-y divide-orange-100 bg-amber-50/20">
@@ -1079,7 +1133,14 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                         <div className="col-span-4 font-bold text-gray-700">{row.label}:</div>
                         <div className="col-span-3 font-bold text-emerald-700">{row.val}</div>
                         <div className="col-span-5 flex justify-end gap-1">
-                          {row.btn1 && <button className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[9px] uppercase">{row.btn1}</button>}
+                          {row.btn1 &&  (<button type="button"
+    onClick={async () => {
+      if (row.btn1 === 'MANAGE DEPOSITS') {
+        const data = await fetchUserDeposits(selectedUser.id);
+        setUserDepositsList(data);
+        setViewMode('manage_deposits');
+      }
+    }} className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[9px] uppercase">{row.btn1}</button>)}
                           {row.btn2 && <button className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[9px] uppercase">{row.btn2}</button>}
                         </div>
                       </div>
@@ -1211,6 +1272,82 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
           )}
 
 
+
+
+         {viewMode === 'manage_deposits' && selectedUser && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+                <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                  User's Deposits: <span className="text-blue-900 font-extrabold">{selectedUser.username}</span>
+                </h2>
+                <button 
+                  type="button"
+                  onClick={() => setViewMode('funds')} 
+                  className="text-gray-600 font-semibold flex items-center gap-1 hover:text-gray-900 text-xs"
+                >
+                  &larr; Back to User Funds
+                </button>
+              </div>
+
+              <div className="border border-orange-200 rounded overflow-hidden text-xs bg-white">
+                <div className="grid grid-cols-12 bg-orange-500 p-2 font-bold text-white border-b border-orange-600">
+                  <span className="col-span-8">Deposit Info & Gateway</span>
+                  <span className="col-span-4 text-right">Actions</span>
+                </div>
+
+                {userDepositsList && userDepositsList.length > 0 ? (
+                  userDepositsList.map((dep: any) => (
+                    <div key={dep.id} className="grid grid-cols-12 p-3 bg-amber-50/30 border-b border-orange-100 items-center">
+                      <div className="col-span-8 space-y-1">
+                        <p className="font-bold text-blue-900">
+                          Amount: <span className="text-emerald-700">${dep.amount}</span> ({dep.gateway})
+                        </p>
+                        <p className="text-gray-600 text-[11px]">Transaction ID: <span className="font-mono">{dep.transaction_id}</span></p>
+                        <p className="text-orange-600 font-semibold text-[10px]">Status: {dep.status}</p>
+                      </div>
+                      <div className="col-span-4 flex justify-end gap-1.5">
+                        {dep.status === 'PENDING' && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await processDepositAction(dep.id, 'approve');
+                              const updated = await fetchUserDeposits(selectedUser.id);
+                              setUserDepositsList(updated);
+                            }}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+                          >
+                            Approve
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await processDepositAction(dep.id, 'reject');
+                            const updated = await fetchUserDeposits(selectedUser.id);
+                            setUserDepositsList(updated);
+                          }}
+                          className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+                        >
+                          Reject / Clear
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-gray-500 bg-white font-medium">
+                    No deposits found for this user
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+
+    
+
+
+
+
           
 
           {/* TAB 8: SYSTEM SETTINGS */}
@@ -1234,8 +1371,14 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
         </main>
       </div>
     </div>
-  );
-}
+  )
+};
+
+
+
+
+
+
 
 
 
