@@ -444,26 +444,35 @@ export async function submitUserWithdrawal(data: { gateway: string; amount: stri
 
 export async function fetchUserDeposits(userId?: number) {
   try {
+    const API_URL = 'https://buchi-bck.onrender.com/api';
     const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
     
     const res = await fetch(`${API_URL}${endpoint}`, {
-      headers: getHeaders(),
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        'Content-Type': 'application/json'
+      }
     });
 
+    // Check if the response failed
     if (!res.ok) {
-      console.error(`Failed to load deposits: ${res.status} ${res.statusText}`);
+      const errorText = await res.text(); // Read as text to see the HTML/error
+      console.error(`Backend error (${res.status}):`, errorText);
       return [];
     }
 
-    const data = await res.json();
+    const text = await res.text();
+    if (!text) return [];
+
+    // Ensure it's valid JSON before parsing
+    const data = JSON.parse(text);
     
-    // Safely return array regardless of pagination or format
     if (Array.isArray(data)) return data;
     if (Array.isArray(data.results)) return data.results;
     if (Array.isArray(data.deposits)) return data.deposits;
     return [];
   } catch (err) {
-    console.error('Failed to fetch user deposits:', err);
+    console.error('Failed to parse or fetch user deposits:', err);
     return [];
   }
 }
