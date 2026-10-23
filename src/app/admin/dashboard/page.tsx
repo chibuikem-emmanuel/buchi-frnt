@@ -1222,7 +1222,12 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
         setViewMode('manage_deposits');
       }
     }} className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[9px] uppercase">{row.btn1}</button>)}
-                          {row.btn2 && <button className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[9px] uppercase">{row.btn2}</button>}
+                          {row.btn2 &&(<button onClick={async () => {
+  const data = await fetchWithdrawals();
+  setWithdrawalsList(data);
+  setActiveTab('withdrawals');
+  setViewMode('list');
+}} className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[9px] uppercase">{row.btn2}</button>)}
                         </div>
                       </div>
                     ))}
