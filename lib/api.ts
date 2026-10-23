@@ -381,14 +381,23 @@ export async function fetchAdminAnalytics() {
 
 export async function fetchUserDeposits(userId?: number) {
   try {
-    // Note: Since API_URL already ends with '/api', your endpoint starts with '/admin/deposits/'
     const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
     
-    const res = await apiRequest(endpoint);
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      console.error(`Failed to load deposits: ${res.status} ${res.statusText}`);
+      return [];
+    }
+
     const data = await res.json();
     
-    console.log("Django Deposits Data Received:", data);
-
+    // Safely return the array regardless of pagination or format
     if (Array.isArray(data)) return data;
     if (Array.isArray(data.results)) return data.results;
     if (Array.isArray(data.deposits)) return data.deposits;
@@ -398,7 +407,6 @@ export async function fetchUserDeposits(userId?: number) {
     return [];
   }
 }
-
 export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
   const res = await fetch(`${API_URL}/user/deposits/`, {
     method: 'POST',
