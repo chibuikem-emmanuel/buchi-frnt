@@ -407,6 +407,8 @@ export async function fetchUserDeposits(userId?: number) {
     return [];
   }
 }
+
+
 export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
   const res = await fetch(`${API_URL}/user/deposits/`, {
     method: 'POST',

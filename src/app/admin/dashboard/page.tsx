@@ -23,7 +23,8 @@ import {
   deleteInvestmentPlan,
   fetchExpiringDeposits,
   createAdminProcessing,
-  fetchAdminAnalytics
+  fetchAdminAnalytics,
+  fetchUserDeposits
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
@@ -252,6 +253,42 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
     }
     setProgramViewMode('edit');
   };
+
+
+
+
+
+  const handleManageDepositsClick = async (userId: number) => {
+  try {
+    // 1. Fetch the deposit list from your Render backend
+    const deposits = await fetchUserDeposits(userId);
+    
+    // 2. Save them into your component's deposit state
+    setUserDepositsList(deposits);
+    
+    // 3. Switch the view mode to display the management table
+    setViewMode('manage_deposits');
+  } catch (err) {
+    console.error('Failed to load deposits:', err);
+    setUserDepositsList([]);
+  }
+};
+
+
+
+
+  const handleManageDeposits = async (userId: number) => {
+  try {
+    // 1. Call your exported utility function that uses API_URL
+    const depositsData = await fetchUserDeposits(userId);
+    
+    // 2. Set the deposit list state and view mode
+    setUserDepositsList(depositsData); // Or the state setter for user deposits
+    setViewMode('manage_deposits');     // Switches your view to render the table
+  } catch (err) {
+    console.error("Failed to load user deposits:", err);
+  }
+};
 
   const handleSavePlan = async (e: React.FormEvent) => {
     e.preventDefault();
