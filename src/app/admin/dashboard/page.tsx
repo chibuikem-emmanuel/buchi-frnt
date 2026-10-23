@@ -24,38 +24,36 @@ import {
   fetchExpiringDeposits,
   createAdminProcessing,
   fetchAdminAnalytics,
-  fetchUserDeposits
+  fetchUserDeposits,
+  processDepositAction
 } from '@/lib/api';
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-
-
-
-
-
-
+  
 
 // Fetch user deposits from your backend
 const fetchUserDeposits = async (userId: number) => {
   try {
-    const res = await fetch(`/api/admin/deposits/?user_id=${userId}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+    const res = await fetch(`https://buchi-bck.onrender.com/api/admin/deposits/?user_id=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      }
     });
     const data = await res.json();
-    return Array.isArray(data) ? data : (data.results || []);
+    return Array.isArray(data) ? data : data.results || [];
   } catch (err) {
-    console.error('Failed to fetch deposits:', err);
+    console.error("Failed to fetch deposits:", err);
     return [];
   }
 };
 
-// Process approve/reject actions
+// Process approve/reject deposit actions
 const processDepositAction = async (depositId: number, action: 'approve' | 'reject') => {
   try {
-    await fetch('/api/admin/deposits/', {
+    const res = await fetch(`https://buchi-bck.onrender.com/api/admin/deposits/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,8 +61,11 @@ const processDepositAction = async (depositId: number, action: 'approve' | 'reje
       },
       body: JSON.stringify({ deposit_id: depositId, action: action })
     });
+    if (!res.ok) throw new Error("Failed to process action");
+    return await res.json();
   } catch (err) {
-    console.error('Failed to process deposit action:', err);
+    console.error("Failed to process deposit action:", err);
+    alert("Failed to process deposit action");
   }
 };
 
@@ -156,6 +157,9 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
   useEffect(() => {
     loadTabData();
   }, [activeTab]);
+
+
+
 
   const loadInitialSettings = async () => {
     try {
@@ -1311,73 +1315,73 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
 
 
 
-         {viewMode === 'manage_deposits' && selectedUser && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center border-b border-orange-200 pb-2">
-                <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-                  User's Deposits: <span className="text-blue-900 font-extrabold">{selectedUser.username}</span>
-                </h2>
-                <button 
-                  type="button"
-                  onClick={() => setViewMode('funds')} 
-                  className="text-gray-600 font-semibold flex items-center gap-1 hover:text-gray-900 text-xs"
-                >
-                  &larr; Back to User Funds
-                </button>
-              </div>
+{viewMode === 'manage_deposits' && selectedUser && (
+  <div className="space-y-4">
+    <div className="flex justify-between items-center border-b border-orange-200 pb-2">
+      <h2 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+        User's Deposits: <span className="text-blue-900 font-extrabold">{selectedUser.username}</span>
+      </h2>
+      <button 
+        type="button"
+        onClick={() => setViewMode('funds')} 
+        className="text-gray-600 font-semibold flex items-center gap-1 hover:text-gray-900 text-xs"
+      >
+        &larr; Back to User Funds
+      </button>
+    </div>
 
-              <div className="border border-orange-200 rounded overflow-hidden text-xs bg-white">
-                <div className="grid grid-cols-12 bg-orange-500 p-2 font-bold text-white border-b border-orange-600">
-                  <span className="col-span-8">Deposit Info & Gateway</span>
-                  <span className="col-span-4 text-right">Actions</span>
-                </div>
+    <div className="border border-orange-200 rounded overflow-hidden text-xs bg-white">
+      <div className="grid grid-cols-12 bg-orange-500 p-2 font-bold text-white border-b border-orange-600">
+        <span className="col-span-8">Deposit Info & Gateway</span>
+        <span className="col-span-4 text-right">Actions</span>
+      </div>
 
-                {userDepositsList && userDepositsList.length > 0 ? (
-                  userDepositsList.map((dep: any) => (
-                    <div key={dep.id} className="grid grid-cols-12 p-3 bg-amber-50/30 border-b border-orange-100 items-center">
-                      <div className="col-span-8 space-y-1">
-                        <p className="font-bold text-blue-900">
-                          Amount: <span className="text-emerald-700">${dep.amount}</span> ({dep.gateway})
-                        </p>
-                        <p className="text-gray-600 text-[11px]">Transaction ID: <span className="font-mono">{dep.transaction_id}</span></p>
-                        <p className="text-orange-600 font-semibold text-[10px]">Status: {dep.status}</p>
-                      </div>
-                      <div className="col-span-4 flex justify-end gap-1.5">
-                        {dep.status === 'PENDING' && (
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              await processDepositAction(dep.id, 'approve');
-                              const updated = await fetchUserDeposits(selectedUser.id);
-                              setUserDepositsList(updated);
-                            }}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
-                          >
-                            Approve
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await processDepositAction(dep.id, 'reject');
-                            const updated = await fetchUserDeposits(selectedUser.id);
-                            setUserDepositsList(updated);
-                          }}
-                          className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
-                        >
-                          Reject / Clear
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-8 text-center text-gray-500 bg-white font-medium">
-                    No deposits found for this user
-                  </div>
-                )}
-              </div>
+      {userDepositsList && userDepositsList.length > 0 ? (
+        userDepositsList.map((dep: any) => (
+          <div key={dep.id} className="grid grid-cols-12 p-3 bg-amber-50/30 border-b border-orange-100 items-center">
+            <div className="col-span-8 space-y-1">
+              <p className="font-bold text-blue-900">
+                Amount: <span className="text-emerald-700">${dep.amount}</span> ({dep.gateway})
+              </p>
+              <p className="text-gray-600 text-[11px]">Transaction ID: <span className="font-mono">{dep.transaction_id}</span></p>
+              <p className="text-orange-600 font-semibold text-[10px]">Status: {dep.status}</p>
             </div>
-          )}
+            <div className="col-span-4 flex justify-end gap-1.5">
+              {dep.status === 'PENDING' && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await processDepositAction(dep.id, 'approve');
+                    const updated = await fetchUserDeposits(selectedUser.id);
+                    setUserDepositsList(updated);
+                  }}
+                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+                >
+                  Approve
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={async () => {
+                  await processDepositAction(dep.id, 'reject');
+                  const updated = await fetchUserDeposits(selectedUser.id);
+                  setUserDepositsList(updated);
+                }}
+                className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+              >
+                Reject / Clear
+              </button>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="p-8 text-center text-gray-500 bg-white font-medium">
+          No deposits found for this user
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
 
     
