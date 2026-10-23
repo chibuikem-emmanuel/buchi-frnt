@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getRawApiUrl = () => {
   let url = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
@@ -39,7 +40,7 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
 
 // Force the absolute Render backend URL so it NEVER hits Next.js routing
-const API_URL = 'https://buchi-bck.onrender.com/api';
+
 
 export function getAuthHeaders() {
   // FIX: Make sure the key matches ('access_token')
