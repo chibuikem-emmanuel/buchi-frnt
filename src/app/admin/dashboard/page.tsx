@@ -78,6 +78,43 @@ const [analytics, setAnalytics] = useState<any>({
 
 
 
+
+// Fetch pending/all withdrawal requests from Render backend
+const fetchWithdrawals = async () => {
+  try {
+    const res = await fetch(`https://buchi-bck.onrender.com/api/admin/withdrawals/`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    const data = await res.json();
+    return Array.isArray(data) ? data : data.results || [];
+  } catch (err) {
+    console.error("Failed to fetch withdrawals:", err);
+    return [];
+  }
+};
+
+// Process approve/reject withdrawal actions
+const processWithdrawalAction = async (withdrawalId: number, action: 'approve' | 'reject') => {
+  try {
+    const res = await fetch(`https://buchi-bck.onrender.com/api/admin/withdrawals/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+      body: JSON.stringify({ withdrawal_id: withdrawalId, action: action })
+    });
+    if (!res.ok) throw new Error("Failed to process withdrawal action");
+    return await res.json();
+  } catch (err) {
+    console.error("Failed to process withdrawal action:", err);
+    alert("Failed to process withdrawal action");
+  }
+};
+
+
   
   // Dynamic State Arrays
   const [users, setUsers] = useState<any[]>([]);
@@ -87,6 +124,9 @@ const [analytics, setAnalytics] = useState<any>({
   const [expiringDeposits, setExpiringDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+
+
+const [withdrawalsList, setWithdrawalsList] = useState<any[]>([]);
 
 
 const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -1288,29 +1328,61 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
           )}
 
           {/* TAB 7: WITHDRAWAL REQUESTS */}
-          {activeTab === 'withdrawals' && (
-            <div className="space-y-4">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
-              <div className="space-y-3">
-                {safeWithdrawals.length === 0 ? (
-                  <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
-                ) : (
-                  safeWithdrawals.map((w) => (
-                    <div key={w.id} className="border border-orange-200 bg-amber-50/30 p-3 rounded flex justify-between items-center text-xs">
-                      <div>
-                        <p className="font-bold text-blue-900">{w.username || w.user_email}</p>
-                        <p className="font-bold text-emerald-700">Amount: ${Number(w.amount).toFixed(2)} ({w.method || 'USDT TRC20'})</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => handleWithdrawalAction(w.id, 'approve')} className="px-3 py-1 bg-emerald-600 text-white font-bold rounded">Approve</button>
-                        <button onClick={() => handleWithdrawalAction(w.id, 'reject')} className="px-3 py-1 bg-red-600 text-white font-bold rounded">Reject</button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
+{activeTab === 'withdrawals' && (
+  <div className="space-y-4">
+    <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
+      Pending Withdrawal Requests
+    </h2>
+
+    {withdrawalsList && withdrawalsList.length > 0 ? (
+      withdrawalsList.map((wd: any) => (
+        <div key={wd.id} className="grid grid-cols-12 p-3 bg-amber-50/30 border border-orange-100 rounded items-center">
+          <div className="col-span-8 space-y-1">
+            <p className="font-bold text-blue-900">
+              User: <span className="text-gray-800">{wd.username || wd.user_email}</span> | Amount: <span className="text-emerald-700">${wd.amount}</span>
+            </p>
+            <p className="text-gray-600 text-[11px]">
+              Wallet / Account: <span className="font-mono">{wd.account_details || wd.wallet_address}</span>
+            </p>
+            <p className="text-orange-600 font-semibold text-[10px]">Status: {wd.status}</p>
+          </div>
+          <div className="col-span-4 flex justify-end gap-1.5">
+            {wd.status === 'PENDING' && (
+              <>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await processWithdrawalAction(wd.id, 'approve');
+                    const updated = await fetchWithdrawals();
+                    setWithdrawalsList(updated);
+                  }}
+                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+                >
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await processWithdrawalAction(wd.id, 'reject');
+                    const updated = await fetchWithdrawals();
+                    setWithdrawalsList(updated);
+                  }}
+                  className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase shadow-sm transition"
+                >
+                  Reject
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="p-8 text-center text-gray-500 bg-white font-medium">
+        No pending withdrawal requests found.
+      </div>
+    )}
+  </div>
+)}
 
 
 
