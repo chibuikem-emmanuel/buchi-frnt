@@ -1,23 +1,11 @@
-
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   trailingSlash: true,
+  skipTrailingSlashRedirect: true,
 
   experimental: {
     agentFeedback: true,
-  },
-
-  cacheComponents: true,
-  partialPrefetching: true,
-
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "https://buchi-bck.onrender.com/api/:path*",
-      },
-    ];
   },
 
   turbopack: {

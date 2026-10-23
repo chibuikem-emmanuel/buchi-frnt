@@ -15,6 +15,9 @@ const getRawApiUrl = () => {
 
 
 
+
+
+
 // Update your fetch helper wrapper to handle 401 errors automatically
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const res = await fetch(`${API_URL}${endpoint}`, {
@@ -39,6 +42,12 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 }
 
 const API_URL = 'https://buchi-bck.onrender.com/api';
+function getHeaders() {
+  return {
+    'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('access_token') : ''}`,
+    'Content-Type': 'application/json',
+  };
+}
 
 
 // Force the absolute Render backend URL so it NEVER hits Next.js routing
@@ -382,34 +391,31 @@ export async function fetchAdminAnalytics() {
 }
 
 
-export async function fetchUserDeposits(userId?: number) {
-  try {
-    // Hardcode the absolute Render URL directly here so it can never be undefined
-    const API_URL = 'https://buchi-bck.onrender.com/api';
-    const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
+// export async function fetchUserDeposits(userId?: number) {
+//   try {
+//     const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
     
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
+//     const res = await fetch(`${API_URL}${endpoint}`, {
+//       headers: getHeaders(),
+//     });
 
-    if (!res.ok) {
-      console.error(`Failed to load deposits: ${res.status} ${res.statusText}`);
-      return [];
-    }
+//     if (!res.ok) {
+//       console.error(`Failed to load deposits: ${res.status} ${res.statusText}`);
+//       return [];
+//     }
 
-    const data = await res.json();
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data.results)) return data.results;
-    if (Array.isArray(data.deposits)) return data.deposits;
-    return [];
-  } catch (err) {
-    console.error('Failed to fetch user deposits:', err);
-    return [];
-  }
-}
+//     const data = await res.json();
+    
+//     // Safely return array regardless of pagination or format
+//     if (Array.isArray(data)) return data;
+//     if (Array.isArray(data.results)) return data.results;
+//     if (Array.isArray(data.deposits)) return data.deposits;
+//     return [];
+//   } catch (err) {
+//     console.error('Failed to fetch user deposits:', err);
+//     return [];
+//   }
+// }
 
 
 export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
@@ -436,16 +442,55 @@ export async function submitUserWithdrawal(data: { gateway: string; amount: stri
   return res.json();
 }
 
-export async function processDepositAction(depositId: number, action: 'approve' | 'reject') {
-  const res = await fetch(`/api/admin/deposits/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-    },
-    body: JSON.stringify({ deposit_id: depositId, action: action })
-  });
-  return res.json();
+export async function fetchUserDeposits(userId?: number) {
+  try {
+    const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
+    
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      headers: getHeaders(),
+    });
+
+    if (!res.ok) {
+      console.error(`Failed to load deposits: ${res.status} ${res.statusText}`);
+      return [];
+    }
+
+    const data = await res.json();
+    
+    // Safely return array regardless of pagination or format
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.deposits)) return data.deposits;
+    return [];
+  } catch (err) {
+    console.error('Failed to fetch user deposits:', err);
+    return [];
+  }
+}
+
+/**
+ * Process deposit actions (approve / reject)
+ */
+export async function processDepositAction(depositId: number | string, action: 'approve' | 'reject') {
+  try {
+    const res = await fetch(`${API_URL}/admin/deposits/`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        deposit_id: depositId,
+        action: action,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to process deposit action: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error('Error processing deposit action:', err);
+    throw err;
+  }
 }
 
 
