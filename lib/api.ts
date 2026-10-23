@@ -381,32 +381,36 @@ export async function fetchAdminAnalytics() {
 
 
 export async function fetchUserDeposits(userId?: number) {
-  try {
-    const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
-    
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!res.ok) {
-      console.error(`Failed to load deposits: ${res.status} ${res.statusText}`);
-      return [];
-    }
-
-    const data = await res.json();
-    
-    // Safely return the array regardless of pagination or format
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data.results)) return data.results;
-    if (Array.isArray(data.deposits)) return data.deposits;
-    return [];
-  } catch (err) {
-    console.error('Failed to fetch user deposits:', err);
-    return [];
+  if (!API_URL) {
+    throw new Error("NEXT_PUBLIC_API_URL is not configured");
   }
+
+  const url = new URL(
+    userId !== undefined
+      ? `/admin/deposits/?user_id=${userId}`
+      : "/admin/deposits/",
+    `${API_URL.replace(/\/+$/, "")}/`
+  );
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    },
+  });
+
+  if (!res.ok) {
+    const error = await res.text();
+    console.error("Deposits API error:", res.status, error);
+    throw new Error(`Failed to fetch deposits: ${res.status}`);
+  }
+
+  const data = await res.json();
+
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.results)) return data.results;
+  if (Array.isArray(data.deposits)) return data.deposits;
+
+  return [];
 }
 
 
