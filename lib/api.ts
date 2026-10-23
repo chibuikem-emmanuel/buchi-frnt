@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 
 const getRawApiUrl = () => {
   let url = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
@@ -37,6 +37,8 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
   return res;
 }
+
+const API_URL = 'https://buchi-bck.onrender.com/api';
 
 
 // Force the absolute Render backend URL so it NEVER hits Next.js routing
@@ -381,36 +383,32 @@ export async function fetchAdminAnalytics() {
 
 
 export async function fetchUserDeposits(userId?: number) {
-  if (!API_URL) {
-    throw new Error("NEXT_PUBLIC_API_URL is not configured");
+  try {
+    // Hardcode the absolute Render URL directly here so it can never be undefined
+    const API_URL = 'https://buchi-bck.onrender.com/api';
+    const endpoint = userId ? `/admin/deposits/?user_id=${userId}` : `/admin/deposits/`;
+    
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      console.error(`Failed to load deposits: ${res.status} ${res.statusText}`);
+      return [];
+    }
+
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.results)) return data.results;
+    if (Array.isArray(data.deposits)) return data.deposits;
+    return [];
+  } catch (err) {
+    console.error('Failed to fetch user deposits:', err);
+    return [];
   }
-
-  const url = new URL(
-    userId !== undefined
-      ? `/admin/deposits/?user_id=${userId}`
-      : "/admin/deposits/",
-    `${API_URL.replace(/\/+$/, "")}/`
-  );
-
-  const res = await fetch(url.toString(), {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-    },
-  });
-
-  if (!res.ok) {
-    const error = await res.text();
-    console.error("Deposits API error:", res.status, error);
-    throw new Error(`Failed to fetch deposits: ${res.status}`);
-  }
-
-  const data = await res.json();
-
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data.results)) return data.results;
-  if (Array.isArray(data.deposits)) return data.deposits;
-
-  return [];
 }
 
 
