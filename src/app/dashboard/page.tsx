@@ -346,19 +346,14 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                   <p className="text-gray-400 uppercase text-[10px]">Account Balance</p>
                   <p className="text-2xl font-bold text-emerald-400 mt-1">${Number(user.balance || 0).toFixed(2)}</p>
                 </div>
-{/* Active Investments Card */}
-  <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
-    <p className="text-gray-400 text-xs uppercase font-semibold">Active Investments</p>
-    <p className="text-2xl font-bold text-white mt-1">
-      ${Number(user?.active_investments || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-    </p>
-  </div>
 <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
-    <p className="text-gray-400 text-xs uppercase font-semibold">Total Earned</p>
-    <p className="text-2xl font-bold text-emerald-400 mt-1">
-      ${Number(user?.total_earned || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-    </p>
+    <p className="text-gray-400 uppercase text-[10px]">Active Investments</p>
+    <p className="text-2xl font-bold text-blue-400 mt-1">${Number(user?.active_investments || user?.active_amount || 0).toFixed(2)}</p>
   </div>
+                <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
+                  <p className="text-gray-400 uppercase text-[10px]">Total Earned</p>
+                  <p className="text-2xl font-bold text-amber-400 mt-1">${Number(user?.total_earned || 0).toFixed(2)}</p>
+                </div>
               </div>
             </div>
           )}
