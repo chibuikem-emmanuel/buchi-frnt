@@ -8,8 +8,12 @@ export default function Footer() {
         {/* Brand */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center font-bold text-white text-lg">
-              <img src="/logo1.jpg" alt="Logo" className="w-6 h-6" />
+            <div className="w-8 h-8 rounded-md flex items-center justify-center font-bold text-white text-lg">
+              <img 
+                src="/logo1.jpeg" 
+                alt="Grove Assets Ltd" 
+                className="h-6 w-6 object-contain" 
+              />
             </div>
             <span className="text-lg font-bold text-white">Grove Assets Ltd</span>
           </div>

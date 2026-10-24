@@ -40,7 +40,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-24">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-md">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-md">
             <img 
     src="/logo1.jpeg" 
     alt="Grove Assets Ltd" 
