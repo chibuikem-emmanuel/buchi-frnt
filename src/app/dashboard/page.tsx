@@ -503,26 +503,32 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
             </div>
           )}
 
-          {/* MY PACKAGES MODULE (DYNAMIC ADMIN PLANS) */}
+{/* MY PACKAGES MODULE (DYNAMIC ADMIN PLANS) */}
           {activeTab === 'packages' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
                 Your deposit options
               </div>
-              {investmentPlans.map((p) => (
-                <div key={p.id} className="bg-[#161f33] border border-gray-800 rounded overflow-hidden">
-                  <div className="bg-orange-500 text-gray-900 font-bold px-4 py-1.5 text-center uppercase">{p.name}</div>
-                  <div className="p-4 flex justify-between items-center bg-[#111827]">
-                    <span className="text-emerald-400 font-bold">{p.profit_percent}% daily for {p.duration_days} days</span>
-                    <span className="text-gray-400">${p.min_amount} -${p.max_amount}</span>
+              {plans && plans.length > 0 ? (
+                plans.map((p) => (
+                  <div key={p.id} className="bg-[#161f33] border border-gray-800 rounded overflow-hidden">
+                    <div className="bg-orange-500 text-gray-900 font-bold px-4 py-1.5 text-center uppercase">{p.name}</div>
+                    <div className="p-4 flex justify-between items-center bg-[#111827] text-xs">
+                      <span className="text-emerald-400 font-bold">{p.daily_profit}% daily for {p.duration_days} days</span>
+                      <span className="text-gray-400">Min: <span className="text-white font-semibold">${p.min_deposit}</span> - Max: <span className="text-white font-semibold">${p.max_deposit}</span></span>
+                    </div>
+                    <div className="p-3 bg-[#161f33] text-center">
+                      <button onClick={() => setActiveTab('make_deposit')} className="text-orange-400 hover:underline font-semibold text-xs uppercase">
+                        Make your deposit plan
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-3 bg-[#161f33] text-center">
-                    <button onClick={() => setActiveTab('make_deposit')} className="text-red-400 hover:underline font-semibold">
-                      Make your deposit plan
-                    </button>
-                  </div>
+                ))
+              ) : (
+                <div className="p-6 text-center text-gray-400 bg-[#161f33] border border-gray-800 rounded text-xs">
+                  No investment packages currently available from admin.
                 </div>
-              ))}
+              )}
             </div>
           )}
 
