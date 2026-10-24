@@ -1,7 +1,10 @@
 // src/components/home/CryptoTicker.tsx
 'use client';
 
-const cryptoData = [
+import { useState, useEffect } from 'react';
+
+// Fallback initial data in case the public API is fetching or rate-limited
+const fallbackData = [
   { symbol: "BTC", price: "96,450.00", change: "+2.4%" },
   { symbol: "ETH", price: "3,520.10", change: "+1.8%" },
   { symbol: "USDT", price: "1.00", change: "0.0%" },
@@ -13,6 +16,72 @@ const cryptoData = [
 ];
 
 export default function CryptoTicker() {
+  const [cryptoData, setCryptoData] = useState(fallbackData);
+
+  useEffect(() => {
+    const fetchLivePrices = async () => {
+      try {
+        const res = await fetch(
+          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether,binancecoin,solana,ripple,cardano,dogecoin&vs_currencies=usd&include_24hr_change=true'
+        );
+        const data = await res.json();
+
+        if (data && Object.keys(data).length > 0) {
+          const formattedData = [
+            {
+              symbol: "BTC",
+              price: data.bitcoin?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "96,450.00",
+              change: `${(data.bitcoin?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.bitcoin?.usd_24h_change || 0).toFixed(1)}%`
+            },
+            {
+              symbol: "ETH",
+              price: data.ethereum?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "3,520.10",
+              change: `${(data.ethereum?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.ethereum?.usd_24h_change || 0).toFixed(1)}%`
+            },
+            {
+              symbol: "USDT",
+              price: data.tether?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "1.00",
+              change: `${(data.tether?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.tether?.usd_24h_change || 0).toFixed(1)}%`
+            },
+            {
+              symbol: "BNB",
+              price: data.binancecoin?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "640.25",
+              change: `${(data.binancecoin?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.binancecoin?.usd_24h_change || 0).toFixed(1)}%`
+            },
+            {
+              symbol: "SOL",
+              price: data.solana?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "215.80",
+              change: `${(data.solana?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.solana?.usd_24h_change || 0).toFixed(1)}%`
+            },
+            {
+              symbol: "XRP",
+              price: data.ripple?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "2.35",
+              change: `${(data.ripple?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.ripple?.usd_24h_change || 0).toFixed(1)}%`
+            },
+            {
+              symbol: "ADA",
+              price: data.cardano?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "0.85",
+              change: `${(data.cardano?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.cardano?.usd_24h_change || 0).toFixed(1)}%`
+            },
+            {
+              symbol: "DOGE",
+              price: data.dogecoin?.usd?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || "0.38",
+              change: `${(data.dogecoin?.usd_24h_change || 0) >= 0 ? '+' : ''}${(data.dogecoin?.usd_24h_change || 0).toFixed(1)}%`
+            },
+          ];
+          setCryptoData(formattedData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live crypto prices, using fallback:", err);
+      }
+    };
+
+    fetchLivePrices();
+    // Refresh prices automatically every 60 seconds
+    const interval = setInterval(fetchLivePrices, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="w-full bg-white overflow-hidden py-2 border-y border-gray-200 flex items-center text-xs">
       {/* CoinMarketCap Fixed Badge on Left */}
