@@ -8,8 +8,10 @@ export default function Footer() {
         {/* Brand */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center font-bold text-white text-lg">💎</div>
-            <span className="text-lg font-bold text-white">Crystals Investments</span>
+            <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center font-bold text-white text-lg">
+              <img src="/logo1.jpg" alt="Logo" className="w-6 h-6" />
+            </div>
+            <span className="text-lg font-bold text-white">Grove Assets Ltd</span>
           </div>
           <p className="text-xs text-gray-500 leading-relaxed">
             We enable investors to take advantage of the rapidly developing digital economy and secure their future now.
