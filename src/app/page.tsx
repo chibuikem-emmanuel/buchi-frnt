@@ -107,17 +107,38 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-10 p-4 border border-gray-200 rounded-lg bg-gray-50 max-w-lg mx-auto flex items-start gap-3.5 text-left shadow-sm">
-            <div className="text-2xl shrink-0 leading-none pt-0.5">🏛️</div>
-            <div className="space-y-1">
-              <h4 className="text-xs font-bold text-gray-900">
-                Company Registration
-              </h4>
-              <p className="text-[11px] text-gray-500 leading-normal">
-                Crystals Investments is registered in the United States/Australia, officially with reg. <span className="text-blue-600 font-semibold">#09802</span> which is research also registered in dmcc Australia-addrs: <span className="text-blue-600 font-semibold">#098002</span>
-              </p>
-            </div>
-          </div>
+<div className="mt-10 p-5 border border-gray-200 rounded-xl bg-white max-w-xl mx-auto shadow-sm text-left space-y-3">
+  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+    <div className="text-xl">🏢</div>
+    <div>
+      <h4 className="text-xs font-extrabold uppercase tracking-wide text-gray-900">
+        Official Company Registration
+      </h4>
+      <p className="text-[11px] text-gray-500">Verified Corporate Details & Compliance</p>
+    </div>
+  </div>
+
+  <div className="text-xs space-y-1.5 text-gray-700">
+    <p><span className="font-semibold text-gray-900">Company Name:</span> GROVE ASSETS LTD</p>
+    <p><span className="font-semibold text-gray-900">Company Number:</span> NI697714</p>
+    <p><span className="font-semibold text-gray-900">Registered Office:</span> 51 Whitesides Road, Randalstown, Antrim, Northern Ireland, BT41 3EX</p>
+  </div>
+
+  <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
+    <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+      <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+      Active UK Register
+    </span>
+    <a
+      href="https://find-and-update.company-information.service.gov.uk/company/NI697714"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline"
+    >
+      View on Companies House &rarr;
+    </a>
+  </div>
+</div>
         </div>
       </section>
 

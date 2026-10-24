@@ -32,15 +32,15 @@ export default function AboutPage() {
             </h1>
             
             <h2 className="text-base sm:text-lg font-bold text-gray-800">
-              Welcome to Crystals Investments
+              Welcome to Grove Assets Ltd
             </h2>
 
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              As a leading global market maker, Crystals Investments has become one of the World's largest independent online traders and funds managers with clients from all over the world.
+              As a leading global market maker, Grove Assets Ltd has become one of the World's largest independent online traders and funds managers with clients from all over the world.
             </p>
 
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              One of the best asset management platforms. With over $145 million traded daily in the binary systems and forex markets, we are dedicated to giving our clients their own share of the money daily. As a leading global market maker, Crystals Investments has become one of the World's Largest independent online traders, cryptocurrency trading and funds managers with clients from all over the world. The company has many sources in which returns are generated, they buy multinational cooperation stocks with investor funds, they buy profitable government bonds, trade in the stock market and forex, they trade on the Forex market top and share their profits with investors as percentage based on the amount of investment invested by an investor.
+              One of the best asset management platforms. With over $145 million traded daily in the binary systems and forex markets, we are dedicated to giving our clients their own share of the money daily. As a leading global market maker, Grove Assets Ltd has become one of the World's Largest independent online traders, cryptocurrency trading and funds managers with clients from all over the world. The company has many sources in which returns are generated, they buy multinational cooperation stocks with investor funds, they buy profitable government bonds, trade in the stock market and forex, they trade on the Forex market top and share their profits with investors as percentage based on the amount of investment invested by an investor.
             </p>
           </div>
 
@@ -55,11 +55,11 @@ export default function AboutPage() {
             </p>
 
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              Due to the successful work and high qualification of employees, Crystals Investments is constantly growing. Constant implementation of modern technologies and use of new trading methods allow the increase of the company's productivity. All is done with the purpose of always being among the best of the best in our business, not only in the field of trading, but also in the provision of financial services. Cooperating with us is based on the provision of high quality services, transparent transaction structure, and high financial growth of investments. Our investors will receive high income throughout the whole investment period, regardless of the investment plan they've chosen.
+              Due to the successful work and high qualification of employees, Grove Assets Ltd is constantly growing. Constant implementation of modern technologies and use of new trading methods allow the increase of the company's productivity. All is done with the purpose of always being among the best of the best in our business, not only in the field of trading, but also in the provision of financial services. Cooperating with us is based on the provision of high quality services, transparent transaction structure, and high financial growth of investments. Our investors will receive high income throughout the whole investment period, regardless of the investment plan they've chosen.
             </p>
 
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              Crystals Investments, though starting as an autonomous company, has been very successful in the past few years on the market and experienced no particular downtime or major downturn.
+              Grove Assets Ltd, though starting as an autonomous company, has been very successful in the past few years on the market and experienced no particular downtime or major downturn.
             </p>
 
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
@@ -67,7 +67,7 @@ export default function AboutPage() {
             </p>
 
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              Our trading methods and the principles that we shall adhere to will bring the company exclusively positive results. We always follow the development of new technologies, and apply new strategies to maintain a high standard. Crystals Investments is not just a group of specialists from various fields; all of them are combined to act together as a single unit forming a precise mechanism, that is capable of solving the most complex tasks in the shortest time, finding new methods, and forecasting the most unpredictable situations.
+              Our trading methods and the principles that we shall adhere to will bring the company exclusively positive results. We always follow the development of new technologies, and apply new strategies to maintain a high standard. Grove Assets Ltd is not just a group of specialists from various fields; all of them are combined to act together as a single unit forming a precise mechanism, that is capable of solving the most complex tasks in the shortest time, finding new methods, and forecasting the most unpredictable situations.
             </p>
 
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">

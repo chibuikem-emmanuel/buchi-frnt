@@ -59,7 +59,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="bg-blue-600 text-white text-xs py-4">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-          <p>© 2026 Crystals Investments. All Rights Reserved.</p>
+          <p>© 2026 Grove Assets Ltd. All Rights Reserved.</p>
           <Link href="/terms" className="hover:underline">Terms and Conditions</Link>
         </div>
       </div>
