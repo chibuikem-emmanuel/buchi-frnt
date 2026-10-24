@@ -44,6 +44,10 @@ export default function UserDashboardPage() {
   const [depWithOpen, setDepWithOpen] = useState(true);
   const [packagesOpen, setPackagesOpen] = useState(false);
 
+
+
+const [plans, setPlans] = useState<any[]>([]);
+
   // Deposit Form States
   const [depositAmount, setDepositAmount] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
@@ -83,25 +87,27 @@ export default function UserDashboardPage() {
     }
   };
 
-  const loadPlans = async () => {
-    try {
-      const data = await fetchInvestmentPlans();
-      if (Array.isArray(data) && data.length > 0) {
-        setInvestmentPlans(data);
-        setSelectedPlan(data[0]);
-      } else {
-        const fallback = [
-          { id: 1, name: 'BASIC PLAN', min_amount: '100.00', max_amount: '4999.00', profit_percent: '4.00', duration_days: '3' },
-          { id: 2, name: 'EXPERT PLAN', min_amount: '5000.00', max_amount: '19999.00', profit_percent: '6.00', duration_days: '5' },
-          { id: 3, name: 'REAL ESTATE PLAN', min_amount: '20000.00', max_amount: '999999.00', profit_percent: '8.00', duration_days: '10' },
-        ];
-        setInvestmentPlans(fallback);
-        setSelectedPlan(fallback[0]);
+const loadPlans = async () => {
+  try {
+    const res = await fetch(`https://buchi-bck.onrender.com/api/plans/`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
-    } catch (err) {
-      console.error('Failed to load dynamic plans:', err);
+    });
+    const data = await res.json();
+    // Only set plans if the backend returns an array of active admin plans
+    if (Array.isArray(data)) {
+      setPlans(data);
+    } else if (data.results && Array.isArray(data.results)) {
+      setPlans(data.results);
+    } else {
+      setPlans([]);
     }
-  };
+  } catch (err) {
+    console.error("Failed to load investment plans from admin backend:", err);
+    setPlans([]);
+  }
+};
 
   const loadTransactions = async () => {
     try {
@@ -326,7 +332,7 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
             </div>
           )}
 
-          {/* MAKE DEPOSIT MODULE (DYNAMIC PLANS FROM ADMIN) */}
+         {/* MAKE DEPOSIT MODULE (DYNAMIC PLANS FROM ADMIN) */}
           {activeTab === 'make_deposit' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
@@ -340,7 +346,7 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
               )}
 
               <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
-                <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
+                <p className="font-bold text-orange-400 uppercase">Select Investment Plan</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {investmentPlans.map((p) => (
                     <div
@@ -352,7 +358,7 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                     >
                       <p className="font-bold text-white uppercase">{p.name}</p>
                       <p className="text-emerald-400 font-bold">{p.profit_percent}% daily for {p.duration_days} days</p>
-                      <p className="text-gray-400">${p.min_amount} -${p.max_amount}</p>
+                      <p className="text-gray-400">${p.min_amount} - ${p.max_amount}</p>
                     </div>
                   ))}
                 </div>
@@ -385,8 +391,8 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                       <option value="Ethereum">Ethereum</option>
                     </select>
                   </div>
-                  <div>
 
+                  <div className="space-y-3">
                     <div>
                       <label className="block text-gray-400 mb-1">Transaction ID / Hash</label>
                       <input
@@ -398,21 +404,23 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                         className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono"
                       />
                     </div>
-                    <label className="block text-gray-400 mb-1">Send payment to official address:</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        readOnly
-                        value={WALLET_ADDRESS}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleCopyWallet}
-                        className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded flex items-center gap-1 shrink-0"
-                      >
-                        {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
-                      </button>
+                    <div>
+                      <label className="block text-gray-400 mb-1">Send payment to official address:</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={WALLET_ADDRESS}
+                          className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCopyWallet}
+                          className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded flex items-center gap-1 shrink-0"
+                        >
+                          {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
