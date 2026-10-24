@@ -363,11 +363,11 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
           }`}
         >
           <p className="font-bold text-white uppercase">{p.name}</p>
-          <p className="text-emerald-400 font-bold text-xs mt-1">{p.profit_percent}% daily for {p.duration_days} days</p>
+          <p className="text-emerald-400 font-bold text-xs mt-1">{p.daily_profit}% daily for {p.duration_days} days</p>
           <p className="text-gray-400 text-xs mt-1">
-            Min: <span className="text-white font-semibold">${p.min_amount}</span> 
+            Min: <span className="text-white font-semibold">${p.min_deposit}</span> 
             {' - '} 
-            Max: <span className="text-white font-semibold">${p.max_amount}</span>
+            Max: <span className="text-white font-semibold">${p.max_deposit}</span>
           </p>
         </div>
       ))
