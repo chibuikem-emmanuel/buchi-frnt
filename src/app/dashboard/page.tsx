@@ -347,33 +347,37 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
       </div>
     )}
 
-    {/* 1. SELECT INVESTMENT PLAN */}
-    <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
-      <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {plans && plans.length > 0 ? (
-          plans.map((p: any) => (
-            <div
-              key={p.id}
-              onClick={() => setSelectedPlan(p)}
-              className={`border p-3 rounded cursor-pointer transition ${
-                selectedPlan?.id === p.id 
-                  ? 'border-orange-500 bg-orange-500/20 shadow-md ring-1 ring-orange-500' 
-                  : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
-              }`}
-            >
-              <p className="font-bold text-white uppercase">{p.name}</p>
-              <p className="text-emerald-400 font-bold text-xs mt-1">{p.profit_percent}% daily for {p.duration_days} days</p>
-              <p className="text-gray-400 text-xs mt-1">Min: ${p.min_amount} - Max: ${p.max_amount}</p>
-            </div>
-          ))
-        ) : (
-          <div className="p-4 text-center text-gray-400 bg-[#111827] border border-gray-800 rounded col-span-3 text-xs">
-            No investment plans currently available from admin.
-          </div>
-        )}
+{/* 1. SELECT INVESTMENT PLAN */}
+<div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
+  <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    {plans && plans.length > 0 ? (
+      plans.map((p) => (
+        <div
+          key={p.id}
+          onClick={() => setSelectedPlan(p)}
+          className={`border p-3 rounded cursor-pointer transition ${
+            selectedPlan?.id === p.id 
+              ? 'border-orange-500 bg-orange-500/20 shadow-md ring-1 ring-orange-500' 
+              : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
+          }`}
+        >
+          <p className="font-bold text-white uppercase">{p.name}</p>
+          <p className="text-emerald-400 font-bold text-xs mt-1">{p.profit_percent}% daily for {p.duration_days} days</p>
+          <p className="text-gray-400 text-xs mt-1">
+            Min: <span className="text-white font-semibold">${p.min_amount}</span> 
+            {' - '} 
+            Max: <span className="text-white font-semibold">${p.max_amount}</span>
+          </p>
+        </div>
+      ))
+    ) : (
+      <div className="p-4 text-center text-gray-400 bg-[#111827] border border-gray-800 rounded col-span-3 text-xs">
+        No investment plans currently available from admin.
       </div>
-    </div>
+    )}
+  </div>
+</div>
 
     {/* 2. DEPOSIT AMOUNT & METHOD FORM */}
     <form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
