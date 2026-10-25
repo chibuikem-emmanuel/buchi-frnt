@@ -504,6 +504,39 @@ export async function processDepositAction(depositId: number | string, action: '
 
 
 
+// Fetch all platform-wide pending deposits for the admin pending deposits module
+export async function fetchAllPendingDeposits() {
+  try {
+    const res = await fetch(`${API_URL}/admin/deposits/pending/`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (data.results) return data.results;
+    if (data.deposits) return data.deposits;
+    return [];
+  } catch (err) {
+    console.error("Failed to fetch pending deposits:", err);
+    return [];
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

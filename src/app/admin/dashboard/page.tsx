@@ -25,8 +25,36 @@ import {
   createAdminProcessing,
   fetchAdminAnalytics,
   fetchUserDeposits,
-  processDepositAction
+  processDepositAction,
+  fetchAllPendingDeposits
 } from '@/lib/api';
+
+
+
+
+const [pendingDepositsList, setPendingDepositsList] = useState<any[]>([]);
+
+// Load pending deposits when tab is active
+const loadPendingDeposits = async () => {
+  const data = await fetchAllPendingDeposits();
+  setPendingDepositsList(data);
+};
+
+
+
+// Action handler using your existing lib function
+const handleProcessPendingDeposit = async (depositId: string, action: 'approve' | 'reject') => {
+  try {
+    await processDepositAction(depositId, action);
+    alert(`Deposit successfully ${action}d!`);
+    loadPendingDeposits(); // Refresh list
+  } catch (err) {
+    console.error(`Error ${action}ing deposit:`, err);
+    alert(`Failed to ${action} deposit.`);
+  }
+};
+
+
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -479,7 +507,7 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
       {/* Main Workspace Layout */}
       <div className="max-w-7xl mx-auto p-4 flex flex-col md:flex-row gap-6">
         
-        {/* Sidebar */}
+      {/* Sidebar */}
         <aside className="w-full md:w-60 bg-white border border-orange-200 rounded shadow-sm p-3 shrink-0 h-fit space-y-1">
           <div className="bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold uppercase text-[11px] px-3 py-1.5 rounded mb-2">
             Menu
@@ -489,6 +517,7 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
               { id: 'overview', label: 'System Overview', icon: Activity },
               { id: 'program', label: 'Investment Programs', icon: TrendingUp },
               { id: 'expiring', label: 'Expiring Deposits', icon: Clock },
+              { id: 'pending_deposits', label: 'Pending Deposits', icon: CreditCard },
               { id: 'users', label: 'Users', icon: Users },
               { id: 'blacklist', label: 'Accounts Blacklist', icon: ShieldAlert },
               { id: 'withdrawals', label: 'Withdrawal Requests', icon: DollarSign },
@@ -518,7 +547,6 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
             })}
           </nav>
         </aside>
-
         {/* Workspace */}
         <main className="flex-1 bg-white border border-orange-200 rounded shadow-sm p-5 min-h-[600px]">
 
@@ -1382,6 +1410,71 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
     </div>
   </div>
 )}
+
+
+
+
+{/* PENDING DEPOSITS MODULE */}
+{activeTab === 'pending_deposits' && (
+  <div className="space-y-4">
+    <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide flex justify-between items-center text-xs">
+      <span>Platform Pending Deposits</span>
+      <span className="bg-gray-900 text-orange-400 px-2 py-0.5 rounded text-[11px]">
+        {pendingDepositsList.length} Pending
+      </span>
+    </div>
+
+    <div className="bg-[#161f33] border border-gray-800 rounded overflow-x-auto">
+      <table className="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr className="bg-[#111827] text-gray-400 border-b border-gray-800 uppercase text-[10px]">
+            <th className="p-3">User</th>
+            <th className="p-3">Plan</th>
+            <th className="p-3">Amount</th>
+            <th className="p-3">Gateway</th>
+            <th className="p-3 font-mono">Transaction ID / Hash</th>
+            <th className="p-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-800 text-gray-300">
+          {pendingDepositsList && pendingDepositsList.length > 0 ? (
+            pendingDepositsList.map((dep: any) => (
+              <tr key={dep.id} className="hover:bg-gray-800/50 transition">
+                <td className="p-3 font-semibold text-white">{dep.username || dep.user_email || 'User'}</td>
+                <td className="p-3 text-orange-400 font-bold">{dep.plan_name || dep.plan?.name || 'Investment Plan'}</td>
+                <td className="p-3 text-emerald-400 font-bold">${Number(dep.amount || 0).toFixed(2)}</td>
+                <td className="p-3">{dep.gateway || dep.payment_method || 'USDT TRC20'}</td>
+                <td className="p-3 font-mono text-gray-400 truncate max-w-[160px]">{dep.transaction_id || dep.tx_hash || 'N/A'}</td>
+                <td className="p-3 text-right space-x-2">
+                  <button
+                    onClick={() => handleProcessPendingDeposit(dep.id, 'approve')}
+                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase shadow"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleProcessPendingDeposit(dep.id, 'reject')}
+                    className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase shadow"
+                  >
+                    Reject
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={6} className="p-8 text-center text-gray-400">
+                No pending deposit requests found on the platform.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+
 
 
     
