@@ -32,7 +32,19 @@ import {
 
 
 
-const [pendingDepositsList, setPendingDepositsList] = useState<any[]>([]);
+
+
+
+
+export default function AdminDashboardPage() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+
+
+
+
+  const [pendingDepositsList, setPendingDepositsList] = useState<any[]>([]);
 
 // Load pending deposits when tab is active
 const loadPendingDeposits = async () => {
@@ -46,24 +58,19 @@ useEffect(() => {
   }
 }, [activeTab]);
 
-// Action handler using your existing lib function
-const handleProcessPendingDeposit = async (depositId: string, action: 'approve' | 'reject') => {
+
+
+const handleProcessPendingDeposit = async (depositId: number, action: 'approve' | 'reject') => {
   try {
     await processDepositAction(depositId, action);
     alert(`Deposit successfully ${action}d!`);
-    loadPendingDeposits(); // Refresh list
+    loadPendingDeposits();
   } catch (err) {
     console.error(`Error ${action}ing deposit:`, err);
     alert(`Failed to ${action} deposit.`);
   }
 };
 
-
-
-export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
   
 
 // Fetch user deposits from your backend
