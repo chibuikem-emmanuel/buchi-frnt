@@ -40,7 +40,11 @@ const loadPendingDeposits = async () => {
   setPendingDepositsList(data);
 };
 
-
+useEffect(() => {
+  if (activeTab === 'pending_deposits') {
+    loadPendingDeposits();
+  }
+}, [activeTab]);
 
 // Action handler using your existing lib function
 const handleProcessPendingDeposit = async (depositId: string, action: 'approve' | 'reject') => {
