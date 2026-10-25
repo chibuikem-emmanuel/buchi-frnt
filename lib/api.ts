@@ -504,20 +504,25 @@ export async function processDepositAction(depositId: number | string, action: '
 
 
 
-// Fetch all platform-wide pending deposits for the admin pending deposits module
 export async function fetchAllPendingDeposits() {
   try {
-    const res = await fetch(`${API_URL}/admin/deposits/pending/`, {
+    const res = await fetch(`${API_URL}/admin/deposits/?status=PENDING`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         'Content-Type': 'application/json',
       }
     });
+    
+    if (!res.ok) {
+      console.error(`Failed to fetch deposits: ${res.status}`);
+      return [];
+    }
+
     const data = await res.json();
-    if (Array.isArray(data)) return data;
-    if (data.results) return data.results;
-    if (data.deposits) return data.deposits;
-    return [];
+    const depositsList = Array.isArray(data) ? data : data.results || data.deposits || [];
+    
+    // Return only pending deposits client-side to be certain
+    return depositsList.filter((dep: any) => dep.status === 'PENDING');
   } catch (err) {
     console.error("Failed to fetch pending deposits:", err);
     return [];
