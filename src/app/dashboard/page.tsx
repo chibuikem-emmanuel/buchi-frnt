@@ -26,6 +26,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.c
 
 
 
+
+
+
+
+
 export default function UserDashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<any>({ balance: 0, username: 'User', email: '' });
@@ -111,6 +116,25 @@ const loadUserProfile = async () => {
 
 
 
+// Wallet mapping for all 6 crypto options
+  const WALLET_ADDRESSES: Record<string, string> = {
+    "USDT TRC20": "TQn9Y2kh5B8uJ1K3mX7P4zL9vN8qW6eR1s",
+    "USDT ERC20": "0x71C3b8e21A9f4E5d6C8b0aF3e2D1c9B8a7F6e5D4",
+    "Bitcoin": "bc1qejwvrm6atnyp4tzwt273szvxza2eesvm42my8d",
+    "Ethereum": "0x71C3b8e21A9f4E5d6C8b0aF3e2D1c9B8a7F6e5D4",
+    "Tron (TRX)": "TQn9Y2kh5B8uJ1K3mX7P4zL9vN8qW6eR1s",
+    "Binance Coin (BNB)": "0x4A5f2B8e1C7d3E9f6A2b8C1d4E7f9A3b2C5d1E6f",
+  };
+
+  const activeWalletAddress = WALLET_ADDRESSES[depositMethod] || WALLET_ADDRESSES["USDT TRC20"];
+
+  const handleCopyWallet = () => {
+    navigator.clipboard.writeText(activeWalletAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+
 const loadPlans = async () => {
   try {
     const res = await fetch(`https://buchi-bck.onrender.com/api/plans/`, {
@@ -186,11 +210,11 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
     }
   };
 
-  const handleCopyWallet = () => {
-    navigator.clipboard.writeText(WALLET_ADDRESS);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  // const handleCopyWallet = () => {
+  //   navigator.clipboard.writeText(WALLET_ADDRESS);
+  //   setCopied(true);
+  //   setTimeout(() => setCopied(false), 2000);
+  // };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -404,7 +428,8 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
 </div>
 
     {/* 2. DEPOSIT AMOUNT & METHOD FORM */}
-    <form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
+    
+<form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
       <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
       
       <div className="space-y-3">
@@ -428,9 +453,11 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
             onChange={(e) => setDepositMethod(e.target.value)}
             className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs"
           >
-            <option value="USDT TRC20">USDT TRC20</option>
-            <option value="Bitcoin">Bitcoin</option>
-            <option value="Ethereum">Ethereum</option>
+            {Object.keys(WALLET_ADDRESSES).map((gateway) => (
+              <option key={gateway} value={gateway}>
+                {gateway}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -447,12 +474,14 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
         </div>
 
         <div>
-          <label className="block text-gray-400 mb-1 text-xs font-semibold">Send payment to official address:</label>
+          <label className="block text-gray-400 mb-1 text-xs font-semibold">
+            Send payment to official <span className="text-orange-400">{depositMethod}</span> address:
+          </label>
           <div className="flex gap-2">
             <input
               type="text"
               readOnly
-              value={WALLET_ADDRESS}
+              value={activeWalletAddress}
               className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
             />
             <button
