@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { ChevronDown, MessageCircle, X, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -71,18 +72,19 @@ const sampleTransactions = [
 ];
 
 export default function FloatingControls() {
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+
   const [selectedLang, setSelectedLang] = useState(languageGroups[0].items[0]);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [isChosen, setIsChosen] = useState(false);
   
   // Live Transaction Notification State
   const [currentNotification, setCurrentNotification] = useState<typeof sampleTransactions[0] | null>(null);
 
-  // Initialize language from localStorage on mount & hide button if already chosen
+  // Initialize language from localStorage on mount and apply translation
   useEffect(() => {
     const savedLangCode = localStorage.getItem('app_selected_lang');
     if (savedLangCode) {
-      setIsChosen(true); // Hide the button since a language is already chosen
       for (const group of languageGroups) {
         const found = group.items.find((item) => item.code === savedLangCode);
         if (found) {
@@ -128,7 +130,6 @@ export default function FloatingControls() {
   const handleLanguageChange = (lang: { code: string; name: string; flag: string }) => {
     setSelectedLang(lang);
     setIsLangOpen(false);
-    setIsChosen(true); // Hides the button immediately upon selection
     localStorage.setItem('app_selected_lang', lang.code);
 
     const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
@@ -142,7 +143,7 @@ export default function FloatingControls() {
 
   return (
     <>
-      {/* 1. BOTTOM LEFT: WHATSAPP ICON & HIDEABLE LANGUAGE DROPDOWN */}
+      {/* 1. BOTTOM LEFT: WHATSAPP ICON & HOMEPAGE-ONLY LANGUAGE DROPDOWN */}
       <div className="fixed bottom-3 left-3 z-50 flex items-end gap-2">
         {/* WhatsApp Button */}
         <div className="flex flex-col items-center shrink-0">
@@ -162,8 +163,8 @@ export default function FloatingControls() {
           </span>
         </div>
 
-        {/* Language Selector Dropdown Button (Disappears completely once a language is chosen) */}
-        {!isChosen && (
+        {/* Language Selector Dropdown (Appears ONLY on the Homepage '/') */}
+        {isHomePage && (
           <div className="relative">
             {isLangOpen && (
               <div className="absolute bottom-9 left-0 w-52 bg-white border border-gray-200 rounded shadow-2xl py-1 text-xs text-gray-800 max-h-64 overflow-y-auto z-50">
