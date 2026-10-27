@@ -89,6 +89,8 @@ export async function registerUser(userData: {
   return res.json();
 }
 
+
+
 export async function loginUser(credentials: { email: string; password: string }) {
   const res = await fetch(`${API_URL}/accounts/login/`, {
     method: 'POST',
@@ -100,7 +102,6 @@ export async function loginUser(credentials: { email: string; password: string }
 
   const data = await res.json();
   if (typeof window !== 'undefined') {
-    // FIX: Add the underscore to match your deposit requests
     localStorage.setItem('access_token', data.access);
     localStorage.setItem('refresh_token', data.refresh);
   }
@@ -124,6 +125,9 @@ export async function loginUser(credentials: { email: string; password: string }
 
   return { ...data, is_staff: isAdminEmail };
 }
+
+
+
 export async function fetchUserProfile() {
   const res = await fetch(`${API_URL}/accounts/profile/`, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch profile (${res.status})`);
