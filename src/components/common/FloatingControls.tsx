@@ -73,14 +73,16 @@ const sampleTransactions = [
 export default function FloatingControls() {
   const [selectedLang, setSelectedLang] = useState(languageGroups[0].items[0]);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isChosen, setIsChosen] = useState(false);
   
   // Live Transaction Notification State
   const [currentNotification, setCurrentNotification] = useState<typeof sampleTransactions[0] | null>(null);
 
-  // Initialize language from localStorage on mount and apply to Google Translate
+  // Initialize language from localStorage on mount & hide button if already chosen
   useEffect(() => {
     const savedLangCode = localStorage.getItem('app_selected_lang');
     if (savedLangCode) {
+      setIsChosen(true); // Hide the button since a language is already chosen
       for (const group of languageGroups) {
         const found = group.items.find((item) => item.code === savedLangCode);
         if (found) {
@@ -126,6 +128,7 @@ export default function FloatingControls() {
   const handleLanguageChange = (lang: { code: string; name: string; flag: string }) => {
     setSelectedLang(lang);
     setIsLangOpen(false);
+    setIsChosen(true); // Hides the button immediately upon selection
     localStorage.setItem('app_selected_lang', lang.code);
 
     const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
@@ -139,9 +142,9 @@ export default function FloatingControls() {
 
   return (
     <>
-      {/* 1. BOTTOM LEFT: WHATSAPP ICON & LANGUAGE DROPDOWN */}
+      {/* 1. BOTTOM LEFT: WHATSAPP ICON & HIDEABLE LANGUAGE DROPDOWN */}
       <div className="fixed bottom-3 left-3 z-50 flex items-end gap-2">
-        {/* WhatsApp Button Only (No Text) */}
+        {/* WhatsApp Button */}
         <div className="flex flex-col items-center shrink-0">
           <a
             href="https://wa.me/"
@@ -159,43 +162,45 @@ export default function FloatingControls() {
           </span>
         </div>
 
-        {/* Language Selector Dropdown Button (WhatsApp Text Removed) */}
-        <div className="relative">
-          {isLangOpen && (
-            <div className="absolute bottom-9 left-0 w-52 bg-white border border-gray-200 rounded shadow-2xl py-1 text-xs text-gray-800 max-h-64 overflow-y-auto z-50">
-              {languageGroups.map((group) => (
-                <div key={group.region} className="py-1">
-                  <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-y border-gray-100">
-                    {group.region}
+        {/* Language Selector Dropdown Button (Disappears completely once a language is chosen) */}
+        {!isChosen && (
+          <div className="relative">
+            {isLangOpen && (
+              <div className="absolute bottom-9 left-0 w-52 bg-white border border-gray-200 rounded shadow-2xl py-1 text-xs text-gray-800 max-h-64 overflow-y-auto z-50">
+                {languageGroups.map((group) => (
+                  <div key={group.region} className="py-1">
+                    <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-y border-gray-100">
+                      {group.region}
+                    </div>
+                    {group.items.map((lang) => (
+                      <button
+                        key={`${lang.code}-${lang.name}`}
+                        onClick={() => handleLanguageChange(lang)}
+                        className={`w-full flex items-center justify-between px-3 py-1.5 hover:bg-blue-50 text-left transition-colors ${
+                          selectedLang.code === lang.code ? 'bg-blue-50 font-bold text-blue-600' : ''
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-base">{lang.flag}</span>
+                          <span>{lang.name}</span>
+                        </span>
+                      </button>
+                    ))}
                   </div>
-                  {group.items.map((lang) => (
-                    <button
-                      key={`${lang.code}-${lang.name}`}
-                      onClick={() => handleLanguageChange(lang)}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 hover:bg-blue-50 text-left transition-colors ${
-                        selectedLang.code === lang.code ? 'bg-blue-50 font-bold text-blue-600' : ''
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-base">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          <button
-            onClick={() => setIsLangOpen(!isLangOpen)}
-            className="flex items-center gap-2 bg-[#161f33] text-white text-xs px-3 py-2 rounded-lg border border-gray-700 shadow-md hover:bg-gray-800 transition-colors"
-          >
-            <span className="text-base">{selectedLang.flag}</span>
-            <span className="font-medium text-[11px]">{selectedLang.name}</span>
-            <ChevronDown size={13} className={`text-gray-400 transform transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
+            <button
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="flex items-center gap-2 bg-[#161f33] text-white text-xs px-3 py-2 rounded-lg border border-gray-700 shadow-md hover:bg-gray-800 transition-colors"
+            >
+              <span className="text-base">{selectedLang.flag}</span>
+              <span className="font-medium text-[11px]">{selectedLang.name}</span>
+              <ChevronDown size={13} className={`text-gray-400 transform transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 2. BOTTOM RIGHT: CHAT BUTTON WITH INTERVAL TRANSACTION POPUP */}
