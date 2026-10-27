@@ -1,13 +1,5 @@
 'use client';
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('access_token'); // Or wherever you store your auth token
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
-};
-
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
@@ -17,46 +9,28 @@ import {
 import { 
   fetchUserProfile, 
   createWithdrawal, 
-  createDeposit,
   fetchUserTransactions,
-  fetchInvestmentPlans,
 } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.com/api';
-
-
-
-
-
-
-
 
 export default function UserDashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [user, setUser] = useState<any>({ balance: 0, username: 'User', email: '' });
   const [userTransactions, setUserTransactions] = useState<any[]>([]);
-  const [investmentPlans, setInvestmentPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
-
-
-
-
-
-  const [transactionId, setTransactionId] = useState('');
 
   // Accordion Sidebar Toggles
   const [accountOpen, setAccountOpen] = useState(true);
   const [depWithOpen, setDepWithOpen] = useState(true);
   const [packagesOpen, setPackagesOpen] = useState(false);
 
-
-
-const [plans, setPlans] = useState<any[]>([]);
-
   // Deposit Form States
   const [depositAmount, setDepositAmount] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [depositMethod, setDepositMethod] = useState('USDT TRC20');
+  const [transactionId, setTransactionId] = useState('');
   const [copied, setCopied] = useState(false);
 
   // Withdrawal Form States
@@ -68,55 +42,7 @@ const [plans, setPlans] = useState<any[]>([]);
   const [newPassword, setNewPassword] = useState('');
   const [usdtTrc20Address, setUsdtTrc20Address] = useState('');
 
-  const WALLET_ADDRESS = 'TQn9Y2kh5B8uJ1K3mX7P4zL9vN8qW6eR1s';
-
-  useEffect(() => {
-    loadUserData();
-    loadPlans();
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === 'transactions') {
-      loadTransactions();
-    }
-  }, [activeTab]);
-
-  const loadUserData = async () => {
-    try {
-      const data = await fetchUserProfile();
-      setUser(data);
-      if (data?.full_name) setFullName(data.full_name);
-      if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
-    } catch (err) {
-      console.error('Failed to load user profile:', err);
-    }
-  };
-
-
-const loadUserProfile = async () => {
-  try {
-    const res = await fetch(`https://buchi-bck.onrender.com/api/user/profile/`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      }
-    });
-    const data = await res.json();
-    
-    // Set user data including the financial metrics returned by Django
-    setUser({
-      ...data,
-      active_investments: data.active_investments || 0.00,
-      total_earned: data.total_earned || 0.00,
-      total_balance: data.total_balance || (Number(data.active_investments || 0) + Number(data.total_earned || 0))
-    });
-  } catch (err) {
-    console.error("Failed to load user profile:", err);
-  }
-};
-
-
-
-// Wallet mapping for all 6 crypto options
+  // 6 Official Dynamic Wallet Addresses Mapping
   const WALLET_ADDRESSES: Record<string, string> = {
     "USDT TRC20": "TQn9Y2kh5B8uJ1K3mX7P4zL9vN8qW6eR1s",
     "USDT ERC20": "0x71C3b8e21A9f4E5d6C8b0aF3e2D1c9B8a7F6e5D4",
@@ -134,28 +60,52 @@ const loadUserProfile = async () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  useEffect(() => {
+    loadUserData();
+    loadPlans();
+  }, []);
 
-const loadPlans = async () => {
-  try {
-    const res = await fetch(`https://buchi-bck.onrender.com/api/plans/`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+  useEffect(() => {
+    if (activeTab === 'transactions') {
+      loadTransactions();
+    }
+  }, [activeTab]);
+
+  const loadUserData = async () => {
+    try {
+      const data = await fetchUserProfile();
+      setUser({
+        ...data,
+        active_investments: data.active_investments || 0.00,
+        total_earned: data.total_earned || 0.00,
+      });
+      if (data?.full_name) setFullName(data.full_name);
+      if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
+    } catch (err) {
+      console.error('Failed to load user profile:', err);
+    }
+  };
+
+  const loadPlans = async () => {
+    try {
+      const res = await fetch(`${API_URL}/plans/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setPlans(data);
+      } else if (data.results && Array.isArray(data.results)) {
+        setPlans(data.results);
+      } else {
+        setPlans([]);
       }
-    });
-    const data = await res.json();
-    // Only set plans if the backend returns an array of active admin plans
-    if (Array.isArray(data)) {
-      setPlans(data);
-    } else if (data.results && Array.isArray(data.results)) {
-      setPlans(data.results);
-    } else {
+    } catch (err) {
+      console.error("Failed to load investment plans:", err);
       setPlans([]);
     }
-  } catch (err) {
-    console.error("Failed to load investment plans from admin backend:", err);
-    setPlans([]);
-  }
-};
+  };
 
   const loadTransactions = async () => {
     try {
@@ -166,36 +116,38 @@ const loadPlans = async () => {
     }
   };
 
-const handleDepositSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const res = await fetch(`https://buchi-bck.onrender.com/api/user/deposits/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      },
-      body: JSON.stringify({
-        amount: parseFloat(depositAmount),
-        gateway: depositMethod,
-        transaction_id: transactionId,
-        plan_id: selectedPlan?.id // Passes the selected admin plan ID
-      })
-    });
+  const handleDepositSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_URL}/user/deposits/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+          amount: parseFloat(depositAmount),
+          gateway: depositMethod,
+          transaction_id: transactionId,
+          plan_id: selectedPlan?.id
+        })
+      });
 
-    if (res.ok) {
-      setStatusMessage({ type: 'success', text: 'Deposit request submitted successfully!' });
-      setDepositAmount('');
-      setTransactionId('');
-      setSelectedPlan(null);
-    } else {
-      setStatusMessage({ type: 'error', text: 'Failed to submit deposit request.' });
+      if (res.ok) {
+        setStatusMessage({ type: 'success', text: 'Deposit request submitted successfully! Awaiting admin confirmation.' });
+        setDepositAmount('');
+        setTransactionId('');
+        setSelectedPlan(null);
+        loadUserData();
+      } else {
+        const errData = await res.json();
+        setStatusMessage({ type: 'error', text: errData.error || 'Failed to submit deposit request.' });
+      }
+    } catch (err) {
+      console.error("Deposit submission error:", err);
+      setStatusMessage({ type: 'error', text: 'An error occurred during deposit submission.' });
     }
-  } catch (err) {
-    console.error("Deposit submission error:", err);
-    setStatusMessage({ type: 'error', text: 'An error occurred during deposit submission.' });
-  }
-};
+  };
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,12 +161,6 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
       setStatusMessage({ type: 'error', text: err.message || 'Failed to submit withdrawal request.' });
     }
   };
-
-  // const handleCopyWallet = () => {
-  //   navigator.clipboard.writeText(WALLET_ADDRESS);
-  //   setCopied(true);
-  //   setTimeout(() => setCopied(false), 2000);
-  // };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -273,9 +219,6 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                 <div className="pl-6 space-y-1 pt-1 text-gray-400">
                   <button onClick={() => setActiveTab('edit_account')} className={`block w-full text-left py-1 hover:text-white ${activeTab === 'edit_account' ? 'text-orange-400 font-bold' : ''}`}>
                     ↳ Edit Account
-                  </button>
-                  <button onClick={() => setActiveTab('security')} className={`block w-full text-left py-1 hover:text-white ${activeTab === 'security' ? 'text-orange-400 font-bold' : ''}`}>
-                    ↳ Security Settings
                   </button>
                 </div>
               )}
@@ -370,137 +313,136 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                   <p className="text-gray-400 uppercase text-[10px]">Account Balance</p>
                   <p className="text-2xl font-bold text-emerald-400 mt-1">${Number(user.balance || 0).toFixed(2)}</p>
                 </div>
-<div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
-    <p className="text-gray-400 uppercase text-[10px]">Active Investments</p>
-    <p className="text-2xl font-bold text-blue-400 mt-1">${Number(user?.active_investments || 0).toFixed(2)}</p>
-  </div>
-<div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
-    <p className="text-gray-400 uppercase text-[10px]">Total Earned</p>
-    <p className="text-2xl font-bold text-orange-400 mt-1">${Number(user?.total_earned || 0).toFixed(2)}</p>
-  </div>
+                <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
+                  <p className="text-gray-400 uppercase text-[10px]">Active Investments</p>
+                  <p className="text-2xl font-bold text-blue-400 mt-1">${Number(user?.active_investments || 0).toFixed(2)}</p>
+                </div>
+                <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
+                  <p className="text-gray-400 uppercase text-[10px]">Total Earned</p>
+                  <p className="text-2xl font-bold text-orange-400 mt-1">${Number(user?.total_earned || 0).toFixed(2)}</p>
+                </div>
               </div>
             </div>
           )}
 
-        {/* MAKE DEPOSIT MODULE (DYNAMIC PLANS FROM ADMIN) */}
-{activeTab === 'make_deposit' && (
-  <div className="space-y-4">
-    <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
-      Make a Deposit
-    </div>
+          {/* MAKE DEPOSIT MODULE (DYNAMIC PLANS & 6 WALLETS) */}
+          {activeTab === 'make_deposit' && (
+            <div className="space-y-4">
+              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
+                Make a Deposit
+              </div>
 
-    {statusMessage.text && (
-      <div className={`p-3 rounded font-medium ${statusMessage.type === 'success' ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700' : 'bg-red-900/40 text-red-300 border border-red-700'}`}>
-        {statusMessage.text}
-      </div>
-    )}
+              {statusMessage.text && (
+                <div className={`p-3 rounded font-medium ${statusMessage.type === 'success' ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700' : 'bg-red-900/40 text-red-300 border border-red-700'}`}>
+                  {statusMessage.text}
+                </div>
+              )}
 
-{/* 1. SELECT INVESTMENT PLAN */}
-<div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
-  <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-    {plans && plans.length > 0 ? (
-      plans.map((p) => (
-        <div
-          key={p.id}
-          onClick={() => setSelectedPlan(p)}
-          className={`border p-3 rounded cursor-pointer transition ${
-            selectedPlan?.id === p.id 
-              ? 'border-orange-500 bg-orange-500/20 shadow-md ring-1 ring-orange-500' 
-              : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
-          }`}
-        >
-          <p className="font-bold text-white uppercase">{p.name}</p>
-          <p className="text-emerald-400 font-bold text-xs mt-1">{p.daily_profit}% daily for {p.duration_days} days</p>
-          <p className="text-gray-400 text-xs mt-1">
-            Min: <span className="text-white font-semibold">${p.min_deposit}</span> 
-            {' - '} 
-            Max: <span className="text-white font-semibold">${p.max_deposit}</span>
-          </p>
-        </div>
-      ))
-    ) : (
-      <div className="p-4 text-center text-gray-400 bg-[#111827] border border-gray-800 rounded col-span-3 text-xs">
-        No investment plans currently available from admin.
-      </div>
-    )}
-  </div>
-</div>
+              {/* 1. SELECT INVESTMENT PLAN */}
+              <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
+                <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {plans && plans.length > 0 ? (
+                    plans.map((p) => (
+                      <div
+                        key={p.id}
+                        onClick={() => setSelectedPlan(p)}
+                        className={`border p-3 rounded cursor-pointer transition ${
+                          selectedPlan?.id === p.id 
+                            ? 'border-orange-500 bg-orange-500/20 shadow-md ring-1 ring-orange-500' 
+                            : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
+                        }`}
+                      >
+                        <p className="font-bold text-white uppercase">{p.name}</p>
+                        <p className="text-emerald-400 font-bold text-xs mt-1">{p.daily_profit}% daily for {p.duration_days} days</p>
+                        <p className="text-gray-400 text-xs mt-1">
+                          Min: <span className="text-white font-semibold">${p.min_deposit}</span> 
+                          {' - '} 
+                          Max: <span className="text-white font-semibold">${p.max_deposit}</span>
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-400 bg-[#111827] border border-gray-800 rounded col-span-3 text-xs">
+                      No investment plans currently available from admin.
+                    </div>
+                  )}
+                </div>
+              </div>
 
-    {/* 2. DEPOSIT AMOUNT & METHOD FORM */}
-    
-<form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
-      <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
-      
-      <div className="space-y-3">
-        <div>
-          <label className="block text-gray-400 mb-1 text-xs font-semibold">Amount to Deposit ($)</label>
-          <input
-            type="number"
-            step="0.01"
-            required
-            value={depositAmount}
-            onChange={(e) => setDepositAmount(e.target.value)}
-            placeholder={selectedPlan?.min_amount || "100.00"}
-            className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs"
-          />
-        </div>
+              {/* 2. DEPOSIT AMOUNT & METHOD FORM */}
+              <form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
+                <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-gray-400 mb-1 text-xs font-semibold">Amount to Deposit ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      placeholder={selectedPlan?.min_deposit || "100.00"}
+                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs"
+                    />
+                  </div>
 
-        <div>
-          <label className="block text-gray-400 mb-1 text-xs font-semibold">Payment Method</label>
-          <select
-            value={depositMethod}
-            onChange={(e) => setDepositMethod(e.target.value)}
-            className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs"
-          >
-            {Object.keys(WALLET_ADDRESSES).map((gateway) => (
-              <option key={gateway} value={gateway}>
-                {gateway}
-              </option>
-            ))}
-          </select>
-        </div>
+                  <div>
+                    <label className="block text-gray-400 mb-1 text-xs font-semibold">Payment Method</label>
+                    <select
+                      value={depositMethod}
+                      onChange={(e) => setDepositMethod(e.target.value)}
+                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs"
+                    >
+                      {Object.keys(WALLET_ADDRESSES).map((gateway) => (
+                        <option key={gateway} value={gateway}>
+                          {gateway}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-        <div>
-          <label className="block text-gray-400 mb-1 text-xs font-semibold">Transaction ID / Hash</label>
-          <input
-            type="text"
-            required
-            value={transactionId}
-            onChange={(e) => setTransactionId(e.target.value)}
-            placeholder="Enter blockchain hash or transfer ID"
-            className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
-          />
-        </div>
+                  <div>
+                    <label className="block text-gray-400 mb-1 text-xs font-semibold">Transaction ID / Hash</label>
+                    <input
+                      type="text"
+                      required
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      placeholder="Enter blockchain hash or transfer ID"
+                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
+                    />
+                  </div>
 
-        <div>
-          <label className="block text-gray-400 mb-1 text-xs font-semibold">
-            Send payment to official <span className="text-orange-400">{depositMethod}</span> address:
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              readOnly
-              value={activeWalletAddress}
-              className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
-            />
-            <button
-              type="button"
-              onClick={handleCopyWallet}
-              className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded flex items-center gap-1 shrink-0 text-xs"
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
-            </button>
-          </div>
-        </div>
-      </div>
+                  <div>
+                    <label className="block text-gray-400 mb-1 text-xs font-semibold">
+                      Send payment to official <span className="text-orange-400">{depositMethod}</span> address:
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={activeWalletAddress}
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCopyWallet}
+                        className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded flex items-center gap-1 shrink-0 text-xs"
+                      >
+                        {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-      <button type="submit" className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition">
-        Confirm Deposit Request
-      </button>
-    </form>
-  </div>
-)}
+                <button type="submit" className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition">
+                  Confirm Deposit Request
+                </button>
+              </form>
+            </div>
+          )}
 
           {/* WITHDRAWAL MODULE */}
           {activeTab === 'withdrawal' && (
@@ -541,11 +483,11 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                       onChange={(e) => setWithdrawMethod(e.target.value)}
                       className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white"
                     >
-                      <option value="Bitcoin">Bitcoin</option>
-                      <option value="USDT TRC20">USDT TRC20</option>
-                      <option value="USDT ERC20">USDT ERC20</option>
-                      <option value="Ethereum">Ethereum</option>
-                      <option value="BNB">BNB</option>
+                      {Object.keys(WALLET_ADDRESSES).map((gateway) => (
+                        <option key={gateway} value={gateway}>
+                          {gateway}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <button type="submit" className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase">
@@ -556,7 +498,7 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
             </div>
           )}
 
-{/* MY PACKAGES MODULE (DYNAMIC ADMIN PLANS) */}
+          {/* MY PACKAGES MODULE */}
           {activeTab === 'packages' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
@@ -568,7 +510,7 @@ const handleDepositSubmit = async (e: React.FormEvent) => {
                     <div className="bg-orange-500 text-gray-900 font-bold px-4 py-1.5 text-center uppercase">{p.name}</div>
                     <div className="p-4 flex justify-between items-center bg-[#111827] text-xs">
                       <span className="text-emerald-400 font-bold">{p.daily_profit}% daily for {p.duration_days} days</span>
-                      <span className="text-gray-400">Min: <span className="text-white font-semibold">${p.min_deposit}</span> - Max: <span className="text-white font-semibold">${p.max_deposit}</span></span>
+                      <span className="text-gray-400">Min: <span className="text-white font-semibold">${p.min_deposit}</span> | Max: <span className="text-white font-semibold">${p.max_deposit}</span></span>
                     </div>
                     <div className="p-3 bg-[#161f33] text-center">
                       <button onClick={() => setActiveTab('make_deposit')} className="text-orange-400 hover:underline font-semibold text-xs uppercase">

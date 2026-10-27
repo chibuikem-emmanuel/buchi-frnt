@@ -53,6 +53,20 @@ export default function RootLayout({
           src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
           strategy="afterInteractive"
         />
+
+
+
+        <script dangerouslySetInnerHTML={{ __html: `
+  (function() {
+    try {
+      var savedLang = localStorage.getItem('app_selected_lang');
+      if (savedLang) {
+        // Store in cookies if Google Translate reads cookies, or prep state
+        document.documentElement.setAttribute('data-lang', savedLang);
+      }
+    } catch (e) {}
+  })();
+`}} />
       </body>
     </html>
   );
