@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageCircle, X, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { ChevronDown, MessageCircle, X, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const languageGroups = [
@@ -72,15 +72,15 @@ const sampleTransactions = [
 
 export default function FloatingControls() {
   const [selectedLang, setSelectedLang] = useState(languageGroups[0].items[0]);
+  const [isLangOpen, setIsLangOpen] = useState(false);
   
   // Live Transaction Notification State
   const [currentNotification, setCurrentNotification] = useState<typeof sampleTransactions[0] | null>(null);
 
-  // Initialize language from localStorage on mount and apply to Google Translate widget
+  // Initialize language from localStorage on mount and apply to Google Translate
   useEffect(() => {
     const savedLangCode = localStorage.getItem('app_selected_lang');
     if (savedLangCode) {
-      // Find language object across groups
       for (const group of languageGroups) {
         const found = group.items.find((item) => item.code === savedLangCode);
         if (found) {
@@ -90,7 +90,6 @@ export default function FloatingControls() {
       }
     }
 
-    // Attempt to apply translation when Google Translate script loads or DOM is ready
     const applyStoredTranslation = () => {
       const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
       if (selectElement && savedLangCode) {
@@ -99,18 +98,16 @@ export default function FloatingControls() {
       }
     };
 
-    // Run after a short timeout to let Google Translate inject its combo element
     const timer = setTimeout(applyStoredTranslation, 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Interval hook to trigger pop-ups every 8-9 seconds
+  // Interval hook to trigger pop-ups every 9 seconds
   useEffect(() => {
     const triggerPopup = () => {
       const randomIndex = Math.floor(Math.random() * sampleTransactions.length);
       setCurrentNotification(sampleTransactions[randomIndex]);
 
-      // Auto dismiss after 5 seconds
       setTimeout(() => {
         setCurrentNotification(null);
       }, 5000);
@@ -125,9 +122,10 @@ export default function FloatingControls() {
     };
   }, []);
 
-  // Language Change Function (Saves preference & triggers translation silently)
+  // Language Change Function
   const handleLanguageChange = (lang: { code: string; name: string; flag: string }) => {
     setSelectedLang(lang);
+    setIsLangOpen(false);
     localStorage.setItem('app_selected_lang', lang.code);
 
     const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
@@ -135,15 +133,15 @@ export default function FloatingControls() {
       selectElement.value = lang.code;
       selectElement.dispatchEvent(new Event('change'));
     } else {
-      // Fallback reload if Google Translate widget takes a moment to mount, ensuring persistence
       window.location.reload();
     }
   };
 
   return (
     <>
-      {/* 1. BOTTOM LEFT: WHATSAPP & HIDDEN/EMBEDDED LANGUAGE LOGIC */}
+      {/* 1. BOTTOM LEFT: WHATSAPP ICON & LANGUAGE DROPDOWN */}
       <div className="fixed bottom-3 left-3 z-50 flex items-end gap-2">
+        {/* WhatsApp Button Only (No Text) */}
         <div className="flex flex-col items-center shrink-0">
           <a
             href="https://wa.me/"
@@ -161,14 +159,47 @@ export default function FloatingControls() {
           </span>
         </div>
 
-        {/* Note: The WhatsApp text banner has been removed, and the language change dropdown button is hidden. 
-            However, language selection logic remains active in the background and persists via localStorage across all pages. 
-            If you ever need to render a language menu elsewhere, you can call handleLanguageChange(lang). */}
+        {/* Language Selector Dropdown Button (WhatsApp Text Removed) */}
+        <div className="relative">
+          {isLangOpen && (
+            <div className="absolute bottom-9 left-0 w-52 bg-white border border-gray-200 rounded shadow-2xl py-1 text-xs text-gray-800 max-h-64 overflow-y-auto z-50">
+              {languageGroups.map((group) => (
+                <div key={group.region} className="py-1">
+                  <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-y border-gray-100">
+                    {group.region}
+                  </div>
+                  {group.items.map((lang) => (
+                    <button
+                      key={`${lang.code}-${lang.name}`}
+                      onClick={() => handleLanguageChange(lang)}
+                      className={`w-full flex items-center justify-between px-3 py-1.5 hover:bg-blue-50 text-left transition-colors ${
+                        selectedLang.code === lang.code ? 'bg-blue-50 font-bold text-blue-600' : ''
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-base">{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={() => setIsLangOpen(!isLangOpen)}
+            className="flex items-center gap-2 bg-[#161f33] text-white text-xs px-3 py-2 rounded-lg border border-gray-700 shadow-md hover:bg-gray-800 transition-colors"
+          >
+            <span className="text-base">{selectedLang.flag}</span>
+            <span className="font-medium text-[11px]">{selectedLang.name}</span>
+            <ChevronDown size={13} className={`text-gray-400 transform transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* 2. BOTTOM RIGHT: CHAT BUTTON WITH INTERVAL TRANSACTION POPUP */}
       <div className="fixed bottom-6 right-4 z-50 flex flex-col items-end gap-2">
-        {/* Animated Pop-Up Banner */}
         <AnimatePresence>
           {currentNotification && (
             <motion.div
@@ -205,7 +236,6 @@ export default function FloatingControls() {
           )}
         </AnimatePresence>
 
-        {/* Live Chat Button */}
         <button
           type="button"
           aria-label="Open live chat"
