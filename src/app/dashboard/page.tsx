@@ -76,8 +76,8 @@ export default function UserDashboardPage() {
       const data = await fetchUserProfile();
       setUser({
         ...data,
-        active_investments: data.active_investments || 0.00,
-        total_earned: data.total_earned || 0.00,
+        active_investments: data?.active_investments || 0.00,
+        total_earned: data?.total_earned || 0.00,
       });
       if (data?.full_name) setFullName(data.full_name);
       if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
@@ -188,7 +188,7 @@ export default function UserDashboardPage() {
         
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-56 bg-[#111827] border-r border-gray-800 p-3 space-y-1 shrink-0">
-          <div className="text-gray-400 font-semibold px-2 py-1 mb-2 text-[11px] truncate">
+          <div className="text-gray-400 font-semibold px-2 py-1 mb-2 text-[11px] truncate notranslate" translate="no">
             {user.username || 'User'}
           </div>
 
@@ -306,26 +306,32 @@ export default function UserDashboardPage() {
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 rounded shadow">
-                Welcome back, {user.username}!
+                Welcome back, <span className="notranslate" translate="no">{user.username}</span>!
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
                   <p className="text-gray-400 uppercase text-[10px]">Account Balance</p>
-                  <p className="text-2xl font-bold text-emerald-400 mt-1">${Number(user.balance || 0).toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-emerald-400 mt-1 notranslate" translate="no">
+                    ${Number(user.balance || 0).toFixed(2)}
+                  </p>
                 </div>
                 <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
                   <p className="text-gray-400 uppercase text-[10px]">Active Investments</p>
-                  <p className="text-2xl font-bold text-blue-400 mt-1">${Number(user?.active_investments || 0).toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-blue-400 mt-1 notranslate" translate="no">
+                    ${Number(user?.active_investments || 0).toFixed(2)}
+                  </p>
                 </div>
                 <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
                   <p className="text-gray-400 uppercase text-[10px]">Total Earned</p>
-                  <p className="text-2xl font-bold text-orange-400 mt-1">${Number(user?.total_earned || 0).toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-orange-400 mt-1 notranslate" translate="no">
+                    ${Number(user?.total_earned || 0).toFixed(2)}
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* MAKE DEPOSIT MODULE (DYNAMIC PLANS & 6 WALLETS) */}
+          {/* MAKE DEPOSIT MODULE */}
           {activeTab === 'make_deposit' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
@@ -353,12 +359,12 @@ export default function UserDashboardPage() {
                             : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
                         }`}
                       >
-                        <p className="font-bold text-white uppercase">{p.name}</p>
-                        <p className="text-emerald-400 font-bold text-xs mt-1">{p.daily_profit}% daily for {p.duration_days} days</p>
+                        <p className="font-bold text-white uppercase notranslate" translate="no">{p.name}</p>
+                        <p className="text-emerald-400 font-bold text-xs mt-1 notranslate" translate="no">{p.daily_profit}% daily for {p.duration_days} days</p>
                         <p className="text-gray-400 text-xs mt-1">
-                          Min: <span className="text-white font-semibold">${p.min_deposit}</span> 
+                          Min: <span className="text-white font-semibold notranslate" translate="no">${p.min_deposit}</span> 
                           {' - '} 
-                          Max: <span className="text-white font-semibold">${p.max_deposit}</span>
+                          Max: <span className="text-white font-semibold notranslate" translate="no">${p.max_deposit}</span>
                         </p>
                       </div>
                     ))
@@ -393,7 +399,8 @@ export default function UserDashboardPage() {
                     <select
                       value={depositMethod}
                       onChange={(e) => setDepositMethod(e.target.value)}
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs"
+                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
+                      translate="no"
                     >
                       {Object.keys(WALLET_ADDRESSES).map((gateway) => (
                         <option key={gateway} value={gateway}>
@@ -417,14 +424,15 @@ export default function UserDashboardPage() {
 
                   <div>
                     <label className="block text-gray-400 mb-1 text-xs font-semibold">
-                      Send payment to official <span className="text-orange-400">{depositMethod}</span> address:
+                      Send payment to official <span className="text-orange-400 notranslate" translate="no">{depositMethod}</span> address:
                     </label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         readOnly
                         value={activeWalletAddress}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs notranslate"
+                        translate="no"
                       />
                       <button
                         type="button"
@@ -460,7 +468,7 @@ export default function UserDashboardPage() {
               <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
                 <div className="flex justify-between border-b border-gray-800 pb-2">
                   <span className="text-gray-400">Account Balance:</span>
-                  <span className="font-bold text-emerald-400">${Number(user.balance || 0).toFixed(2)}</span>
+                  <span className="font-bold text-emerald-400 notranslate" translate="no">${Number(user.balance || 0).toFixed(2)}</span>
                 </div>
                 
                 <form onSubmit={handleWithdrawSubmit} className="space-y-3 pt-2">
@@ -481,7 +489,8 @@ export default function UserDashboardPage() {
                     <select
                       value={withdrawMethod}
                       onChange={(e) => setWithdrawMethod(e.target.value)}
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white"
+                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white notranslate"
+                      translate="no"
                     >
                       {Object.keys(WALLET_ADDRESSES).map((gateway) => (
                         <option key={gateway} value={gateway}>
@@ -507,10 +516,10 @@ export default function UserDashboardPage() {
               {plans && plans.length > 0 ? (
                 plans.map((p) => (
                   <div key={p.id} className="bg-[#161f33] border border-gray-800 rounded overflow-hidden">
-                    <div className="bg-orange-500 text-gray-900 font-bold px-4 py-1.5 text-center uppercase">{p.name}</div>
+                    <div className="bg-orange-500 text-gray-900 font-bold px-4 py-1.5 text-center uppercase notranslate" translate="no">{p.name}</div>
                     <div className="p-4 flex justify-between items-center bg-[#111827] text-xs">
-                      <span className="text-emerald-400 font-bold">{p.daily_profit}% daily for {p.duration_days} days</span>
-                      <span className="text-gray-400">Min: <span className="text-white font-semibold">${p.min_deposit}</span> | Max: <span className="text-white font-semibold">${p.max_deposit}</span></span>
+                      <span className="text-emerald-400 font-bold notranslate" translate="no">{p.daily_profit}% daily for {p.duration_days} days</span>
+                      <span className="text-gray-400">Min: <span className="text-white font-semibold notranslate" translate="no">${p.min_deposit}</span> | Max: <span className="text-white font-semibold notranslate" translate="no">${p.max_deposit}</span></span>
                     </div>
                     <div className="p-3 bg-[#161f33] text-center">
                       <button onClick={() => setActiveTab('make_deposit')} className="text-orange-400 hover:underline font-semibold text-xs uppercase">
@@ -536,7 +545,7 @@ export default function UserDashboardPage() {
               <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-4">
                 <div className="flex justify-between border-b border-gray-800 pb-2">
                   <span className="text-gray-400">Account Name:</span>
-                  <span className="font-bold text-white">{user.username}</span>
+                  <span className="font-bold text-white notranslate" translate="no">{user.username}</span>
                 </div>
                 <div className="space-y-3">
                   <div>
@@ -549,7 +558,7 @@ export default function UserDashboardPage() {
                   </div>
                   <div>
                     <label className="block text-gray-400 mb-1">Your USDT TRC20 Address:</label>
-                    <input type="text" value={usdtTrc20Address} onChange={(e) => setUsdtTrc20Address(e.target.value)} className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white" placeholder="TRC20 Wallet Address" />
+                    <input type="text" value={usdtTrc20Address} onChange={(e) => setUsdtTrc20Address(e.target.value)} className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white notranslate" translate="no" placeholder="TRC20 Wallet Address" />
                   </div>
                   <button onClick={() => alert('Account updated successfully!')} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase">
                     Change Account data
@@ -586,10 +595,10 @@ export default function UserDashboardPage() {
                       {userTransactions.map((tx) => (
                         <tr key={tx.id} className="hover:bg-gray-800/40">
                           <td className="p-3 font-semibold text-white">{tx.type}</td>
-                          <td className={`p-3 font-bold ${tx.type === 'WITHDRAWAL' ? 'text-red-400' : 'text-emerald-400'}`}>
+                          <td className={`p-3 font-bold notranslate ${tx.type === 'WITHDRAWAL' ? 'text-red-400' : 'text-emerald-400'}`} translate="no">
                             ${Number(tx.amount).toFixed(2)}
                           </td>
-                          <td className="p-3 text-gray-400">{tx.method || 'USDT TRC20'}</td>
+                          <td className="p-3 text-gray-400 notranslate" translate="no">{tx.method || 'USDT TRC20'}</td>
                           <td className="p-3">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                               tx.status === 'APPROVED' ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700' :
@@ -599,7 +608,7 @@ export default function UserDashboardPage() {
                               {tx.status}
                             </span>
                           </td>
-                          <td className="p-3 text-right text-gray-400">{tx.date}</td>
+                          <td className="p-3 text-right text-gray-400 notranslate" translate="no">{tx.date}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -618,11 +627,11 @@ export default function UserDashboardPage() {
               <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-3">
                 <div className="flex justify-between border-b border-gray-800 pb-2">
                   <span className="text-gray-400">Referrals:</span>
-                  <span className="font-bold text-white">0</span>
+                  <span className="font-bold text-white notranslate" translate="no">0</span>
                 </div>
                 <div className="flex justify-between border-b border-gray-800 pb-2">
                   <span className="text-gray-400">Total referral commission:</span>
-                  <span className="font-bold text-emerald-400">$0.00</span>
+                  <span className="font-bold text-emerald-400 notranslate" translate="no">$0.00</span>
                 </div>
               </div>
             </div>
