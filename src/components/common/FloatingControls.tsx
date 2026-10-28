@@ -21,14 +21,13 @@ const languageGroups = [
     ],
   },
   {
-    region: 'Europe',
+    region: 'Middle East & Central Asia',
     items: [
-      { code: 'it', name: 'Italian', flag: '🇮🇹' },
-      { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
-      { code: 'pl', name: 'Polish', flag: '🇵🇱' },
-      { code: 'tr', name: 'Turkish', flag: '🇹🇷' },
-      { code: 'hy', name: 'Armenian', flag: '🇦🇲' },
-      { code: 'sq', name: 'Albanian', flag: '🇦🇱' },
+      { code: 'fa', name: 'Persian (Farsi - Iran)', flag: '🇮🇷' },
+      { code: 'tr', name: 'Turkish (Turkey)', flag: '🇹🇷' },
+      { code: 'ur', name: 'Urdu (Pakistan)', flag: '🇵🇰' },
+      { code: 'he', name: 'Hebrew (Israel)', flag: '🇮🇱' },
+      { code: 'az', name: 'Azerbaijani', flag: '🇦🇿' },
     ],
   },
   {
@@ -38,7 +37,20 @@ const languageGroups = [
       { code: 'ko', name: 'Korean', flag: '🇰🇷' },
       { code: 'hi', name: 'Hindi', flag: '🇮🇳' },
       { code: 'id', name: 'Indonesian', flag: '🇮🇩' },
+      { code: 'th', name: 'Thai', flag: '🇹🇭' },
+      { code: 'ms', name: 'Malay', flag: '🇲🇾' },
       { code: 'vi', name: 'Vietnamese', flag: '🇻🇳' },
+      { code: 'bn', name: 'Bengali', flag: '🇧🇩' },
+    ],
+  },
+  {
+    region: 'Europe',
+    items: [
+      { code: 'it', name: 'Italian', flag: '🇮🇹' },
+      { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
+      { code: 'pl', name: 'Polish', flag: '🇵🇱' },
+      { code: 'hy', name: 'Armenian', flag: '🇦🇲' },
+      { code: 'sq', name: 'Albanian', flag: '🇦🇱' },
     ],
   },
   {
@@ -59,7 +71,6 @@ const languageGroups = [
   },
 ];
 
-// Random Transaction Popups Data Pool
 const sampleTransactions = [
   { name: 'David M.', flag: '🇺🇸', type: 'deposited', amount: '$3,500.00', timeAgo: 'Just now' },
   { name: 'Elena R.', flag: '🇪🇸', type: 'withdrew', amount: '$12,400.00', timeAgo: '2 mins ago' },
@@ -77,11 +88,8 @@ export default function FloatingControls() {
 
   const [selectedLang, setSelectedLang] = useState(languageGroups[0].items[0]);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  
-  // Live Transaction Notification State
   const [currentNotification, setCurrentNotification] = useState<typeof sampleTransactions[0] | null>(null);
 
-  // Initialize language from localStorage on mount and apply translation
   useEffect(() => {
     const savedLangCode = localStorage.getItem('app_selected_lang');
     if (savedLangCode) {
@@ -106,7 +114,6 @@ export default function FloatingControls() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Interval hook to trigger pop-ups every 9 seconds
   useEffect(() => {
     const triggerPopup = () => {
       const randomIndex = Math.floor(Math.random() * sampleTransactions.length);
@@ -126,7 +133,6 @@ export default function FloatingControls() {
     };
   }, []);
 
-  // Language Change Function
   const handleLanguageChange = (lang: { code: string; name: string; flag: string }) => {
     setSelectedLang(lang);
     setIsLangOpen(false);
@@ -143,9 +149,7 @@ export default function FloatingControls() {
 
   return (
     <>
-      {/* 1. BOTTOM LEFT: WHATSAPP ICON & HOMEPAGE-ONLY LANGUAGE DROPDOWN */}
       <div className="fixed bottom-3 left-3 z-50 flex items-end gap-2">
-        {/* WhatsApp Button */}
         <div className="flex flex-col items-center shrink-0">
           <a
             href="https://wa.me/"
@@ -163,11 +167,10 @@ export default function FloatingControls() {
           </span>
         </div>
 
-        {/* Language Selector Dropdown (Appears ONLY on the Homepage '/') */}
         {isHomePage && (
           <div className="relative">
             {isLangOpen && (
-              <div className="absolute bottom-9 left-0 w-52 bg-white border border-gray-200 rounded shadow-2xl py-1 text-xs text-gray-800 max-h-64 overflow-y-auto z-50">
+              <div className="absolute bottom-9 left-0 w-60 bg-white border border-gray-200 rounded shadow-2xl py-1 text-xs text-gray-800 max-h-72 overflow-y-auto z-50">
                 {languageGroups.map((group) => (
                   <div key={group.region} className="py-1">
                     <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 border-y border-gray-100">
@@ -204,7 +207,6 @@ export default function FloatingControls() {
         )}
       </div>
 
-      {/* 2. BOTTOM RIGHT: CHAT BUTTON WITH INTERVAL TRANSACTION POPUP */}
       <div className="fixed bottom-6 right-4 z-50 flex flex-col items-end gap-2">
         <AnimatePresence>
           {currentNotification && (

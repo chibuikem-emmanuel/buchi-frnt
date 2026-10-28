@@ -44,12 +44,12 @@ export default function UserDashboardPage() {
 
   // 6 Official Dynamic Wallet Addresses Mapping
   const WALLET_ADDRESSES: Record<string, string> = {
-    "USDT TRC20": "TQn9Y2kh5B8uJ1K3mX7P4zL9vN8qW6eR1s",
+    "USDT TRC20": "0xd6025fDB7Ab5BE476312735eb0eAd34dd5d2396F",
     "USDT ERC20": "0x71C3b8e21A9f4E5d6C8b0aF3e2D1c9B8a7F6e5D4",
-    "Bitcoin": "bc1qejwvrm6atnyp4tzwt273szvxza2eesvm42my8d",
-    "Ethereum": "0x71C3b8e21A9f4E5d6C8b0aF3e2D1c9B8a7F6e5D4",
-    "Tron (TRX)": "TQn9Y2kh5B8uJ1K3mX7P4zL9vN8qW6eR1s",
-    "Binance Coin (BNB)": "0x4A5f2B8e1C7d3E9f6A2b8C1d4E7f9A3b2C5d1E6f",
+    "Bitcoin": "bc1qzvxyd9542kl43lwl6ldfw4wals4cg67xwa9v9f",
+    "Ethereum": "0xd6025fDB7Ab5BE476312735eb0eAd34dd5d2396F",
+    "BnB": "0xd6025fDB7Ab5BE476312735eb0eAd34dd5d2396F",
+    "USDT Bep20": "0xd6025fDB7Ab5BE476312735eb0eAd34dd5d2396F",
   };
 
   const activeWalletAddress = WALLET_ADDRESSES[depositMethod] || WALLET_ADDRESSES["USDT TRC20"];
