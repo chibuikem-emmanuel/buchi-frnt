@@ -71,24 +71,44 @@ const languageGroups = [
   },
 ];
 
-// Expanded International Transaction Popups Data Pool
+// Rich International Transaction Popups Data Pool (Featuring Turkish, Arabic, Persian, Asian, and Global names)
 const sampleTransactions = [
-  { name: 'David M.', flag: '🇺🇸', type: 'deposited', amount: '$3,500.00', timeAgo: 'Just now' },
-  { name: 'Elena R.', flag: '🇪🇸', type: 'withdrew', amount: '$12,400.00', timeAgo: '2 mins ago' },
+  // Turkish
+  { name: 'Mehmet Y.', flag: '🇹🇷', type: 'deposited', amount: '$14,000.00', timeAgo: 'Just now' },
+  { name: 'Zeynep K.', flag: '🇹🇷', type: 'withdrew', amount: '$4,100.00', timeAgo: '2 mins ago' },
+  { name: 'Emre A.', flag: '🇹🇷', type: 'deposited', amount: '$7,500.00', timeAgo: 'Just now' },
+  { name: 'Elif S.', flag: '🇹🇷', type: 'withdrew', amount: '$12,300.00', timeAgo: '1 min ago' },
+  { name: 'Burak D.', flag: '🇹🇷', type: 'deposited', amount: '$19,500.00', timeAgo: 'Just now' },
+
+  // Persian / Iranian
   { name: 'Amir H.', flag: '🇮🇷', type: 'deposited', amount: '$5,800.00', timeAgo: 'Just now' },
   { name: 'Fatemeh Z.', flag: '🇮🇷', type: 'withdrew', amount: '$9,250.00', timeAgo: '1 min ago' },
-  { name: 'Mehmet Y.', flag: '🇹🇷', type: 'deposited', amount: '$14,000.00', timeAgo: 'Just now' },
-  { name: 'Zeynep K.', flag: '🇹🇷', type: 'withdrew', amount: '$4,100.00', timeAgo: '3 mins ago' },
-  { name: 'Liam K.', flag: '🇬🇧', type: 'deposited', amount: '$8,000.00', timeAgo: 'Just now' },
-  { name: 'Sophie T.', flag: '🇫🇷', type: 'withdrew', amount: '$5,250.00', timeAgo: '1 min ago' },
-  { name: 'Mateo G.', flag: '🇧🇷', type: 'deposited', amount: '$15,000.00', timeAgo: 'Just now' },
+  { name: 'Kian R.', flag: '🇮🇷', type: 'deposited', amount: '$11,000.00', timeAgo: '3 mins ago' },
+  { name: 'Parisa M.', flag: '🇮🇷', type: 'withdrew', amount: '$6,400.00', timeAgo: 'Just now' },
+
+  // Arabic / Middle Eastern
+  { name: 'Tariq A.', flag: '🇸🇦', type: 'deposited', amount: '$25,000.00', timeAgo: 'Just now' },
+  { name: 'Layla M.', flag: '🇦🇪', type: 'withdrew', amount: '$18,200.00', timeAgo: '2 mins ago' },
+  { name: 'Omar K.', flag: '🇶🇦', type: 'deposited', amount: '$16,500.00', timeAgo: 'Just now' },
+  { name: 'Yasmin B.', flag: '🇪🇬', type: 'withdrew', amount: '$8,900.00', timeAgo: '4 mins ago' },
+  { name: 'Ziyad N.', flag: '🇰🇼', type: 'deposited', amount: '$30,000.00', timeAgo: 'Just now' },
+
+  // East & South Asian
   { name: 'Kenji S.', flag: '🇯🇵', type: 'deposited', amount: '$22,100.00', timeAgo: '3 mins ago' },
   { name: 'Min-Ho C.', flag: '🇰🇷', type: 'withdrew', amount: '$7,600.00', timeAgo: 'Just now' },
   { name: 'Aarav P.', flag: '🇮🇳', type: 'deposited', amount: '$4,500.00', timeAgo: '2 mins ago' },
-  { name: 'Oluwaseun A.', flag: '🇳🇬', type: 'withdrew', amount: '$9,800.00', timeAgo: 'Just now' },
-  { name: 'Lukas W.', flag: '🇩🇪', type: 'deposited', amount: '$6,400.00', timeAgo: 'Just now' },
+  { name: 'Priya S.', flag: '🇮🇳', type: 'withdrew', amount: '$13,400.00', timeAgo: 'Just now' },
+  { name: 'Wei L.', flag: '🇨🇳', type: 'deposited', amount: '$19,000.00', timeAgo: 'Just now' },
+  { name: 'Mei-Ling X.', flag: '🇨🇳', type: 'withdrew', amount: '$8,200.00', timeAgo: '1 min ago' },
   { name: 'Chanya S.', flag: '🇹🇭', type: 'deposited', amount: '$11,200.00', timeAgo: 'Just now' },
   { name: 'Nguyen V.', flag: '🇻🇳', type: 'withdrew', amount: '$3,900.00', timeAgo: '4 mins ago' },
+
+  // Global / Western / African
+  { name: 'David M.', flag: '🇺🇸', type: 'deposited', amount: '$3,500.00', timeAgo: 'Just now' },
+  { name: 'Elena R.', flag: '🇪🇸', type: 'withdrew', amount: '$12,400.00', timeAgo: '2 mins ago' },
+  { name: 'Liam K.', flag: '🇬🇧', type: 'deposited', amount: '$8,000.00', timeAgo: 'Just now' },
+  { name: 'Mateo G.', flag: '🇧🇷', type: 'deposited', amount: '$15,000.00', timeAgo: 'Just now' },
+  { name: 'Oluwaseun A.', flag: '🇳🇬', type: 'withdrew', amount: '$9,800.00', timeAgo: 'Just now' },
 ];
 
 export default function FloatingControls() {
