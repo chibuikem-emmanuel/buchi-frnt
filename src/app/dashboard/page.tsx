@@ -633,13 +633,13 @@ export default function UserDashboardPage() {
                     <input
                       type="text"
                       readOnly
-                      value={typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.username || user.email?.split('@')[0]}` : ''}
+                      value={typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.email}` : ''}
                       className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
                     />
                     <button
                       type="button"
                       onClick={() => {
-                        const link = `${window.location.origin}/register?ref=${user.username || user.email?.split('@')[0]}`;
+                        const link = `${window.location.origin}/register?ref=${user.email}`;
                         navigator.clipboard.writeText(link);
                         alert('Referral link copied to clipboard!');
                       }}
