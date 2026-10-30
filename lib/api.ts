@@ -76,6 +76,7 @@ export async function registerUser(userData: {
   phone_number?: string;
   country?: string;
   payout_address?: string;
+  referred_by?: string;
 }) {
   const res = await fetch(`${API_URL}/accounts/register/`, {
     method: 'POST',

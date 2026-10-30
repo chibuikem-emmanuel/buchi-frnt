@@ -1,12 +1,14 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Phone, Globe, Wallet, Eye, EyeOff } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { User, Mail, Lock, Phone, Globe, Wallet, Eye, EyeOff, Share2 } from 'lucide-react';
 import { registerUser } from '@/lib/api';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -17,10 +19,18 @@ export default function RegisterPage() {
     usdtAddress: '',
   });
 
+  const [referredBy, setReferredBy] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      setReferredBy(refCode);
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,6 +57,7 @@ export default function RegisterPage() {
         phone_number: formData.phone,
         country: formData.country,
         payout_address: formData.usdtAddress,
+        referred_by: referredBy || undefined, // Passes referral code to Django
       });
 
       router.push('/login?registered=success');
@@ -68,6 +79,13 @@ export default function RegisterPage() {
         {error && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs p-3 rounded font-medium">
             {error}
+          </div>
+        )}
+
+        {referredBy && (
+          <div className="bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs p-3 rounded flex items-center gap-2">
+            <Share2 size={16} />
+            <span>You were invited by <strong className="text-white">{referredBy}</strong>!</span>
           </div>
         )}
 
@@ -230,5 +248,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#111827]" />}>
+      <RegisterForm />
+    </Suspense>
   );
 }
