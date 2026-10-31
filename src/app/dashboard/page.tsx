@@ -619,57 +619,57 @@ export default function UserDashboardPage() {
           )}
 
 {/* REFER USERS MODULE */}
-          {activeTab === 'referrals' && (
-            <div className="space-y-4">
-              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
-                Your Referrals
-              </div>
+{activeTab === 'referrals' && (
+  <div className="space-y-4">
+    <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
+      Your Referrals
+    </div>
 
-              <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-4 text-xs">
-                {/* Referral Link Box */}
-                <div className="space-y-1">
-                  <label className="text-gray-400 font-semibold">Your Unique Referral Link</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      readOnly
-                      value={typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.email}` : ''}
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const link = `${window.location.origin}/register?ref=${user.email}`;
-                        navigator.clipboard.writeText(link);
-                        alert('Referral link copied to clipboard!');
-                      }}
-                      className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase shrink-0 transition"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <p className="text-[10px] text-gray-400 pt-1">
-                    Share this link with partners to earn instant signup commissions credited directly to your balance.
-                  </p>
-                </div>
+    <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-4 text-xs">
+      {/* Referral Link Box */}
+      <div className="space-y-1">
+        <label className="text-gray-400 font-semibold">Your Unique Referral Link</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            readOnly
+            value={typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.id}` : ''}
+            className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const link = `${window.location.origin}/register?ref=${user.id}`;
+              navigator.clipboard.writeText(link);
+              alert('Referral link copied to clipboard!');
+            }}
+            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase shrink-0 transition"
+          >
+            Copy
+          </button>
+        </div>
+        <p className="text-[10px] text-gray-400 pt-1">
+          Share this link with partners to earn instant signup commissions credited directly to your balance.
+        </p>
+      </div>
 
-                <div className="space-y-3 pt-2">
-                  <div className="flex justify-between border-b border-gray-800 pb-2">
-                    <span className="text-gray-400">Referrals:</span>
-                    <span className="font-bold text-white notranslate" translate="no">
-                      {user.total_referrals || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-gray-800 pb-2">
-                    <span className="text-gray-400">Total referral commission:</span>
-                    <span className="font-bold text-emerald-400 notranslate" translate="no">
-                      ${Number(user.referral_bonus_earned || 0).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+      <div className="space-y-3 pt-2">
+        <div className="flex justify-between border-b border-gray-800 pb-2">
+          <span className="text-gray-400">Referrals:</span>
+          <span className="font-bold text-white notranslate" translate="no">
+            {user.total_referrals || 0}
+          </span>
+        </div>
+        <div className="flex justify-between border-b border-gray-800 pb-2">
+          <span className="text-gray-400">Total referral commission:</span>
+          <span className="font-bold text-emerald-400 notranslate" translate="no">
+            ${Number(user.referral_bonus_earned || 0).toFixed(2)}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
         </main>
       </div>
     </div>
