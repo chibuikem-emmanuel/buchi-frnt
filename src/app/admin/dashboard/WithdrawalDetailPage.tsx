@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { apiRequest } from '@/lib/api'; // Adjust path if needed (e.g. '../../../lib/api')
+import { apiRequest } from '@/lib/api'; // Adjust path if needed
 
 interface WithdrawalDetailPageProps {
   withdrawalId: number;
@@ -16,7 +16,6 @@ export default function WithdrawalDetailPage({ withdrawalId, onBack, onActionCom
   useEffect(() => {
     async function fetchDetails() {
       try {
-        // Fetches single withdrawal details securely using your lib.ts apiRequest helper
         const res = await apiRequest(`/admin/withdrawals/${withdrawalId}/`, {
           method: 'GET',
         });
@@ -36,7 +35,6 @@ export default function WithdrawalDetailPage({ withdrawalId, onBack, onActionCom
   const handleAction = async (actionType: 'approve' | 'reject') => {
     setActionLoading(true);
     try {
-      // Calls your process endpoint via apiRequest
       const res = await apiRequest(`/admin/withdrawals/${withdrawalId}/process/`, {
         method: 'POST',
         body: JSON.stringify({ action: actionType }),
@@ -107,6 +105,14 @@ export default function WithdrawalDetailPage({ withdrawalId, onBack, onActionCom
           <span className="text-gray-400 block">Destination Wallet Address</span>
           <div className="bg-[#111827] p-2 rounded border border-gray-700 text-gray-200 font-mono break-all">
             {withdrawal.wallet_address}
+          </div>
+        </div>
+
+        {/* Transaction ID / Hash Field */}
+        <div className="space-y-1 border-b border-gray-800 pb-4">
+          <span className="text-gray-400 block">Transaction ID / Hash</span>
+          <div className="bg-[#111827] p-2 rounded border border-gray-700 text-gray-200 font-mono break-all">
+            {withdrawal.transaction_id || 'Not Provided / Pending Broadcast'}
           </div>
         </div>
 
