@@ -11,15 +11,15 @@ import { useState } from 'react';
 
 const faqs = [
   { 
-    q: "How do I invest with Crystals Investments?", 
-    a: "To make an investment, you must become a member of Crystals Investments. Once you sign right up, you can make your deposits down the assets through the members home. You can start trading via standard economic professional you meet upon signup." 
+    q: "How do I invest with  GROVE ASSETS LTD?", 
+    a: "To make an investment, you must become a member of  GROVE ASSETS LTD. Once you sign right up, you can make your deposits down the assets through the members home. You can start trading via standard economic professional you meet upon signup." 
   },
   { 
     q: "I wish to invest but don't have an e-currency account. What should I do?", 
     a: "You can open a free Blockchain account from www.blockchain.com." 
   },
   { 
-    q: "How do I open my Crystals Investments account?", 
+    q: "How do I open my  GROVE ASSETS LTD account?", 
     a: "It is super easy and convenient. Follow the link, fill in the registration form, and click register." 
   },
   { 
@@ -58,10 +58,10 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight"
           >
-            Crystals Investments, for a world powered by technology
+             GROVE ASSETS LTD, for a world powered by technology
           </motion.h1>
           <p className="text-gray-200 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-medium">
-            Crystals investments involves most-basic financial approaches that will endure in ever-changing investment environment. As the biggest digital currency wealth manager, Crystal Investments enables investors to take advantage of the rapidly developing digital economy and secure their future now.
+             GROVE ASSETS LTD involves most-basic financial approaches that will endure in ever-changing investment environment. As the biggest digital currency wealth manager, GROVE ASSETS LTD enables investors to take advantage of the rapidly developing digital economy and secure their future now.
           </p>
           <div className="pt-2">
             <Link href="/register">
@@ -92,11 +92,11 @@ export default function HomePage() {
           </h2>
           
           <p className="text-gray-600 text-xs sm:text-sm leading-relaxed max-w-2xl mx-auto">
-            Trading on stock exchanges, FX, and crypto markets is our main business, assistance of Crystals investments allows investors to start producing in asset pools as well as trading on commercial activities in any trading direction that has potential to be highly profitable. We frequently secure other financial sources like launching to venture capital funds, as well as funding business angel funds.
+            Trading on stock exchanges, FX, and crypto markets is our main business, assistance of  GROVE ASSETS LTD allows investors to start producing in asset pools as well as trading on commercial activities in any trading direction that has potential to be highly profitable. We frequently secure other financial sources like launching to venture capital funds, as well as funding business angel funds.
           </p>
 
           <p className="text-gray-500 text-xs sm:text-sm leading-relaxed max-w-2xl mx-auto">
-            Profiting gains can become on Crystals investments from the capacity to produce resilience dollars every day. Our systems in balancing our diversified investment and trading portfolio, and then supporting the community base item within most of the governments have valid securities only general.
+            Profiting gains can become on  GROVE ASSETS LTD from the capacity to produce resilience dollars every day. Our systems in balancing our diversified investment and trading portfolio, and then supporting the community base item within most of the governments have valid securities only general.
           </p>
 
           <div className="pt-2">
@@ -253,7 +253,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto space-y-12 relative z-10">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-wide drop-shadow-md">
-              Crystals Investments
+               GROVE ASSETS LTD
             </h2>
           </div>
 
@@ -272,7 +272,7 @@ export default function HomePage() {
               <div className="w-full h-[3px] bg-cyan-400 rounded-full my-2 shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
               
               <p className="text-xs sm:text-sm text-gray-100 font-bold leading-relaxed pt-1">
-                We have developed a platform for you to manage your investments and increase your income. Crystals investments is supported by a team of professionals, experts, and leading market specialists who offer users 24/7 assistance and support, ensuring a dependable system.
+                We have developed a platform for you to manage your investments and increase your income.  GROVE ASSETS LTD is supported by a team of professionals, experts, and leading market specialists who offer users 24/7 assistance and support, ensuring a dependable system.
               </p>
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function HomePage() {
             The company has a wide range of business relationships and income generating sources. It uses conventional trading for short and medium term strategies, and applies rigorous market analysis to select stocks for long term holdings. With money from investors, they invest in the stock and currency markets, well researched multinational cooperation companies, successful government bonds, and as the case, blind long term assets like Louis jeans, Netflix, Amazon, and Tesla, among others. In addition to these financial assets, foreign funds are also included.
           </p>
           <p className="text-xs text-gray-600 leading-relaxed">
-            The highly skilled analysts and risk managers on the Crystals Investments investments team combine their years of experience with exciting edge-software to produce astounding prediction accuracy on the movements and shifts of currency exchanges and cryptocurrency markets. Additionally, the corporation invests in a variety of global agricultural and real estate projects. Thus, in proportion to each investor's portfolio, they distribute to investors their enormous earnings from their securities skilled deals.
+            The highly skilled analysts and risk managers on the  GROVE ASSETS LTD team combine their years of experience with exciting edge-software to produce astounding prediction accuracy on the movements and shifts of currency exchanges and cryptocurrency markets. Additionally, the corporation invests in a variety of global agricultural and real estate projects. Thus, in proportion to each investor's portfolio, they distribute to investors their enormous earnings from their securities skilled deals.
           </p>
         </div>
       </section>

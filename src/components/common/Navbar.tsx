@@ -54,7 +54,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-7">
             <Link href="/" className="text-xs font-medium text-gray-200 hover:text-white transition-colors">Home</Link>
             <Link href="/about" className="text-xs font-medium text-gray-200 hover:text-white transition-colors">About us</Link>
-            <Link href="/plans" className="text-xs font-medium text-gray-200 hover:text-white transition-colors">Plans</Link>
+            {/* <Link href="/plans" className="text-xs font-medium text-gray-200 hover:text-white transition-colors">Plans</Link> */}
             <a 
               href="/#faqs" 
               onClick={(e) => handleSectionClick(e, 'faqs')} 
