@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import WithdrawalDetailPage from './WithdrawalDetailPage';
+
 import Link from 'next/link';
 import { 
   Users, DollarSign, ShieldAlert, MessageSquare, 
@@ -28,6 +30,14 @@ import {
   processDepositAction,
   fetchAllPendingDeposits
 } from '@/lib/api';
+
+
+
+
+
+
+
+
 
 
 
@@ -107,6 +117,10 @@ const processDepositAction = async (depositId: number, action: 'approve' | 'reje
     alert("Failed to process deposit action");
   }
 };
+
+
+
+const [selectedWithdrawalId, setSelectedWithdrawalId] = useState<number | null>(null);
 
 
 const [analytics, setAnalytics] = useState<any>({
@@ -1326,30 +1340,47 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
             </div>
           )}
 
-          {/* TAB 7: WITHDRAWAL REQUESTS */}
-          {activeTab === 'withdrawals' && (
-            <div className="space-y-4">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
-              <div className="space-y-3">
-                {safeWithdrawals.length === 0 ? (
-                  <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
-                ) : (
-                  safeWithdrawals.map((w) => (
-                    <div key={w.id} className="border border-orange-200 bg-amber-50/30 p-3 rounded flex justify-between items-center text-xs">
-                      <div>
-                        <p className="font-bold text-blue-900">{w.username || w.user_email}</p>
-                        <p className="font-bold text-emerald-700">Amount: ${Number(w.amount).toFixed(2)} ({w.method || 'USDT TRC20'})</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => handleWithdrawalAction(w.id, 'approve')} className="px-3 py-1 bg-emerald-600 text-white font-bold rounded">Approve</button>
-                        <button onClick={() => handleWithdrawalAction(w.id, 'reject')} className="px-3 py-1 bg-red-600 text-white font-bold rounded">Reject</button>
-                      </div>
-                    </div>
-                  ))
-                )}
+{/* TAB 7: WITHDRAWAL REQUESTS */}
+{activeTab === 'withdrawals' && (
+  selectedWithdrawalId ? (
+    /* If an ID is selected, show the Detail Page component */
+    <WithdrawalDetailPage 
+      withdrawalId={selectedWithdrawalId} 
+      onBack={() => setSelectedWithdrawalId(null)}
+      onActionComplete={(id, newStatus) => {
+        setSelectedWithdrawalId(null); // Go back to list after approving/rejecting
+      }}
+    />
+  ) : (
+    /* Otherwise, show the normal list of pending withdrawals */
+    <div className="space-y-4">
+      <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">Pending Withdrawal Requests</h2>
+      <div className="space-y-3">
+        {safeWithdrawals.length === 0 ? (
+          <p className="text-gray-500 text-center py-6">No pending withdrawal requests found.</p>
+        ) : (
+          safeWithdrawals.map((w) => (
+            <div key={w.id} className="border border-orange-200 bg-amber-50/30 p-3 rounded flex justify-between items-center text-xs">
+              <div>
+                <p className="font-bold text-blue-900">{w.username || w.user_email}</p>
+                <p className="font-bold text-emerald-700">Amount: ${Number(w.amount).toFixed(2)} ({w.method || 'USDT TRC20'})</p>
+              </div>
+              <div>
+                {/* Clicking this button sets the ID and opens your new details page */}
+                <button 
+                  onClick={() => setSelectedWithdrawalId(w.id)} 
+                  className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase transition"
+                >
+                  Review Details
+                </button>
               </div>
             </div>
-          )}
+          ))
+        )}
+      </div>
+    </div>
+  )
+)}
 
 
 
@@ -1518,6 +1549,8 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
     </div>
   )
 };
+
+
 
 
 
