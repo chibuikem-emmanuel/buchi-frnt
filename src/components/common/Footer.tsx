@@ -48,11 +48,11 @@ export default function Footer() {
         <div>
           <h4 className="text-sm font-semibold text-white mb-4">Legal</h4>
           <p className="text-xs text-gray-500 leading-relaxed mb-3">
-            Registered with official authority. Registered in Australia address.
+            Registered with official authority. 51 Whitesides Road, Randalstown, Antrim, Northern Ireland, BT41 3EX
           </p>
-          <span className="inline-block bg-gray-900 border border-gray-800 text-gray-300 text-[10px] px-3 py-1 rounded">
+          {/* <span className="inline-block bg-gray-900 border border-gray-800 text-gray-300 text-[10px] px-3 py-1 rounded">
             REG: #09802
-          </span>
+          </span> */}
         </div>
       </div>
 

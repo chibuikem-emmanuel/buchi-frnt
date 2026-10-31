@@ -50,7 +50,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Access Your Secure Investment Portal</h1>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Log in to monitor active portfolios, track automated daily earnings, and manage your financial growth with Crystals Investments.
+            Log in to monitor active portfolios, track automated daily earnings, and manage your financial growth with  GROVE ASSETS LTD.
           </p>
         </div>
 
