@@ -56,7 +56,8 @@ export default function AdminDashboardPage() {
 
 
 
-const [selectedDepositId, setSelectedDepositId] = useState<number | null>(null);
+// Inside your AdminDashboardPage component states:
+const [selectedDeposit, setSelectedDeposit] = useState<any>(null);
 
   const [pendingDepositsList, setPendingDepositsList] = useState<any[]>([]);
 
@@ -1462,13 +1463,15 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
 
 {/* PENDING DEPOSITS MODULE */}
 {activeTab === 'pending_deposits' && (
-  selectedDepositId ? (
+  selectedDeposit ? (
     <DepositDetailPage 
-      depositId={selectedDepositId} 
-      onBack={() => setSelectedDepositId(null)}
+      deposit={selectedDeposit} 
+      onBack={() => setSelectedDeposit(null)}
       onActionComplete={(id, newStatus) => {
-        setSelectedDepositId(null);
-        // Refresh your pending deposits list function here if you have one, e.g., loadPendingDeposits();
+        setSelectedDeposit(null);
+        if (typeof loadPendingDeposits === 'function') {
+          loadPendingDeposits();
+        }
       }}
     />
   ) : (
@@ -1502,9 +1505,8 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                   <td className="p-3">{dep.gateway || dep.payment_method || 'USDT TRC20'}</td>
                   <td className="p-3 font-mono text-gray-400 truncate max-w-[160px]">{dep.transaction_id || dep.tx_hash || 'N/A'}</td>
                   <td className="p-3 text-right space-x-2">
-                    {/* Add Review Details Button */}
                     <button
-                      onClick={() => setSelectedDepositId(dep.id)}
+                      onClick={() => setSelectedDeposit(dep)}
                       className="px-2.5 py-1 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded text-[10px] uppercase shadow transition"
                     >
                       Review

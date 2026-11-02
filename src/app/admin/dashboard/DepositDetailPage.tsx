@@ -1,50 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { apiRequest } from '@/lib/api';
 
 interface DepositDetailPageProps {
-  depositId: number;
+  deposit: any;
   onBack: () => void;
   onActionComplete: (updatedId: number, newStatus: string) => void;
 }
 
-export default function DepositDetailPage({ depositId, onBack, onActionComplete }: DepositDetailPageProps) {
-  const [deposit, setDeposit] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+export default function DepositDetailPage({ deposit, onBack, onActionComplete }: DepositDetailPageProps) {
   const [actionLoading, setActionLoading] = useState(false);
-
-  useEffect(() => {
-    async function fetchDetails() {
-      try {
-        const res = await apiRequest(`/admin/deposits/${depositId}/`, {
-          method: 'GET',
-        });
-        
-        if (!res.ok) throw new Error('Failed to load deposit details.');
-        const data = await res.json();
-        setDeposit(data);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred.');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchDetails();
-  }, [depositId]);
 
   const handleAction = async (actionType: 'approve' | 'reject') => {
     setActionLoading(true);
     try {
-      const res = await apiRequest(`/admin/deposits/${depositId}/process/`, {
+      const res = await apiRequest(`/admin/deposits/${deposit.id}/action/`, {
         method: 'POST',
         body: JSON.stringify({ action: actionType }),
       });
 
-      if (!res.ok) throw new Error('Failed to process deposit action.');
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to process deposit action.');
+      }
       
       const newStatus = actionType === 'approve' ? 'APPROVED' : 'REJECTED';
-      alert(`Deposit request successfully ${actionType}d! It will now reflect as an active investment upon approval.`);
-      onActionComplete(depositId, newStatus);
+      alert(`Deposit request successfully ${actionType}d!`);
+      onActionComplete(deposit.id, newStatus);
     } catch (err: any) {
       alert(err.message || 'Error processing request.');
     } finally {
@@ -52,8 +33,6 @@ export default function DepositDetailPage({ depositId, onBack, onActionComplete 
     }
   };
 
-  if (loading) return <div className="text-gray-400 p-6 text-xs font-mono">Loading deposit details...</div>;
-  if (error) return <div className="text-red-400 p-6 text-xs font-mono">Error: {error}</div>;
   if (!deposit) return <div className="text-gray-400 p-6 text-xs font-mono">Deposit request not found.</div>;
 
   return (
@@ -61,7 +40,7 @@ export default function DepositDetailPage({ depositId, onBack, onActionComplete 
       <div className="flex justify-between items-center bg-[#161f33] border border-gray-800 p-4 rounded">
         <div>
           <h2 className="text-white font-bold text-sm">Deposit Request #{deposit.id}</h2>
-          <p className="text-gray-400 text-[10px]">Submitted: {new Date(deposit.created_at).toLocaleString()}</p>
+          <p className="text-gray-400 text-[10px]">Submitted: {deposit.created_at}</p>
         </div>
         <button
           onClick={onBack}
@@ -92,23 +71,19 @@ export default function DepositDetailPage({ depositId, onBack, onActionComplete 
 
         <div className="grid grid-cols-2 gap-4 border-b border-gray-800 pb-4">
           <div>
-            <span className="text-gray-400 block pb-1">Investment Package</span>
-            <span className="text-orange-400 font-bold uppercase">{deposit.package_name || deposit.plan || 'Standard Plan'}</span>
+            <span className="text-gray-400 block pb-1">Payment Gateway</span>
+            <span className="text-orange-400 font-bold uppercase">{deposit.gateway}</span>
           </div>
-          <div>
-            <span className="text-gray-400 block pb-1">Payment Method</span>
-            <span className="text-white font-semibold">{deposit.method || deposit.payment_method}</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 border-b border-gray-800 pb-4">
           <div>
             <span className="text-gray-400 block pb-1">Amount Deposited</span>
             <span className="text-emerald-400 font-bold font-mono text-sm">${Number(deposit.amount).toFixed(2)}</span>
           </div>
-          <div>
-            <span className="text-gray-400 block pb-1">Transaction Proof / Hash</span>
-            <span className="text-gray-200 font-mono break-all">{deposit.transaction_id || deposit.tx_hash || 'N/A'}</span>
+        </div>
+
+        <div className="space-y-1 border-b border-gray-800 pb-4">
+          <span className="text-gray-400 block">Transaction ID / Hash</span>
+          <div className="bg-[#111827] p-2 rounded border border-gray-700 text-gray-200 font-mono break-all">
+            {deposit.transaction_id || 'N/A'}
           </div>
         </div>
 
@@ -119,7 +94,7 @@ export default function DepositDetailPage({ depositId, onBack, onActionComplete 
               onClick={() => handleAction('approve')}
               className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded transition uppercase tracking-wider disabled:opacity-50"
             >
-              {actionLoading ? 'Processing...' : 'Approve & Activate Investment'}
+              {actionLoading ? 'Processing...' : 'Approve Deposit'}
             </button>
             <button
               disabled={actionLoading}
