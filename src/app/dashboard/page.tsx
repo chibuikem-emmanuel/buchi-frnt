@@ -446,7 +446,7 @@ export default function UserDashboardPage() {
   </div>
 )}
 
-          {/* MAKE DEPOSIT MODULE */}
+{/* MAKE DEPOSIT MODULE */}
           {activeTab === 'make_deposit' && (
             <div className="space-y-4">
               <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
@@ -459,110 +459,115 @@ export default function UserDashboardPage() {
                 </div>
               )}
 
-              {/* 1. SELECT INVESTMENT PLAN */}
-              <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
-                <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {plans && plans.length > 0 ? (
-                    plans.map((p) => (
-                      <div
-                        key={p.id}
-                        onClick={() => setSelectedPlan(p)}
-                        className={`border p-3 rounded cursor-pointer transition ${
-                          selectedPlan?.id === p.id 
-                            ? 'border-orange-500 bg-orange-500/20 shadow-md ring-1 ring-orange-500' 
-                            : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
-                        }`}
-                      >
-                        <p className="font-bold text-white uppercase notranslate" translate="no">{p.name}</p>
-                        <p className="text-emerald-400 font-bold text-xs mt-1 notranslate" translate="no">{p.daily_profit}% daily for {p.duration_days} days</p>
-                        <p className="text-gray-400 text-xs mt-1">
-                          Min: <span className="text-white font-semibold notranslate" translate="no">${p.min_deposit}</span> 
-                          {' - '} 
-                          Max: <span className="text-white font-semibold notranslate" translate="no">${p.max_deposit}</span>
-                        </p>
+              <form onSubmit={handleDepositSubmit} className="space-y-4">
+                {/* 1. SELECT INVESTMENT PLAN */}
+                <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
+                  <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {plans && plans.length > 0 ? (
+                      plans.map((p) => (
+                        <div
+                          key={p.id}
+                          onClick={() => setSelectedPlan(p)}
+                          className={`border p-3 rounded cursor-pointer transition ${
+                            selectedPlan?.id === p.id 
+                              ? 'border-orange-500 bg-orange-500/20 shadow-md ring-1 ring-orange-500' 
+                              : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
+                          }`}
+                        >
+                          <p className="font-bold text-white uppercase notranslate" translate="no">{p.name}</p>
+                          <p className="text-emerald-400 font-bold text-xs mt-1 notranslate" translate="no">{p.daily_profit}% daily for {p.duration_days} days</p>
+                          <p className="text-gray-400 text-xs mt-1">
+                            Min: <span className="text-white font-semibold notranslate" translate="no">${p.min_deposit}</span> 
+                            {' - '} 
+                            Max: <span className="text-white font-semibold notranslate" translate="no">${p.max_deposit}</span>
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-gray-400 bg-[#111827] border border-gray-800 rounded col-span-3 text-xs">
+                        No investment plans currently available from admin.
                       </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-center text-gray-400 bg-[#111827] border border-gray-800 rounded col-span-3 text-xs">
-                      No investment plans currently available from admin.
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* 2. DEPOSIT AMOUNT & METHOD FORM */}
-              <form onSubmit={handleDepositSubmit} className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
-                <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
-                
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-gray-400 mb-1 text-xs font-semibold">Amount to Deposit ($)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                      placeholder={selectedPlan?.min_deposit || "100.00"}
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs"
-                    />
-                  </div>
+                {/* 2. DEPOSIT AMOUNT & METHOD FORM */}
+                <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
+                  <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-gray-400 mb-1 text-xs font-semibold">Amount to Deposit ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        value={depositAmount}
+                        onChange={(e) => setDepositAmount(e.target.value)}
+                        placeholder={selectedPlan?.min_deposit || "100.00"}
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs font-mono"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-gray-400 mb-1 text-xs font-semibold">Payment Method</label>
-                    <select
-                      value={depositMethod}
-                      onChange={(e) => setDepositMethod(e.target.value)}
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
-                      translate="no"
-                    >
-                      {Object.keys(WALLET_ADDRESSES).map((gateway) => (
-                        <option key={gateway} value={gateway}>
-                          {gateway}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1 text-xs font-semibold">Payment Method</label>
+                      <select
+                        value={depositMethod}
+                        onChange={(e) => setDepositMethod(e.target.value)}
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
+                        translate="no"
+                      >
+                        {Object.keys(WALLET_ADDRESSES || {}).map((gateway) => (
+                          <option key={gateway} value={gateway}>
+                            {gateway}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <div>
-                    <label className="block text-gray-400 mb-1 text-xs font-semibold">Transaction ID / Hash</label>
-                    <input
-                      type="text"
-                      required
-                      value={transactionId}
-                      onChange={(e) => setTransactionId(e.target.value)}
-                      placeholder="Enter blockchain hash or transfer ID"
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-400 mb-1 text-xs font-semibold">
-                      Send payment to official <span className="text-orange-400 notranslate" translate="no">{depositMethod}</span> address:
-                    </label>
-                    <div className="flex gap-2">
+                    <div>
+                      <label className="block text-gray-400 mb-1 text-xs font-semibold">Transaction ID / Hash</label>
                       <input
                         type="text"
-                        readOnly
-                        value={activeWalletAddress}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs notranslate"
-                        translate="no"
+                        required
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        placeholder="Enter blockchain hash or transfer ID"
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
                       />
-                      <button
-                        type="button"
-                        onClick={handleCopyWallet}
-                        className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded flex items-center gap-1 shrink-0 text-xs"
-                      >
-                        {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
-                      </button>
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-400 mb-1 text-xs font-semibold">
+                        Send payment to official <span className="text-orange-400 notranslate" translate="no">{depositMethod}</span> address:
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={activeWalletAddress || WALLET_ADDRESSES?.[depositMethod] || ''}
+                          className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs notranslate select-all"
+                          translate="no"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCopyWallet}
+                          className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded flex items-center gap-1 shrink-0 text-xs transition"
+                        >
+                          {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <button type="submit" className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition">
-                  Confirm Deposit Request
-                </button>
+                  <button 
+                    type="submit" 
+                    className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition shadow"
+                  >
+                    Confirm Deposit Request
+                  </button>
+                </div>
               </form>
             </div>
           )}
