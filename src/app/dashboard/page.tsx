@@ -301,35 +301,150 @@ export default function UserDashboardPage() {
 
         {/* Main Workspace */}
         <main className="flex-1 p-6 space-y-6">
-          
-          {/* DASHBOARD HOME */}
-          {activeTab === 'dashboard' && (
-            <div className="space-y-6">
-              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 rounded shadow">
-                Welcome back, <span className="notranslate" translate="no">{user.username}</span>!
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
-                  <p className="text-gray-400 uppercase text-[10px]">Account Balance</p>
-                  <p className="text-2xl font-bold text-emerald-400 mt-1 notranslate" translate="no">
-                    ${Number(user.balance || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
-                  <p className="text-gray-400 uppercase text-[10px]">Active Investments</p>
-                  <p className="text-2xl font-bold text-blue-400 mt-1 notranslate" translate="no">
-                    ${Number(user?.active_investments || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="bg-[#161f33] border border-gray-800 p-4 rounded shadow">
-                  <p className="text-gray-400 uppercase text-[10px]">Total Earned</p>
-                  <p className="text-2xl font-bold text-orange-400 mt-1 notranslate" translate="no">
-                    ${Number(user?.total_earned || 0).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+{/* DASHBOARD HOME */}
+{activeTab === 'dashboard' && (
+  <div className="space-y-6 text-xs text-gray-300">
+    {/* Welcome Banner */}
+    <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 rounded shadow text-sm">
+      Welcome, <span className="notranslate" translate="no">{user?.username || 'User'}</span>!
+    </div>
+
+    {/* Referral Link Copy Bar */}
+    <div className="bg-[#161f33] border border-gray-800 p-3 rounded flex items-center justify-between gap-4">
+      <input
+        type="text"
+        readOnly
+        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user?.username || ''}`}
+        className="w-full bg-[#111827] border border-gray-700 rounded px-3 py-1.5 text-gray-300 font-mono text-[11px]"
+      />
+      <button
+        onClick={() => {
+          const link = `${window.location.origin}/register?ref=${user?.username || ''}`;
+          navigator.clipboard.writeText(link);
+          alert('Referral link copied to clipboard!');
+        }}
+        className="bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold px-4 py-1.5 rounded uppercase text-[10px] transition shrink-0"
+      >
+        Copy Link
+      </button>
+    </div>
+
+    {/* 4-Column Metric Grid matching target UI */}
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#161f33] border border-gray-800 p-6 rounded divide-y md:divide-y-0 md:divide-x divide-gray-800">
+      
+      {/* Column 1: Deposited & Balance */}
+      <div className="space-y-6 md:pr-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-orange-500/10 text-orange-400 rounded">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-400 text-[10px] uppercase font-semibold">Deposited</p>
+            <p className="text-white font-bold text-base font-mono notranslate" translate="no">
+              ${Number(user?.deposited || user?.total_deposit || 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-400 text-[10px] uppercase font-semibold">Balance</p>
+            <p className="text-emerald-400 font-bold text-base font-mono notranslate" translate="no">
+              ${Number(user?.balance || 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Column 2: Earned & Total Deposit */}
+      <div className="space-y-6 md:px-4 pt-6 md:pt-0">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-400 text-[10px] uppercase font-semibold">Earned</p>
+            <p className="text-white font-bold text-base font-mono notranslate" translate="no">
+              ${Number(user?.total_earned || user?.earned || 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-500/10 text-blue-400 rounded">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-400 text-[10px] uppercase font-semibold">Total Deposit</p>
+            <p className="text-white font-bold text-base font-mono notranslate" translate="no">
+              ${Number(user?.total_deposit || user?.deposited || 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Column 3: Withdrew Total & Active Investment */}
+      <div className="space-y-6 md:px-4 pt-6 md:pt-0">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-pink-500/10 text-pink-400 rounded">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 13C10.832 19.877 8 18 5 18M12 21c1.168-1.123 4-3 7-3" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-400 text-[10px] uppercase font-semibold">Withdrew Total</p>
+            <p className="text-white font-bold text-base font-mono notranslate" translate="no">
+              ${Number(user?.withdrew_total || user?.total_withdrawn || 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-500/10 text-blue-400 rounded">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-400 text-[10px] uppercase font-semibold">Active Investment</p>
+            <p className="text-white font-bold text-base font-mono notranslate" translate="no">
+              ${Number(user?.active_investments || user?.active_investment || 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Column 4: Ref. Bonus */}
+      <div className="space-y-6 md:pl-4 pt-6 md:pt-0">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-cyan-500/10 text-cyan-400 rounded">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-400 text-[10px] uppercase font-semibold">Ref. Bonus</p>
+            <p className="text-white font-bold text-base font-mono notranslate" translate="no">
+              ${Number(user?.ref_bonus || user?.referral_bonus || 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+)}
 
           {/* MAKE DEPOSIT MODULE */}
           {activeTab === 'make_deposit' && (
