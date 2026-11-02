@@ -567,10 +567,10 @@ export default function UserDashboardPage() {
             </div>
           )}
 
-          {/* WITHDRAWAL MODULE */}
+{/* WITHDRAWAL MODULE */}
           {activeTab === 'withdrawal' && (
-            <div className="space-y-4">
-              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
+            <div className="space-y-4 text-xs text-gray-300">
+              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
                 Ask for withdrawal
               </div>
               
@@ -580,43 +580,93 @@ export default function UserDashboardPage() {
                 </div>
               )}
 
-              <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
-                <div className="flex justify-between border-b border-gray-800 pb-2">
-                  <span className="text-gray-400">Account Balance:</span>
-                  <span className="font-bold text-emerald-400 notranslate" translate="no">${Number(user.balance || 0).toFixed(2)}</span>
+              <div className="bg-[#161f33] border border-gray-800 p-6 rounded space-y-4">
+                <div className="flex justify-between items-center border-b border-gray-800 pb-3">
+                  <span className="text-gray-400 uppercase font-semibold">Account Balance:</span>
+                  <span className="font-bold text-emerald-400 font-mono text-sm notranslate" translate="no">
+                    ${Number(user?.balance || 0).toFixed(2)}
+                  </span>
                 </div>
-                
-                <form onSubmit={handleWithdrawSubmit} className="space-y-3 pt-2">
-                  <div>
-                    <label className="block text-gray-400 mb-1">Withdrawal Amount ($)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      value={withdrawAmount}
-                      onChange={(e) => setWithdrawAmount(e.target.value)}
-                      placeholder="0.00"
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 mb-1">Payment Method</label>
-                    <select
-                      value={withdrawMethod}
-                      onChange={(e) => setWithdrawMethod(e.target.value)}
-                      className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white notranslate"
-                      translate="no"
-                    >
-                      {Object.keys(WALLET_ADDRESSES).map((gateway) => (
-                        <option key={gateway} value={gateway}>
-                          {gateway}
-                        </option>
+
+                {/* Gateway Status Table matching dhx2.PNG */}
+                <div className="overflow-x-auto pt-1">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-[#111827] text-gray-400 border-b border-gray-800 uppercase text-[10px]">
+                        <th className="p-3">Processing</th>
+                        <th className="p-3">Available</th>
+                        <th className="p-3">Pending</th>
+                        <th className="p-3 text-right">Account</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {Object.keys(WALLET_ADDRESSES || { 'USDT TRC20': '', 'Bitcoin': '' }).map((gateway) => (
+                        <tr key={gateway} className="hover:bg-gray-800/40 transition">
+                          <td className="p-3 font-semibold text-white">{gateway}</td>
+                          <td className="p-3 text-emerald-400 font-mono">${Number(user?.balance || 0).toFixed(2)}</td>
+                          <td className="p-3 text-amber-400 font-mono">$0.00</td>
+                          <td className="p-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => setWithdrawMethod(gateway)}
+                              className={`text-[10px] underline uppercase ${withdrawMethod === gateway ? 'text-orange-400 font-bold' : 'text-gray-500 hover:text-gray-300'}`}
+                            >
+                              {withdrawMethod === gateway ? 'Selected' : 'Select'}
+                            </button>
+                          </td>
+                        </tr>
                       ))}
-                    </select>
+                    </tbody>
+                  </table>
+                </div>
+
+                {Number(user?.balance || 0) <= 0 && (
+                  <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-2.5 rounded text-center text-[11px]">
+                    You have no funds to withdraw.
                   </div>
-                  <button type="submit" className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase">
-                    Request Withdrawal
-                  </button>
+                )}
+
+                {/* Withdrawal Form */}
+                <form onSubmit={handleWithdrawSubmit} className="space-y-4 pt-4 border-t border-gray-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-400 mb-1">Withdrawal Amount ($)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 mb-1">Payment Method</label>
+                      <select
+                        value={withdrawMethod}
+                        onChange={(e) => setWithdrawMethod(e.target.value)}
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white notranslate"
+                        translate="no"
+                      >
+                        {Object.keys(WALLET_ADDRESSES || {}).map((gateway) => (
+                          <option key={gateway} value={gateway}>
+                            {gateway}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={Number(user?.balance || 0) <= 0}
+                      className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase tracking-wider transition disabled:opacity-50 shadow"
+                    >
+                      Request Withdrawal via {withdrawMethod}
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
