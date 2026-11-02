@@ -21,6 +21,10 @@ export default function UserDashboardPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
+
+
+  const [depositStep, setDepositStep] = useState<1 | 2>(1); // 1 = Plan & Amount Selection, 2 = Wallet & Hash Confirmation
+
   // Accordion Sidebar Toggles
   const [accountOpen, setAccountOpen] = useState(true);
   const [depWithOpen, setDepWithOpen] = useState(true);
@@ -448,70 +452,84 @@ export default function UserDashboardPage() {
 
 {/* MAKE DEPOSIT MODULE */}
           {activeTab === 'make_deposit' && (
-            <div className="space-y-4">
-              <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
-                Make a Deposit
-              </div>
+            <div className="space-y-4 text-xs text-gray-300">
+              
+              {/* STEP 1: PLAN SELECTION & INITIAL FORM (Matching dhx3.PNG) */}
+              {depositStep === 1 && (
+                <div className="space-y-4">
+                  <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
+                    Make a deposit
+                  </div>
 
-              {statusMessage.text && (
-                <div className={`p-3 rounded font-medium ${statusMessage.type === 'success' ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700' : 'bg-red-900/40 text-red-300 border border-red-700'}`}>
-                  {statusMessage.text}
-                </div>
-              )}
+                  {statusMessage.text && (
+                    <div className={`p-3 rounded font-medium ${statusMessage.type === 'success' ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700' : 'bg-red-900/40 text-red-300 border border-red-700'}`}>
+                      {statusMessage.text}
+                    </div>
+                  )}
 
-              <form onSubmit={handleDepositSubmit} className="space-y-4">
-                {/* 1. SELECT INVESTMENT PLAN */}
-                <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-3">
-                  <p className="font-bold text-orange-400 uppercase">1. Select Investment Plan</p>
+                  {/* 1. PLAN CARDS GRID */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {plans && plans.length > 0 ? (
                       plans.map((p) => (
                         <div
                           key={p.id}
                           onClick={() => setSelectedPlan(p)}
-                          className={`border p-3 rounded cursor-pointer transition ${
+                          className={`bg-[#161f33] border p-4 rounded cursor-pointer transition ${
                             selectedPlan?.id === p.id 
-                              ? 'border-orange-500 bg-orange-500/20 shadow-md ring-1 ring-orange-500' 
-                              : 'border-gray-800 hover:border-gray-700 bg-[#111827]'
+                              ? 'border-orange-500 shadow-md ring-1 ring-orange-500' 
+                              : 'border-gray-800 hover:border-gray-700'
                           }`}
                         >
-                          <p className="font-bold text-white uppercase notranslate" translate="no">{p.name}</p>
-                          <p className="text-emerald-400 font-bold text-xs mt-1 notranslate" translate="no">{p.daily_profit}% daily for {p.duration_days} days</p>
-                          <p className="text-gray-400 text-xs mt-1">
-                            Min: <span className="text-white font-semibold notranslate" translate="no">${p.min_deposit}</span> 
-                            {' - '} 
-                            Max: <span className="text-white font-semibold notranslate" translate="no">${p.max_deposit}</span>
+                          <p className="font-bold text-white uppercase text-xs notranslate" translate="no">{p.name}</p>
+                          <p className="text-emerald-400 font-bold text-xs mt-1 notranslate" translate="no">
+                            PROFITS: {p.daily_profit}% Daily for {p.duration_days} days
                           </p>
+                          <div className="text-gray-400 text-[11px] mt-2 space-y-0.5">
+                            <p>Minimum: <span className="text-white">${p.min_deposit}</span></p>
+                            <p>Maximum: <span className="text-white">${p.max_deposit || 'Unlimited'}</span></p>
+                            <p>Principal Returned: <span className="text-white">Yes</span></p>
+                            <p>Withdrawal: <span className="text-white">Instant</span></p>
+                          </div>
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-400 bg-[#111827] border border-gray-800 rounded col-span-3 text-xs">
-                        No investment plans currently available from admin.
+                      <div className="p-4 text-center text-gray-400 bg-[#161f33] border border-gray-800 rounded col-span-3">
+                        No investment plans currently available.
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* 2. DEPOSIT AMOUNT & METHOD FORM */}
-                <div className="bg-[#161f33] border border-gray-800 p-4 rounded space-y-4">
-                  <p className="font-bold text-orange-400 uppercase">2. Deposit Amount & Method</p>
-                  
-                  <div className="space-y-3">
+                  {/* 2. INITIAL FORM INPUTS */}
+                  <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-4">
                     <div>
-                      <label className="block text-gray-400 mb-1 text-xs font-semibold">Amount to Deposit ($)</label>
+                      <label className="block text-gray-400 mb-1 text-[11px]">Your Account Balance</label>
                       <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={depositAmount}
-                        onChange={(e) => setDepositAmount(e.target.value)}
-                        placeholder={selectedPlan?.min_deposit || "100.00"}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs font-mono"
+                        type="text"
+                        readOnly
+                        value={`$${Number(user?.balance || 0).toFixed(2)}`}
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-gray-400 mb-1 text-xs font-semibold">Payment Method</label>
+                      <label className="block text-gray-400 mb-1 text-[11px]">Select Package</label>
+                      <select
+                        value={selectedPlan?.id || ''}
+                        onChange={(e) => {
+                          const found = plans.find((p) => p.id.toString() === e.target.value);
+                          if (found) setSelectedPlan(found);
+                        }}
+                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
+                        translate="no"
+                      >
+                        {plans.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-400 mb-1 text-[11px]">Select Payment Method</label>
                       <select
                         value={depositMethod}
                         onChange={(e) => setDepositMethod(e.target.value)}
@@ -519,56 +537,144 @@ export default function UserDashboardPage() {
                         translate="no"
                       >
                         {Object.keys(WALLET_ADDRESSES || {}).map((gateway) => (
-                          <option key={gateway} value={gateway}>
-                            {gateway}
-                          </option>
+                          <option key={gateway} value={gateway}>{gateway}</option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-gray-400 mb-1 text-xs font-semibold">Transaction ID / Hash</label>
+                      <label className="block text-gray-400 mb-1 text-[11px]">Enter Amount ($)</label>
                       <input
-                        type="text"
+                        type="number"
+                        step="0.01"
                         required
-                        value={transactionId}
-                        onChange={(e) => setTransactionId(e.target.value)}
-                        placeholder="Enter blockchain hash or transfer ID"
+                        value={depositAmount}
+                        onChange={(e) => setDepositAmount(e.target.value)}
+                        placeholder={selectedPlan?.min_deposit || "100.00"}
                         className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-gray-400 mb-1 text-xs font-semibold">
-                        Send payment to official <span className="text-orange-400 notranslate" translate="no">{depositMethod}</span> address:
-                      </label>
-                      <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!selectedPlan) {
+                          alert('Please select a plan.');
+                          return;
+                        }
+                        if (!depositAmount || Number(depositAmount) <= 0) {
+                          alert('Please enter a valid deposit amount.');
+                          return;
+                        }
+                        setDepositStep(2); // Progress to dhx4.PNG Confirmation Screen
+                      }}
+                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
+                    >
+                      Deposit
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: DEPOSIT CONFIRMATION PAGE (Matching dhx4.PNG) */}
+              {depositStep === 2 && (
+                <div className="space-y-4">
+                  <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
+                    Deposit Confirmation:
+                  </div>
+
+                  <div className="bg-[#161f33] border border-gray-800 p-6 rounded space-y-5">
+                    {/* Official Payment Address Copy Bar */}
+                    <div className="space-y-1.5">
+                      <label className="block text-gray-300 font-semibold text-xs">Send your payment to this address</label>
+                      <div className="flex gap-2 max-w-xl">
                         <input
                           type="text"
                           readOnly
-                          value={activeWalletAddress || WALLET_ADDRESSES?.[depositMethod] || ''}
-                          className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs notranslate select-all"
-                          translate="no"
+                          value={activeWalletAddress || WALLET_ADDRESSES?.[depositMethod] || 'bc1q4edf256m4khgdxvxtkjhnhcunnmjt09a3m266h'}
+                          className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-200 font-mono text-xs select-all"
                         />
                         <button
                           type="button"
                           onClick={handleCopyWallet}
-                          className="px-3 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded flex items-center gap-1 shrink-0 text-xs transition"
+                          className="px-3 py-1.5 bg-gray-200 hover:bg-white text-gray-900 font-bold border border-gray-400 rounded shrink-0 text-xs transition"
                         >
-                          {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
+                          {copied ? 'Copied' : 'Copy address'}
                         </button>
                       </div>
                     </div>
-                  </div>
 
-                  <button 
-                    type="submit" 
-                    className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition shadow"
-                  >
-                    Confirm Deposit Request
-                  </button>
+                    {/* Plan Summary Breakdown matching dhx4.PNG */}
+                    <div className="space-y-1 text-xs text-gray-300 max-w-xl py-2 border-t border-b border-gray-800">
+                      <div className="grid grid-cols-2 py-0.5">
+                        <span className="text-gray-400">Plan:</span>
+                        <span className="font-bold text-white uppercase">{selectedPlan?.name || 'STARTER PLAN'}</span>
+                      </div>
+                      <div className="grid grid-cols-2 py-0.5">
+                        <span className="text-gray-400">Profit:</span>
+                        <span className="text-emerald-400 font-semibold">{selectedPlan?.daily_profit || '4.00'}% Daily for {selectedPlan?.duration_days || '3'} days</span>
+                      </div>
+                      <div className="grid grid-cols-2 py-0.5">
+                        <span className="text-gray-400">Principal Return:</span>
+                        <span className="text-white">Yes</span>
+                      </div>
+                      <div className="grid grid-cols-2 py-0.5">
+                        <span className="text-gray-400">Principal Withdraw:</span>
+                        <span className="text-white">Available with 0.00% fee</span>
+                      </div>
+                      <div className="grid grid-cols-2 py-0.5">
+                        <span className="text-gray-400">Credit Amount:</span>
+                        <span className="text-white font-mono">${Number(depositAmount).toFixed(2)}</span>
+                      </div>
+                      <div className="grid grid-cols-2 py-0.5">
+                        <span className="text-gray-400">Deposit Fee:</span>
+                        <span className="text-white font-mono">0.00% + $0.00 (min. $0.00 max. $0.00)</span>
+                      </div>
+                      <div className="grid grid-cols-2 py-0.5 font-bold">
+                        <span className="text-gray-400">Debit Amount:</span>
+                        <span className="text-emerald-400 font-mono">${Number(depositAmount).toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    {/* Final Submission Form */}
+                    <form onSubmit={(e) => {
+                      handleDepositSubmit(e);
+                      setDepositStep(1); // Reset back to step 1 after submit
+                    }} className="space-y-4 max-w-xl">
+                      <div>
+                        <label className="block text-gray-400 mb-1 font-semibold text-xs">Required Information:</label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-400 text-xs">Transaction ID</span>
+                          <input
+                            type="text"
+                            required
+                            value={transactionId}
+                            onChange={(e) => setTransactionId(e.target.value)}
+                            className="bg-[#111827] border border-gray-700 rounded p-1.5 text-white font-mono text-xs w-64"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          type="submit"
+                          className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded text-xs uppercase transition"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDepositStep(1)}
+                          className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded text-xs uppercase transition"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </form>
+              )}
+
             </div>
           )}
 
