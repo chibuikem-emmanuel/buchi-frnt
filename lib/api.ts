@@ -540,6 +540,20 @@ export async function fetchAllPendingDeposits() {
 }
 
 
+export async function investInPlan(data: { plan_id: number; amount: string }) {
+  const res = await fetch(`${API_URL}/invest/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to process investment');
+  }
+  return res.json();
+}
+
+
 
 
 // export async function fetchUserProfile() {
