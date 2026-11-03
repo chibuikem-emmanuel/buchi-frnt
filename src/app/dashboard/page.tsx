@@ -58,6 +58,9 @@ export default function UserDashboardPage() {
 
   const activeWalletAddress = WALLET_ADDRESSES[depositMethod] || WALLET_ADDRESSES["USDT TRC20"];
 
+
+  
+
   const handleCopyWallet = () => {
     navigator.clipboard.writeText(activeWalletAddress);
     setCopied(true);
@@ -152,6 +155,8 @@ export default function UserDashboardPage() {
       setStatusMessage({ type: 'error', text: 'An error occurred during deposit submission.' });
     }
   };
+
+  
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

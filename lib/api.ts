@@ -447,6 +447,11 @@ export async function submitUserWithdrawal(data: { gateway: string; amount: stri
   return res.json();
 }
 
+
+
+
+
+
 export async function fetchUserDeposits(userId?: number) {
   try {
     const API_URL = 'https://buchi-bck.onrender.com/api';
@@ -537,7 +542,18 @@ export async function fetchAllPendingDeposits() {
 
 
 
-
+// export async function fetchUserProfile() {
+//   try {
+//     const res = await fetch(`${API_URL}/user/stats/`, { // <-- Must match your Django URL!
+//       headers: getAuthHeaders(),
+//     });
+//     if (!res.ok) throw new Error('Failed to fetch user stats');
+//     return await res.json();
+//   } catch (err) {
+//     console.error('Error fetching user stats:', err);
+//     return null;
+//   }
+// }
 
 
 
