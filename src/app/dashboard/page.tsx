@@ -560,23 +560,56 @@ export default function UserDashboardPage() {
                       />
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!selectedPlan) {
-                          alert('Please select a plan.');
-                          return;
-                        }
-                        if (!depositAmount || Number(depositAmount) <= 0) {
-                          alert('Please enter a valid deposit amount.');
-                          return;
-                        }
-                        setDepositStep(2); // Progress to dhx4.PNG Confirmation Screen
-                      }}
-                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
-                    >
-                      Deposit
-                    </button>
+<button
+  type="button"
+  onClick={async () => {
+    if (!selectedPlan) {
+      alert('Please select a plan.');
+      return;
+    }
+    if (!depositAmount || Number(depositAmount) <= 0) {
+      alert('Please enter a valid deposit amount.');
+      return;
+    }
+
+    try {
+      // 1. FIRST: Call your backend invest/deposit endpoint to lock the capital
+      const res = await fetch('https://buchi-bck.onrender.com/api/invest/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          plan_id: selectedPlan.id, 
+          amount: depositAmount 
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Failed to process investment plan.');
+        return;
+      }
+
+      // 2. Refresh user profile stats so dashboard cards update instantly
+      if (typeof loadUserData === 'function') {
+        await loadUserData();
+      }
+
+      // 3. Move to Step 2 (Confirmation / Success screen)
+      setDepositStep(2);
+
+    } catch (err) {
+      console.error('Investment submission error:', err);
+      alert('Network error while processing investment.');
+    }
+  }}
+  className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
+>
+  Deposit & Invest
+</button>
                   </div>
                 </div>
               )}
