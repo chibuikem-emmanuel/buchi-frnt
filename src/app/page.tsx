@@ -32,7 +32,7 @@ const faqs = [
   },
   { 
     q: "How can I change my email address or password?", 
-    a: "Log into your Crystals Investments account and click on the 'Account Information'. You can change your email address and password there." 
+    a: "Log into your  GROVE ASSETS LTD  account and click on the 'Account Information'. You can change your email address and password there." 
   },
   { 
     q: "What if I can't log into my account because I forgot my password?", 
