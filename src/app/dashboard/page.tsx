@@ -46,8 +46,9 @@ export default function UserDashboardPage() {
   const [newPassword, setNewPassword] = useState('');
   const [usdtTrc20Address, setUsdtTrc20Address] = useState('');
 
-  // 6 Official Dynamic Wallet Addresses Mapping
+// 6 Official Dynamic Wallet Addresses Mapping + Account Balance Reinvestment
   const WALLET_ADDRESSES: Record<string, string> = {
+    "Account Balance": "INTERNAL_BALANCE", // Allows reinvesting directly from spendable cash
     "USDT TRC20": "0xd6025fDB7Ab5BE476312735eb0eAd34dd5d2396F",
     "USDT ERC20": "0x71C3b8e21A9f4E5d6C8b0aF3e2D1c9B8a7F6e5D4",
     "Bitcoin": "bc1qzvxyd9542kl43lwl6ldfw4wals4cg67xwa9v9f",
@@ -573,7 +574,7 @@ export default function UserDashboardPage() {
     }
 
     try {
-      // 1. FIRST: Call your backend invest/deposit endpoint to lock the capital
+      // 1. Call backend invest endpoint with plan, amount, and payment method
       const res = await fetch('https://buchi-bck.onrender.com/api/invest/', {
         method: 'POST',
         headers: {
@@ -582,7 +583,8 @@ export default function UserDashboardPage() {
         },
         body: JSON.stringify({ 
           plan_id: selectedPlan.id, 
-          amount: depositAmount 
+          amount: depositAmount,
+          payment_method: depositMethod // Passes 'Account Balance' or selected crypto gateway
         }),
       });
 
