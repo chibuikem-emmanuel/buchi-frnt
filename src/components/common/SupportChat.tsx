@@ -15,7 +15,7 @@ export default function SupportChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: 'Hello! Welcome to Crystal Investments. How can we help you today?',
+      text: 'Hello! Welcome to  GROVE ASSETS LTD. How can we help you today?',
       sender: 'admin',
     },
   ]);
