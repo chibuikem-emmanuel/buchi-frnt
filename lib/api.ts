@@ -423,12 +423,22 @@ export async function fetchAdminAnalytics() {
 // }
 
 
-export async function submitUserDeposit(data: { gateway: string; amount: string; transaction_id: string }) {
+export async function submitUserDeposit(data: { 
+  gateway: string; 
+  amount: string | number; 
+  transaction_id: string; 
+  plan_id?: number | string; // 👈 Add this so TypeScript allows plan_id through
+}) {
   const res = await fetch(`${API_URL}/user/deposits/`, {
     method: 'POST',
     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
+  
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to submit deposit');
+  }
   return res.json();
 }
 
