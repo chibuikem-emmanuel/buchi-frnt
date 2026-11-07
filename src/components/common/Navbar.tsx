@@ -92,7 +92,7 @@ export default function Navbar() {
           <div className="md:hidden py-4 bg-gray-900/95 backdrop-blur-md border border-gray-800 rounded-lg space-y-3 px-4 text-xs">
             <Link href="/" className="block py-1.5 text-gray-300 hover:text-white" onClick={() => setIsOpen(false)}>Home</Link>
             <Link href="/about" className="block py-1.5 text-gray-300 hover:text-white" onClick={() => setIsOpen(false)}>About us</Link>
-            <Link href="/plans" className="block py-1.5 text-gray-300 hover:text-white" onClick={() => setIsOpen(false)}>Plans</Link>
+            {/* <Link href="/plans" className="block py-1.5 text-gray-300 hover:text-white" onClick={() => setIsOpen(false)}>Plans</Link> */}
             <a 
               href="/#faqs" 
               onClick={(e) => handleSectionClick(e, 'faqs')} 
