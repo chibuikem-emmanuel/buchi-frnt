@@ -60,6 +60,29 @@ export default function UserDashboardPage() {
   const activeWalletAddress = WALLET_ADDRESSES[depositMethod] || WALLET_ADDRESSES["USDT TRC20"];
 
 
+
+  const loadUserData = async () => {
+    try {
+      const data = await fetchUserProfile();
+      if (data) {
+        setUser({
+          ...data,
+          id: data.id || data.user_id, // Ensures ID is captured whether named id or user_id
+          active_investment: Number(data.active_investment || 0.00),
+          total_earned: Number(data.total_earned || 0.00),
+          deposited: Number(data.deposited || 0.00),
+          total_referrals: Number(data.total_referrals || 0),
+          referral_bonus_earned: Number(data.referral_bonus_earned || 0.00),
+        });
+        if (data?.full_name) setFullName(data.full_name);
+        if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
+      }
+    } catch (err) {
+      console.error('Failed to load user profile:', err);
+    }
+  };
+
+
   
 
   const handleCopyWallet = () => {
@@ -79,20 +102,20 @@ export default function UserDashboardPage() {
     }
   }, [activeTab]);
 
-  const loadUserData = async () => {
-    try {
-      const data = await fetchUserProfile();
-      setUser({
-        ...data,
-        active_investments: data?.active_investments || 0.00,
-        total_earned: data?.total_earned || 0.00,
-      });
-      if (data?.full_name) setFullName(data.full_name);
-      if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
-    } catch (err) {
-      console.error('Failed to load user profile:', err);
-    }
-  };
+  // const loadUserData = async () => {
+  //   try {
+  //     const data = await fetchUserProfile();
+  //     setUser({
+  //       ...data,
+  //       active_investments: data?.active_investments || 0.00,
+  //       total_earned: data?.total_earned || 0.00,
+  //     });
+  //     if (data?.full_name) setFullName(data.full_name);
+  //     if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
+  //   } catch (err) {
+  //     console.error('Failed to load user profile:', err);
+  //   }
+  // };
 
   const loadPlans = async () => {
     try {
