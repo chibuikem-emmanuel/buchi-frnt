@@ -957,12 +957,20 @@ export default function UserDashboardPage() {
           <input
             type="text"
             readOnly
-            value={typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.id}` : ''}
+            value={
+              typeof window !== 'undefined' && user?.id
+                ? `${window.location.origin}/register?ref=${user.id}`
+                : 'Loading referral link...'
+            }
             className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
           />
           <button
             type="button"
             onClick={() => {
+              if (!user?.id) {
+                alert('User data is still loading. Please try again.');
+                return;
+              }
               const link = `${window.location.origin}/register?ref=${user.id}`;
               navigator.clipboard.writeText(link);
               alert('Referral link copied to clipboard!');
@@ -981,13 +989,13 @@ export default function UserDashboardPage() {
         <div className="flex justify-between border-b border-gray-800 pb-2">
           <span className="text-gray-400">Referrals:</span>
           <span className="font-bold text-white notranslate" translate="no">
-            {user.total_referrals || 0}
+            {user?.total_referrals || 0}
           </span>
         </div>
         <div className="flex justify-between border-b border-gray-800 pb-2">
           <span className="text-gray-400">Total referral commission:</span>
           <span className="font-bold text-emerald-400 notranslate" translate="no">
-            ${Number(user.referral_bonus_earned || 0).toFixed(2)}
+            ${Number(user?.referral_bonus_earned || 0).toFixed(2)}
           </span>
         </div>
       </div>
