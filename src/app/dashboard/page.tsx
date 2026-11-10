@@ -82,19 +82,18 @@ export default function UserDashboardPage() {
 const loadUserData = async () => {
   try {
     const data = await fetchUserProfile();
+    console.log("Profile API Response:", data); // Check console to verify shape
+    
     if (data) {
-      const updatedUser = {
+      setUser({
         ...data,
-        id: data.id, // Explicitly capture the database ID
+        id: data.id || data.pk || data.user_id, // Fallback catches any key variant
         active_investment: Number(data.active_investment || 0.00),
         total_earned: Number(data.total_earned || 0.00),
         deposited: Number(data.deposited || 0.00),
         total_referrals: Number(data.total_referrals || 0),
         referral_bonus_earned: Number(data.referral_bonus_earned || 0.00),
-      };
-      setUser(updatedUser);
-      localStorage.setItem('user_info', JSON.stringify(updatedUser)); // Cache it
-      
+      });
       if (data?.full_name) setFullName(data.full_name);
       if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
     }
