@@ -185,6 +185,8 @@ const loadUserData = async () => {
     window.location.href = '/login';
   };
 
+console.log("Current User Object in State:", user);
+
   return (
     <div className="min-h-screen bg-[#0d1322] text-gray-200 font-sans text-xs">
       
@@ -951,6 +953,7 @@ const loadUserData = async () => {
           )}
 
 {/* REFER USERS MODULE */}
+
 {activeTab === 'referrals' && (
   <div className="space-y-4">
     <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2 uppercase tracking-wide">
