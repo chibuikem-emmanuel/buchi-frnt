@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 declare global {
   interface Window {
-    $crisp?: unknown[];
-    CRISP_WEBSITE_ID?: string;
+    Tawk_API?: {
+      onLoad?: () => void;
+      hideWidget?: () => void;
+      maximize?: () => void;
+      minimize?: () => void;
+      [key: string]: unknown;
+    };
+    Tawk_LoadStart?: Date;
   }
 }
 
@@ -14,30 +20,39 @@ export default function SupportChat() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // 1. Inject Crisp script silently on mount so admin gets mobile notifications
-    if (document.getElementById('crisp-sdk')) return;
+    // Prevent duplicate script injection
+    if (document.getElementById('tawk-sdk')) return;
 
-    window.$crisp = [];
-    window.CRISP_WEBSITE_ID = "0491f10d-0a11-4ea3-a33b-83051e9d1730";
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_LoadStart = new Date();
 
-    const d = document;
-    const s = d.createElement("script");
-    s.id = 'crisp-sdk';
-    s.src = "https://client.crisp.chat/l.js";
-    s.async = true;
-    d.getElementsByTagName("head")[0].appendChild(s);
+    // Hide Tawk's default widget bubble so your custom button handles it exclusively
+    window.Tawk_API.onLoad = function () {
+      if (typeof window.Tawk_API?.hideWidget === 'function') {
+        window.Tawk_API.hideWidget();
+      }
+    };
 
-    // Optional: Hide Crisp's default floating launcher bubble since you are using your own custom button
-    window.$crisp.push(["set", "position:reverse", [true]]);
+    const s1 = document.createElement('script');
+    s1.id = 'tawk-sdk';
+    s1.async = true;
+    s1.src = 'https://embed.tawk.to/6af2eeffa3ee303c40518963/1k72fb5v0';
+    s1.charset = 'UTF-8';
+    s1.setAttribute('crossorigin', '*');
+
+    const s0 = document.getElementsByTagName('script')[0];
+    if (s0 && s0.parentNode) {
+      s0.parentNode.insertBefore(s1, s0);
+    }
   }, []);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
-    if (window.$crisp) {
-      if (!isOpen) {
-        window.$crisp.push(['do', 'chat:open']);
-      } else {
-        window.$crisp.push(['do', 'chat:hide']);
+    if (window.Tawk_API) {
+      if (!isOpen && typeof window.Tawk_API.maximize === 'function') {
+        window.Tawk_API.maximize();
+      } else if (typeof window.Tawk_API.minimize === 'function') {
+        window.Tawk_API.minimize();
       }
     }
   };
