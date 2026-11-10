@@ -16,7 +16,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://buchi-bck.onrender.c
 
 export default function UserDashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [user, setUser] = useState<any>({ balance: 0, username: 'User', email: '' });
+  const [user, setUser] = useState<any>({ id: null, balance: 0, username: 'User', email: '' });
   const [userTransactions, setUserTransactions] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
@@ -60,7 +60,7 @@ export default function UserDashboardPage() {
   const activeWalletAddress = WALLET_ADDRESSES[depositMethod] || WALLET_ADDRESSES["USDT TRC20"];
 
 
-  
+
 
   const handleCopyWallet = () => {
     navigator.clipboard.writeText(activeWalletAddress);
@@ -79,20 +79,29 @@ export default function UserDashboardPage() {
     }
   }, [activeTab]);
 
-  const loadUserData = async () => {
-    try {
-      const data = await fetchUserProfile();
-      setUser({
+const loadUserData = async () => {
+  try {
+    const data = await fetchUserProfile();
+    if (data) {
+      const updatedUser = {
         ...data,
-        active_investments: data?.active_investments || 0.00,
-        total_earned: data?.total_earned || 0.00,
-      });
+        id: data.id, // Explicitly capture the database ID
+        active_investment: Number(data.active_investment || 0.00),
+        total_earned: Number(data.total_earned || 0.00),
+        deposited: Number(data.deposited || 0.00),
+        total_referrals: Number(data.total_referrals || 0),
+        referral_bonus_earned: Number(data.referral_bonus_earned || 0.00),
+      };
+      setUser(updatedUser);
+      localStorage.setItem('user_info', JSON.stringify(updatedUser)); // Cache it
+      
       if (data?.full_name) setFullName(data.full_name);
       if (data?.usdt_trc20) setUsdtTrc20Address(data.usdt_trc20);
-    } catch (err) {
-      console.error('Failed to load user profile:', err);
     }
-  };
+  } catch (err) {
+    console.error('Failed to load user profile:', err);
+  }
+};
 
   const loadPlans = async () => {
     try {
@@ -957,12 +966,20 @@ export default function UserDashboardPage() {
           <input
             type="text"
             readOnly
-            value={typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.id}` : ''}
+            value={
+              typeof window !== 'undefined' && user?.id
+                ? `${window.location.origin}/register?ref=${user.id}`
+                : 'Loading referral link...'
+            }
             className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-300 font-mono text-xs"
           />
           <button
             type="button"
             onClick={() => {
+              if (!user?.id) {
+                alert('User data is still loading. Please try again.');
+                return;
+              }
               const link = `${window.location.origin}/register?ref=${user.id}`;
               navigator.clipboard.writeText(link);
               alert('Referral link copied to clipboard!');
@@ -981,13 +998,13 @@ export default function UserDashboardPage() {
         <div className="flex justify-between border-b border-gray-800 pb-2">
           <span className="text-gray-400">Referrals:</span>
           <span className="font-bold text-white notranslate" translate="no">
-            {user.total_referrals || 0}
+            {user?.total_referrals || 0}
           </span>
         </div>
         <div className="flex justify-between border-b border-gray-800 pb-2">
           <span className="text-gray-400">Total referral commission:</span>
           <span className="font-bold text-emerald-400 notranslate" translate="no">
-            ${Number(user.referral_bonus_earned || 0).toFixed(2)}
+            ${Number(user?.referral_bonus_earned || 0).toFixed(2)}
           </span>
         </div>
       </div>
