@@ -130,7 +130,7 @@ export async function loginUser(credentials: { email: string; password: string }
 
 
 export async function fetchUserProfile() {
-  const res = await fetch(`${API_URL}/user/profile/`, { headers: getAuthHeaders() });
+  const res = await fetch(`${API_URL}/accounts/profile/`, { headers: getAuthHeaders() }); // 👈 Updated to match your accounts route namespace
   if (!res.ok) throw new Error(`Failed to fetch profile (${res.status})`);
   return res.json();
 }
