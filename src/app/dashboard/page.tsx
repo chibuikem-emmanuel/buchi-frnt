@@ -329,25 +329,25 @@ console.log("Current User Object in State:", user);
       Welcome, <span className="notranslate" translate="no">{user?.username || 'User'}</span>!
     </div>
 
-    {/* Referral Link Copy Bar */}
-    <div className="bg-[#161f33] border border-gray-800 p-3 rounded flex items-center justify-between gap-4">
-      <input
-        type="text"
-        readOnly
-        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user?.username || ''}`}
-        className="w-full bg-[#111827] border border-gray-700 rounded px-3 py-1.5 text-gray-300 font-mono text-[11px]"
-      />
-      <button
-        onClick={() => {
-          const link = `${window.location.origin}/register?ref=${user?.username || ''}`;
-          navigator.clipboard.writeText(link);
-          alert('Referral link copied to clipboard!');
-        }}
-        className="bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold px-4 py-1.5 rounded uppercase text-[10px] transition shrink-0"
-      >
-        Copy Link
-      </button>
-    </div>
+{/* Referral Link Copy Bar */}
+<div className="bg-[#161f33] border border-gray-800 p-3 rounded flex items-center justify-between gap-4">
+  <input
+    type="text"
+    readOnly
+    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${user?.id || ''}`}
+    className="w-full bg-[#111827] border border-gray-700 rounded px-3 py-1.5 text-gray-300 font-mono text-[11px]"
+  />
+  <button
+    onClick={() => {
+      const link = `${window.location.origin}/register?ref=${user?.id || ''}`;
+      navigator.clipboard.writeText(link);
+      alert('Referral link copied to clipboard!');
+    }}
+    className="bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold px-4 py-1.5 rounded uppercase text-[10px] transition shrink-0"
+  >
+    Copy Link
+  </button>
+</div>
 
     {/* 4-Column Metric Grid matching target UI */}
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#161f33] border border-gray-800 p-6 rounded divide-y md:divide-y-0 md:divide-x divide-gray-800">
