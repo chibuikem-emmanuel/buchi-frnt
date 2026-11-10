@@ -188,7 +188,7 @@ export default function FloatingControls() {
         {/* WhatsApp Button */}
         <div className="flex flex-col items-center shrink-0">
           <a
-            href="https://wa.me/"
+            href="https://wa.me/2349018463343"
             target="_blank"
             rel="noopener noreferrer"
             className="w-11 h-11 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105"
