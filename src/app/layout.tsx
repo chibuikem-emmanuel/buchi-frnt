@@ -1,40 +1,50 @@
-// src/app/layout.tsx
-'use client';
-
-import { usePathname } from 'next/navigation';
+import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import './globals.css';
-import Navbar from '@/src/components/common/Navbar';
-import Footer from '@/src/components/common/Footer';
-import SupportChat from '@/src/components/common/SupportChat';
-import FloatingControls from '@/src/components/common/FloatingControls';
+import LayoutContent from '@/src/components/common/LayoutContent';
+
+export const metadata: Metadata = {
+  title: 'GROVE ASSETS LTD',
+  description: 'Secure digital asset management and investment platform.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
+};
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  
-  // Check if current route is part of user or admin dashboard
-  const isDashboardRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
-
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="bg-gray-950 text-white min-h-screen flex flex-col justify-between antialiased">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var savedLang = localStorage.getItem('app_selected_lang');
+                  if (savedLang) {
+                    document.documentElement.setAttribute('data-lang', savedLang);
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="bg-gray-950 text-white min-h-screen flex flex-col justify-between antialiased selection:bg-orange-500 selection:text-gray-900">
         <div id="google_translate_element" className="hidden" />
 
-        {/* Render global Navbar only on public pages */}
-        {!isDashboardRoute && <Navbar />}
+        {/* Client Layout Wrapper for conditional Nav/Footer & Floating Widgets */}
+        <LayoutContent>{children}</LayoutContent>
 
-        <main className="flex-grow">{children}</main>
-
-        <SupportChat />
-        <FloatingControls />
-
-        {/* Render global Footer only on public pages */}
-        {!isDashboardRoute && <Footer />}
-
+        {/* Google Translate Scripts */}
         <Script
           id="google-translate-init"
           strategy="afterInteractive"
@@ -53,20 +63,6 @@ export default function RootLayout({
           src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
           strategy="afterInteractive"
         />
-
-
-
-        <script dangerouslySetInnerHTML={{ __html: `
-  (function() {
-    try {
-      var savedLang = localStorage.getItem('app_selected_lang');
-      if (savedLang) {
-        // Store in cookies if Google Translate reads cookies, or prep state
-        document.documentElement.setAttribute('data-lang', savedLang);
-      }
-    } catch (e) {}
-  })();
-`}} />
       </body>
     </html>
   );
