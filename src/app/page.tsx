@@ -11,15 +11,15 @@ import { useState } from 'react';
 
 const faqs = [
   { 
-    q: "How do I invest with  GROVE ASSETS LTD?", 
-    a: "To make an investment, you must become a member of  GROVE ASSETS LTD. Once you sign right up, you can make your deposits down the assets through the members home. You can start trading via standard economic professional you meet upon signup." 
+    q: "How do I invest with GROVE ASSETS LTD?", 
+    a: "To make an investment, you must become a member of GROVE ASSETS LTD. Once you sign right up, you can make your deposits down the assets through the members home. You can start trading via standard economic professional you meet upon signup." 
   },
   { 
     q: "I wish to invest but don't have an e-currency account. What should I do?", 
     a: "You can open a free Blockchain account from www.blockchain.com." 
   },
   { 
-    q: "How do I open my  GROVE ASSETS LTD account?", 
+    q: "How do I open my GROVE ASSETS LTD account?", 
     a: "It is super easy and convenient. Follow the link, fill in the registration form, and click register." 
   },
   { 
@@ -32,7 +32,7 @@ const faqs = [
   },
   { 
     q: "How can I change my email address or password?", 
-    a: "Log into your  GROVE ASSETS LTD  account and click on the 'Account Information'. You can change your email address and password there." 
+    a: "Log into your GROVE ASSETS LTD account and click on the 'Account Information'. You can change your email address and password there." 
   },
   { 
     q: "What if I can't log into my account because I forgot my password?", 
@@ -58,14 +58,14 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight"
           >
-             GROVE ASSETS LTD, for a world powered by technology
+            GROVE ASSETS LTD, for a world powered by technology
           </motion.h1>
-          <p className="text-gray-200 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-medium">
-             GROVE ASSETS LTD involves most-basic financial approaches that will endure in ever-changing investment environment. As the biggest digital currency wealth manager, GROVE ASSETS LTD enables investors to take advantage of the rapidly developing digital economy and secure their future now.
+          <p className="text-gray-100 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed font-medium">
+            GROVE ASSETS LTD involves most-basic financial approaches that will endure in ever-changing investment environment. As the biggest digital currency wealth manager, GROVE ASSETS LTD enables investors to take advantage of the rapidly developing digital economy and secure their future now.
           </p>
           <div className="pt-2">
             <Link href="/register">
-              <span className="inline-block bg-[#2563eb] hover:bg-blue-600 text-white font-medium text-xs px-8 py-3 rounded-md transition-all shadow-lg">
+              <span className="inline-block bg-[#2563eb] hover:bg-blue-600 text-white font-semibold text-sm px-8 py-3.5 rounded-md transition-all shadow-lg">
                 Get Started
               </span>
             </Link>
@@ -83,7 +83,7 @@ export default function HomePage() {
       {/* 3. WHO WE ARE */}
       <section className="py-20 bg-white text-gray-900 px-4">
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <span className="text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+          <span className="text-xs font-bold tracking-widest text-blue-600 uppercase">
             ABOUT US
           </span>
 
@@ -91,54 +91,54 @@ export default function HomePage() {
             Who We Are ?
           </h2>
           
-          <p className="text-gray-600 text-xs sm:text-sm leading-relaxed max-w-2xl mx-auto">
-            Trading on stock exchanges, FX, and crypto markets is our main business, assistance of  GROVE ASSETS LTD allows investors to start producing in asset pools as well as trading on commercial activities in any trading direction that has potential to be highly profitable. We frequently secure other financial sources like launching to venture capital funds, as well as funding business angel funds.
+          <p className="text-gray-700 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-normal">
+            Trading on stock exchanges, FX, and crypto markets is our main business, assistance of GROVE ASSETS LTD allows investors to start producing in asset pools as well as trading on commercial activities in any trading direction that has potential to be highly profitable. We frequently secure other financial sources like launching to venture capital funds, as well as funding business angel funds.
           </p>
 
-          <p className="text-gray-500 text-xs sm:text-sm leading-relaxed max-w-2xl mx-auto">
-            Profiting gains can become on  GROVE ASSETS LTD from the capacity to produce resilience dollars every day. Our systems in balancing our diversified investment and trading portfolio, and then supporting the community base item within most of the governments have valid securities only general.
+          <p className="text-gray-700 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-normal">
+            Profiting gains can become on GROVE ASSETS LTD from the capacity to produce resilience dollars every day. Our systems in balancing our diversified investment and trading portfolio, and then supporting the community base item within most of the governments have valid securities only general.
           </p>
 
           <div className="pt-2">
             <Link href="/login">
-              <span className="bg-[#2563eb] hover:bg-blue-700 text-white text-xs font-semibold px-8 py-3 rounded-full inline-block shadow-md transition-colors">
+              <span className="bg-[#2563eb] hover:bg-blue-700 text-white text-sm font-semibold px-8 py-3.5 rounded-full inline-block shadow-md transition-colors">
                 Start Trading
               </span>
             </Link>
           </div>
 
-<div className="mt-10 p-5 border border-gray-200 rounded-xl bg-white max-w-xl mx-auto shadow-sm text-left space-y-3">
-  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-    <div className="text-xl">🏢</div>
-    <div>
-      <h4 className="text-xs font-extrabold uppercase tracking-wide text-gray-900">
-        Official Company Registration
-      </h4>
-      <p className="text-[11px] text-gray-500">Verified Corporate Details & Compliance</p>
-    </div>
-  </div>
+          <div className="mt-10 p-6 border border-gray-200 rounded-xl bg-gray-50/50 max-w-xl mx-auto shadow-sm text-left space-y-3">
+            <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
+              <div className="text-2xl">🏢</div>
+              <div>
+                <h4 className="text-sm font-extrabold uppercase tracking-wide text-gray-900">
+                  Official Company Registration
+                </h4>
+                <p className="text-xs text-gray-500 font-medium">Verified Corporate Details & Compliance</p>
+              </div>
+            </div>
 
-  <div className="text-xs space-y-1.5 text-gray-700">
-    <p><span className="font-semibold text-gray-900">Company Name:</span> GROVE ASSETS LTD</p>
-    <p><span className="font-semibold text-gray-900">Company Number:</span> NI697714</p>
-    <p><span className="font-semibold text-gray-900">Registered Office:</span> 51 Whitesides Road, Randalstown, Antrim, Northern Ireland, BT41 3EX</p>
-  </div>
+            <div className="text-xs sm:text-sm space-y-2 text-gray-700">
+              <p><span className="font-bold text-gray-900">Company Name:</span> GROVE ASSETS LTD</p>
+              <p><span className="font-bold text-gray-900">Company Number:</span> NI697714</p>
+              <p><span className="font-bold text-gray-900">Registered Office:</span> 51 Whitesides Road, Randalstown, Antrim, Northern Ireland, BT41 3EX</p>
+            </div>
 
-  <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
-    <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-      <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-      Active UK Register
-    </span>
-    <a
-      href="https://find-and-update.company-information.service.gov.uk/company/NI697714"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline"
-    >
-      View on Companies House &rarr;
-    </a>
-  </div>
-</div>
+            <div className="pt-2 border-t border-gray-200 flex justify-between items-center">
+              <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                Active UK Register
+              </span>
+              <a
+                href="https://find-and-update.company-information.service.gov.uk/company/NI697714"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                View on Companies House &rarr;
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -151,10 +151,10 @@ export default function HomePage() {
       >
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-left space-y-2">
-            <span className="text-xs font-bold text-gray-200 uppercase tracking-widest block">
+            <span className="text-xs font-bold text-blue-400 uppercase tracking-widest block">
               OUR FEATURES
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Experience the next level of performance with our standout features
             </h2>
             <hr className="border-gray-500/50 my-3" />
@@ -165,10 +165,10 @@ export default function HomePage() {
               <div className="w-14 h-14 flex items-center justify-center text-4xl mb-1">
                 🤖
               </div>
-              <h3 className="text-base font-extrabold text-white">
+              <h3 className="text-lg font-extrabold text-white">
                 24/7 Support
               </h3>
-              <p className="text-xs sm:text-sm text-gray-200 leading-relaxed max-w-md">
+              <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-md font-medium">
                 Our customer care service is available at all time to attend to you and also offer profitable advice on the best investment programs.
               </p>
             </div>
@@ -177,10 +177,10 @@ export default function HomePage() {
               <div className="w-14 h-14 flex items-center justify-center text-4xl mb-1">
                 💻
               </div>
-              <h3 className="text-base font-extrabold text-white">
+              <h3 className="text-lg font-extrabold text-white">
                 Secured Transactions
               </h3>
-              <p className="text-xs sm:text-sm text-gray-200 leading-relaxed max-w-md">
+              <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-md font-medium">
                 Your financial future is secured through our multiple investment packages that are suitable for every class.
               </p>
             </div>
@@ -189,10 +189,10 @@ export default function HomePage() {
               <div className="w-14 h-14 flex items-center justify-center text-4xl mb-1">
                 🚀
               </div>
-              <h3 className="text-base font-extrabold text-white">
+              <h3 className="text-lg font-extrabold text-white">
                 Quick Returns
               </h3>
-              <p className="text-xs sm:text-sm text-gray-200 leading-relaxed max-w-md">
+              <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-md font-medium">
                 We offer you an unbeatable interest on your investment within the shortest possible time.
               </p>
             </div>
@@ -201,10 +201,10 @@ export default function HomePage() {
               <div className="w-14 h-14 flex items-center justify-center text-4xl mb-1">
                 🌐
               </div>
-              <h3 className="text-base font-extrabold text-white">
+              <h3 className="text-lg font-extrabold text-white">
                 Strong Security
               </h3>
-              <p className="text-xs sm:text-sm text-gray-200 leading-relaxed max-w-md">
+              <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-md font-medium">
                 The system runs on highly encrypted algorithms to protect and secure our user accounts. We have experienced security experts who are constantly fixing threats.
               </p>
             </div>
@@ -216,24 +216,24 @@ export default function HomePage() {
       <section id="faqs" className="py-20 bg-white text-gray-900 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 space-y-2">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">FAQS</span>
-            <h2 className="text-2xl font-extrabold text-gray-900">Industries We Serve</h2>
+            <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">FAQS</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Industries We Serve</h2>
           </div>
 
           <div className="space-y-3">
             {faqs.map((faq, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-md bg-white overflow-hidden">
+              <div key={idx} className="border border-gray-200 rounded-lg bg-white overflow-hidden shadow-sm">
                 <button
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full text-left p-4 flex justify-between items-center text-xs sm:text-sm font-semibold text-gray-800 hover:bg-gray-50"
+                  className="w-full text-left p-4 sm:p-5 flex justify-between items-center text-sm sm:text-base font-bold text-gray-900 hover:bg-gray-50 transition-colors"
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="text-gray-400">▶</span> {faq.q}
+                  <span className="flex items-center gap-3">
+                    <span className="text-blue-600 text-xs">▶</span> {faq.q}
                   </span>
-                  <ChevronDown size={16} className={`transform transition-transform ${openFaq === idx ? 'rotate-180 text-blue-600' : 'text-gray-400'}`} />
+                  <ChevronDown size={18} className={`transform transition-transform ${openFaq === idx ? 'rotate-180 text-blue-600' : 'text-gray-400'}`} />
                 </button>
                 {openFaq === idx && (
-                  <div className="p-4 pt-0 text-xs text-gray-600 border-t border-gray-100 leading-relaxed bg-gray-50/50">
+                  <div className="p-4 sm:p-5 pt-0 text-sm sm:text-base text-gray-700 border-t border-gray-100 leading-relaxed bg-gray-50/50 font-normal">
                     {faq.a}
                   </div>
                 )}
@@ -253,7 +253,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto space-y-12 relative z-10">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-wide drop-shadow-md">
-               GROVE ASSETS LTD
+              GROVE ASSETS LTD
             </h2>
           </div>
 
@@ -271,8 +271,8 @@ export default function HomePage() {
               
               <div className="w-full h-[3px] bg-cyan-400 rounded-full my-2 shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
               
-              <p className="text-xs sm:text-sm text-gray-100 font-bold leading-relaxed pt-1">
-                We have developed a platform for you to manage your investments and increase your income.  GROVE ASSETS LTD is supported by a team of professionals, experts, and leading market specialists who offer users 24/7 assistance and support, ensuring a dependable system.
+              <p className="text-sm sm:text-base text-gray-100 font-medium leading-relaxed pt-1">
+                We have developed a platform for you to manage your investments and increase your income. GROVE ASSETS LTD is supported by a team of professionals, experts, and leading market specialists who offer users 24/7 assistance and support, ensuring a dependable system.
               </p>
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function HomePage() {
 
       {/* 7. PARTNERS */}
       <section className="py-20 bg-white text-gray-900 text-center px-4 border-t border-gray-100">
-        <h3 className="text-xl font-bold text-gray-900 mb-12">Our Partners</h3>
+        <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-12">Our Partners</h3>
         <div className="flex flex-wrap items-center justify-center gap-12 sm:gap-16 opacity-90">
           <span className="text-3xl sm:text-4xl font-black tracking-widest text-purple-700">myob</span>
           <span className="text-3xl sm:text-4xl font-black tracking-widest text-red-600 flex items-center gap-1">
@@ -295,13 +295,13 @@ export default function HomePage() {
 
       {/* 8. INSIGHTS SECTION */}
       <section id="insights" className="py-20 bg-white text-gray-900 border-t border-gray-100 px-4 text-center">
-        <div className="max-w-3xl mx-auto space-y-4">
-          <h2 className="text-xl font-extrabold text-gray-900">Insights</h2>
-          <p className="text-xs text-gray-600 leading-relaxed">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <h2 className="text-2xl font-extrabold text-gray-900">Insights</h2>
+          <p className="text-sm sm:text-base text-gray-700 leading-relaxed font-normal">
             The company has a wide range of business relationships and income generating sources. It uses conventional trading for short and medium term strategies, and applies rigorous market analysis to select stocks for long term holdings. With money from investors, they invest in the stock and currency markets, well researched multinational cooperation companies, successful government bonds, and as the case, blind long term assets like Louis jeans, Netflix, Amazon, and Tesla, among others. In addition to these financial assets, foreign funds are also included.
           </p>
-          <p className="text-xs text-gray-600 leading-relaxed">
-            The highly skilled analysts and risk managers on the  GROVE ASSETS LTD team combine their years of experience with exciting edge-software to produce astounding prediction accuracy on the movements and shifts of currency exchanges and cryptocurrency markets. Additionally, the corporation invests in a variety of global agricultural and real estate projects. Thus, in proportion to each investor's portfolio, they distribute to investors their enormous earnings from their securities skilled deals.
+          <p className="text-sm sm:text-base text-gray-700 leading-relaxed font-normal">
+            The highly skilled analysts and risk managers on the GROVE ASSETS LTD team combine their years of experience with exciting edge-software to produce astounding prediction accuracy on the movements and shifts of currency exchanges and cryptocurrency markets. Additionally, the corporation invests in a variety of global agricultural and real estate projects. Thus, in proportion to each investor's portfolio, they distribute to investors their enormous earnings from their securities skilled deals.
           </p>
         </div>
       </section>
