@@ -91,8 +91,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      {/* FOOTER */}
-      <Footer />
+
 
       {/* FLOATING CONTROLS */}
       <FloatingControls />
