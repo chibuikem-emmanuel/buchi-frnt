@@ -49,7 +49,7 @@ export default function UserDashboardPage() {
 // 6 Official Dynamic Wallet Addresses Mapping + Account Balance Reinvestment
   const WALLET_ADDRESSES: Record<string, string> = {
     "Account Balance": "INTERNAL_BALANCE", // Allows reinvesting directly from spendable cash
-    "USDT TRC20": "0xd6025fDB7Ab5BE476312735eb0eAd34dd5d2396F",
+    "USDT TRC20": "TMcT4UFoboPgesRsg199upU7XU8cH6SeyC",
     "USDT ERC20": "0x71C3b8e21A9f4E5d6C8b0aF3e2D1c9B8a7F6e5D4",
     "Bitcoin": "bc1qzvxyd9542kl43lwl6ldfw4wals4cg67xwa9v9f",
     "Ethereum": "0xd6025fDB7Ab5BE476312735eb0eAd34dd5d2396F",
