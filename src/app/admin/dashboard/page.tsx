@@ -150,28 +150,20 @@ const [analytics, setAnalytics] = useState<any>({
 
 
 
-const [userToDelete, setUserToDelete] = useState<any | null>(null);
+// Delete User State & Handler
+  const [userToDelete, setUserToDelete] = useState<any | null>(null);
   const [isDeletingUser, setIsDeletingUser] = useState(false);
 
   const handleConfirmDeleteUser = async () => {
     if (!userToDelete) return;
     setIsDeletingUser(true);
     try {
-      const token = localStorage.getItem('access_token'); // Match your existing token key
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userToDelete.id}/`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.success === false) {
-        throw new Error(data.error || data.detail || 'Failed to delete user.');
-      }
+      await deleteAdminUser(userToDelete.id);
       setUsers((prev: any[]) => prev.filter((item) => item.id !== userToDelete.id));
       setUserToDelete(null);
+      alert('User deleted successfully!');
     } catch (err: any) {
+      console.error("Failed to delete user:", err);
       alert(err.message || 'Could not delete user.');
     } finally {
       setIsDeletingUser(false);
@@ -1096,6 +1088,33 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                   </div>
                 </div>
               )}
+
+
+              {/* DELETE CONFIRMATION MODAL */}
+{userToDelete && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="w-full max-w-sm bg-white border border-orange-300 rounded shadow-lg overflow-hidden text-xs">
+      <div className="bg-amber-100 border-b border-orange-200 px-4 py-2 flex justify-between items-center">
+        <span className="font-bold text-gray-800 uppercase">Confirm Delete User</span>
+        <button type="button" onClick={() => !isDeletingUser && setUserToDelete(null)} className="text-gray-600 hover:text-gray-900 font-bold">✕</button>
+      </div>
+      <div className="p-4 space-y-3 bg-amber-50/30">
+        <p className="text-gray-700">
+          Are you sure you want to permanently delete <span className="font-bold text-blue-900">{userToDelete.username}</span> ({userToDelete.email})?
+        </p>
+        <p className="text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-2">
+          This will permanently remove their account and balance (${Number(userToDelete.balance || 0).toFixed(2)}). This cannot be undone.
+        </p>
+        <div className="flex justify-end gap-2 pt-1">
+          <button type="button" onClick={() => setUserToDelete(null)} disabled={isDeletingUser} className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded text-[10px] uppercase">CANCEL</button>
+          <button type="button" onClick={handleConfirmDeleteUser} disabled={isDeletingUser} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase disabled:opacity-50">
+            {isDeletingUser ? 'DELETING...' : 'DELETE'}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
               {/* VIEW 2: EDIT USER FORM */}
               {viewMode === 'edit' && selectedUser && (
