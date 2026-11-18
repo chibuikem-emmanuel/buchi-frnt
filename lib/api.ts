@@ -564,13 +564,12 @@ export async function investInPlan(data: { plan_id: number; amount: string }) {
 
 
 
-// lib/api.ts
 export async function deleteAdminUser(userId: number | string) {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}/`,
+    `${API_URL}/admin/users/${userId}/`,
     {
       method: "DELETE",
       headers: {
@@ -588,7 +587,6 @@ export async function deleteAdminUser(userId: number | string) {
 
   return data;
 }
-
 
 // export async function fetchUserProfile() {
 //   try {
