@@ -564,6 +564,31 @@ export async function investInPlan(data: { plan_id: number; amount: string }) {
 
 
 
+// lib/api.ts
+export async function deleteAdminUser(userId: number | string) {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}/`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || data.detail || "Failed to delete user.");
+  }
+
+  return data;
+}
+
 
 // export async function fetchUserProfile() {
 //   try {

@@ -29,7 +29,8 @@ import {
   fetchAdminAnalytics,
   fetchUserDeposits,
   processDepositAction,
-  fetchAllPendingDeposits
+  fetchAllPendingDeposits,
+  deleteAdminUser
 } from '@/lib/api';
 
 
@@ -144,6 +145,38 @@ const [analytics, setAnalytics] = useState<any>({
   const [plans, setPlans] = useState<any[]>([]);
   const [expiringDeposits, setExpiringDeposits] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+
+
+
+
+const [userToDelete, setUserToDelete] = useState<any | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
+
+  const handleConfirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    setIsDeletingUser(true);
+    try {
+      const token = localStorage.getItem('access_token'); // Match your existing token key
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userToDelete.id}/`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.error || data.detail || 'Failed to delete user.');
+      }
+      setUsers((prev: any[]) => prev.filter((item) => item.id !== userToDelete.id));
+      setUserToDelete(null);
+    } catch (err: any) {
+      alert(err.message || 'Could not delete user.');
+    } finally {
+      setIsDeletingUser(false);
+    }
+  };
 
 
 
@@ -994,7 +1027,7 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
             </div>
           )}
 
-          {/* TAB 5: USERS DIRECTORY */}
+{/* TAB 5: USERS DIRECTORY */}
           {activeTab === 'users' && (
             <div className="space-y-4">
               {viewMode === 'list' && (
@@ -1056,6 +1089,7 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                           <div className="col-span-2 flex flex-col gap-1 items-end">
                             <button onClick={() => handleOpenEditUser(u)} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10px] uppercase w-16">EDIT</button>
                             <button onClick={() => handleOpenUserFunds(u)} className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded text-[10px] uppercase w-16">FUNDS</button>
+                            <button onClick={() => setUserToDelete(u)} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] uppercase w-16">DELETE</button>
                           </div>
                         </div>
                       ))}
