@@ -583,47 +583,42 @@ console.log("Current User Object in State:", user);
       return;
     }
 
-    try {
-      const res = await fetch('https://buchi-bck.onrender.com/api/invest/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          plan_id: selectedPlan.id, 
-          amount: depositAmount,
-          payment_method: depositMethod 
-        }),
-      });
+    if (depositMethod === 'Account Balance') {
+      try {
+        const res = await fetch(`${API_URL}/invest/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            plan_id: selectedPlan.id,
+            amount: depositAmount,
+            payment_method: depositMethod,
+          }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        alert(data.error || 'Failed to process request.');
-        return;
-      }
+        if (!res.ok) {
+          alert(data.error || 'Failed to process request.');
+          return;
+        }
 
-      // Refresh user stats so the balance & active investment update instantly
-      if (typeof loadUserData === 'function') {
-        await loadUserData();
-      }
+        if (typeof loadUserData === 'function') {
+          await loadUserData();
+        }
 
-      // IF PAYING FROM ACCOUNT BALANCE: Skip admin deposit instructions entirely!
-      if (depositMethod === 'Account Balance') {
         alert(data.message || 'Plan activated successfully!');
-        // Reset or redirect back to dashboard / active investments tab
-        setActiveTab('dashboard'); // or whatever your main tab state is named
+        setActiveTab('dashboard');
         setDepositStep(1);
         setDepositAmount('');
-      } else {
-        // ONLY show the crypto deposit / admin confirmation step if they chose a crypto gateway
-        setDepositStep(2); 
+      } catch (err) {
+        console.error('Submission error:', err);
+        alert('Network error while processing request.');
       }
-
-    } catch (err) {
-      console.error('Submission error:', err);
-      alert('Network error while processing request.');
+    } else {
+      setDepositStep(2);
     }
   }}
   className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
