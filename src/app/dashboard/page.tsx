@@ -467,283 +467,304 @@ console.log("Current User Object in State:", user);
 )}
 
 {/* MAKE DEPOSIT MODULE */}
-          {activeTab === 'make_deposit' && (
-            <div className="space-y-4 text-xs text-gray-300">
-              
-              {/* STEP 1: PLAN SELECTION & INITIAL FORM (Matching dhx3.PNG) */}
-              {depositStep === 1 && (
-                <div className="space-y-4">
-                  <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
-                    Make a deposit
-                  </div>
+{activeTab === 'make_deposit' && (
+  <div className="space-y-4 text-xs text-gray-300">
+    {depositStep === 1 && (
+      <div className="space-y-4">
+        <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
+          Make a deposit
+        </div>
 
-                  {statusMessage.text && (
-                    <div className={`p-3 rounded font-medium ${statusMessage.type === 'success' ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700' : 'bg-red-900/40 text-red-300 border border-red-700'}`}>
-                      {statusMessage.text}
-                    </div>
-                  )}
+        {statusMessage.text && (
+          <div
+            className={`p-3 rounded font-medium ${
+              statusMessage.type === 'success'
+                ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700'
+                : 'bg-red-900/40 text-red-300 border border-red-700'
+            }`}
+          >
+            {statusMessage.text}
+          </div>
+        )}
 
-                  {/* 1. PLAN CARDS GRID */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {plans && plans.length > 0 ? (
-                      plans.map((p) => (
-                        <div
-                          key={p.id}
-                          onClick={() => setSelectedPlan(p)}
-                          className={`bg-[#161f33] border p-4 rounded cursor-pointer transition ${
-                            selectedPlan?.id === p.id 
-                              ? 'border-orange-500 shadow-md ring-1 ring-orange-500' 
-                              : 'border-gray-800 hover:border-gray-700'
-                          }`}
-                        >
-                          <p className="font-bold text-white uppercase text-xs notranslate" translate="no">{p.name}</p>
-                          <p className="text-emerald-400 font-bold text-xs mt-1 notranslate" translate="no">
-                            PROFITS: {p.daily_profit}% Daily for {p.duration_days} days
-                          </p>
-                          <div className="text-gray-400 text-[11px] mt-2 space-y-0.5">
-                            <p>Minimum: <span className="text-white">${p.min_deposit}</span></p>
-                            <p>Maximum: <span className="text-white">${p.max_deposit || 'Unlimited'}</span></p>
-                            <p>Principal Returned: <span className="text-white">Yes</span></p>
-                            <p>Withdrawal: <span className="text-white">Instant</span></p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-4 text-center text-gray-400 bg-[#161f33] border border-gray-800 rounded col-span-3">
-                        No investment plans currently available.
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 2. INITIAL FORM INPUTS */}
-                  <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-4">
-                    <div>
-                      <label className="block text-gray-400 mb-1 text-[11px]">Your Account Balance</label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={`$${Number(user?.balance || 0).toFixed(2)}`}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-400 mb-1 text-[11px]">Select Package</label>
-                      <select
-                        value={selectedPlan?.id || ''}
-                        onChange={(e) => {
-                          const found = plans.find((p) => p.id.toString() === e.target.value);
-                          if (found) setSelectedPlan(found);
-                        }}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
-                        translate="no"
-                      >
-                        {plans.map((p) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-400 mb-1 text-[11px]">Select Payment Method</label>
-                      <select
-                        value={depositMethod}
-                        onChange={(e) => setDepositMethod(e.target.value)}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
-                        translate="no"
-                      >
-                        <option value="Account Balance">Account Balance</option>
-                        {Object.keys(WALLET_ADDRESSES || {})
-                          .filter((gateway) => gateway !== 'Account Balance')
-                          .map((gateway) => (
-                            <option key={gateway} value={gateway}>{gateway}</option>
-                          ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-400 mb-1 text-[11px]">Enter Amount ($)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        value={depositAmount}
-                        onChange={(e) => setDepositAmount(e.target.value)}
-                        placeholder={selectedPlan?.min_deposit || "100.00"}
-                        className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setStatusMessage({ type: '', text: '' });
-
-                        if (!selectedPlan) {
-                          setStatusMessage({ type: 'error', text: 'Please select a plan.' });
-                          return;
-                        }
-                        if (!depositAmount || Number(depositAmount) <= 0) {
-                          setStatusMessage({ type: 'error', text: 'Please enter a valid amount.' });
-                          return;
-                        }
-
-                        if (depositMethod === 'Account Balance') {
-                          try {
-                            const res = await fetch(`${API_URL}/invest/`, {
-                              method: 'POST',
-                              headers: {
-                                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({
-                                plan_id: selectedPlan.id,
-                                amount: depositAmount,
-                                payment_method: depositMethod,
-                              }),
-                            });
-
-                            const data = await res.json();
-
-                            if (!res.ok) {
-                              setStatusMessage({
-                                type: 'error',
-                                text: data.error || 'Failed to process request.',
-                              });
-                              return;
-                            }
-
-                            if (typeof loadUserData === 'function') {
-                              await loadUserData();
-                            }
-
-                            setStatusMessage({
-                              type: 'success',
-                              text: data.message || 'Plan activated successfully!',
-                            });
-                            setActiveTab('dashboard');
-                            setDepositStep(1);
-                            setDepositAmount('');
-                          } catch (err) {
-                            console.error('Submission error:', err);
-                            setStatusMessage({
-                              type: 'error',
-                              text: 'Network error while processing request.',
-                            });
-                          }
-                        } else {
-                          setDepositStep(2);
-                        }
-                      }}
-                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
-                    >
-                      Proceed & Invest
-                    </button>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {plans && plans.length > 0 ? (
+            plans.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => setSelectedPlan(p)}
+                className={`bg-[#161f33] border p-4 rounded cursor-pointer transition ${
+                  selectedPlan?.id === p.id
+                    ? 'border-orange-500 shadow-md ring-1 ring-orange-500'
+                    : 'border-gray-800 hover:border-gray-700'
+                }`}
+              >
+                <p className="font-bold text-white uppercase text-xs notranslate" translate="no">
+                  {p.name}
+                </p>
+                <p className="text-emerald-400 font-bold text-xs mt-1 notranslate" translate="no">
+                  PROFITS: {p.daily_profit}% Daily for {p.duration_days} days
+                </p>
+                <div className="text-gray-400 text-[11px] mt-2 space-y-0.5">
+                  <p>
+                    Minimum: <span className="text-white">${p.min_deposit}</span>
+                  </p>
+                  <p>
+                    Maximum: <span className="text-white">${p.max_deposit || 'Unlimited'}</span>
+                  </p>
+                  <p>
+                    Principal Returned: <span className="text-white">Yes</span>
+                  </p>
+                  <p>
+                    Withdrawal: <span className="text-white">Instant</span>
+                  </p>
                 </div>
-              )}
-
-              {/* STEP 2: DEPOSIT CONFIRMATION PAGE (Matching dhx4.PNG) */}
-              {depositStep === 2 && (
-                <div className="space-y-4">
-                  <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
-                    Deposit Confirmation:
-                  </div>
-
-                  <div className="bg-[#161f33] border border-gray-800 p-6 rounded space-y-5">
-                    {/* Official Payment Address Copy Bar */}
-                    <div className="space-y-1.5">
-                      <label className="block text-gray-300 font-semibold text-xs">Send your payment to this address</label>
-                      <div className="flex gap-2 max-w-xl">
-                        <input
-                          type="text"
-                          readOnly
-                          value={activeWalletAddress || WALLET_ADDRESSES?.[depositMethod] || 'bc1q4edf256m4khgdxvxtkjhnhcunnmjt09a3m266h'}
-                          className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-200 font-mono text-xs select-all"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleCopyWallet}
-                          className="px-3 py-1.5 bg-gray-200 hover:bg-white text-gray-900 font-bold border border-gray-400 rounded shrink-0 text-xs transition"
-                        >
-                          {copied ? 'Copied' : 'Copy address'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Plan Summary Breakdown matching dhx4.PNG */}
-                    <div className="space-y-1 text-xs text-gray-300 max-w-xl py-2 border-t border-b border-gray-800">
-                      <div className="grid grid-cols-2 py-0.5">
-                        <span className="text-gray-400">Plan:</span>
-                        <span className="font-bold text-white uppercase">{selectedPlan?.name || 'STARTER PLAN'}</span>
-                      </div>
-                      <div className="grid grid-cols-2 py-0.5">
-                        <span className="text-gray-400">Profit:</span>
-                        <span className="text-emerald-400 font-semibold">{selectedPlan?.daily_profit || '4.00'}% Daily for {selectedPlan?.duration_days || '3'} days</span>
-                      </div>
-                      <div className="grid grid-cols-2 py-0.5">
-                        <span className="text-gray-400">Principal Return:</span>
-                        <span className="text-white">Yes</span>
-                      </div>
-                      <div className="grid grid-cols-2 py-0.5">
-                        <span className="text-gray-400">Principal Withdraw:</span>
-                        <span className="text-white">Available with 0.00% fee</span>
-                      </div>
-                      <div className="grid grid-cols-2 py-0.5">
-                        <span className="text-gray-400">Credit Amount:</span>
-                        <span className="text-white font-mono">${Number(depositAmount).toFixed(2)}</span>
-                      </div>
-                      <div className="grid grid-cols-2 py-0.5">
-                        <span className="text-gray-400">Deposit Fee:</span>
-                        <span className="text-white font-mono">0.00% + $0.00 (min. $0.00 max. $0.00)</span>
-                      </div>
-                      <div className="grid grid-cols-2 py-0.5 font-bold">
-                        <span className="text-gray-400">Debit Amount:</span>
-                        <span className="text-emerald-400 font-mono">${Number(depositAmount).toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    {/* Final Submission Form */}
-                    <form onSubmit={(e) => {
-                      handleDepositSubmit(e);
-                      setDepositStep(1); // Reset back to step 1 after submit
-                    }} className="space-y-4 max-w-xl">
-                      <div>
-                        <label className="block text-gray-400 mb-1 font-semibold text-xs">Required Information:</label>
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-400 text-xs">Transaction ID</span>
-                          <input
-                            type="text"
-                            required
-                            value={transactionId}
-                            onChange={(e) => setTransactionId(e.target.value)}
-                            className="bg-[#111827] border border-gray-700 rounded p-1.5 text-white font-mono text-xs w-64"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 pt-2">
-                        <button
-                          type="submit"
-                          className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded text-xs uppercase transition"
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDepositStep(1)}
-                          className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded text-xs uppercase transition"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
-
+              </div>
+            ))
+          ) : (
+            <div className="p-4 text-center text-gray-400 bg-[#161f33] border border-gray-800 rounded col-span-3">
+              No investment plans currently available.
             </div>
           )}
+        </div>
+
+        <div className="bg-[#161f33] border border-gray-800 p-5 rounded space-y-4">
+          <div>
+            <label className="block text-gray-400 mb-1 text-[11px]">Your Account Balance</label>
+            <input
+              type="text"
+              readOnly
+              value={`$${Number(user?.balance || 0).toFixed(2)}`}
+              className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-emerald-400 font-bold font-mono text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-400 mb-1 text-[11px]">Select Package</label>
+            <select
+              value={selectedPlan?.id || ''}
+              onChange={(e) => {
+                const found = plans.find((p) => p.id.toString() === e.target.value);
+                if (found) setSelectedPlan(found);
+              }}
+              className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
+              translate="no"
+            >
+              {plans.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-gray-400 mb-1 text-[11px]">Select Payment Method</label>
+            <select
+              value={depositMethod}
+              onChange={(e) => setDepositMethod(e.target.value)}
+              className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
+              translate="no"
+            >
+              <option value="Account Balance">
+                Account Balance (${Number(user?.balance || 0).toFixed(2)})
+              </option>
+              {Object.keys(WALLET_ADDRESSES || {})
+                .filter((gateway) => gateway !== 'Account Balance')
+                .map((gateway) => (
+                  <option key={gateway} value={gateway}>
+                    {gateway}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-gray-400 mb-1 text-[11px]">Enter Amount ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={depositAmount}
+              onChange={(e) => setDepositAmount(e.target.value)}
+              placeholder={selectedPlan?.min_deposit || '100.00'}
+              className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white font-mono text-xs"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setStatusMessage({ type: '', text: '' });
+              const numericAmount = Number(depositAmount);
+
+              if (!selectedPlan) {
+                setStatusMessage({ type: 'error', text: 'Please select a plan.' });
+                return;
+              }
+              if (!depositAmount || Number.isNaN(numericAmount) || numericAmount <= 0) {
+                setStatusMessage({ type: 'error', text: 'Please enter a valid amount.' });
+                return;
+              }
+              if (selectedPlan.min_deposit && numericAmount < Number(selectedPlan.min_deposit)) {
+                setStatusMessage({
+                  type: 'error',
+                  text: `Minimum deposit for ${selectedPlan.name} is $${Number(selectedPlan.min_deposit).toFixed(2)}.`,
+                });
+                return;
+              }
+              if (selectedPlan.max_deposit && numericAmount > Number(selectedPlan.max_deposit)) {
+                setStatusMessage({
+                  type: 'error',
+                  text: `Maximum deposit for ${selectedPlan.name} is $${Number(selectedPlan.max_deposit).toFixed(2)}.`,
+                });
+                return;
+              }
+
+              if (depositMethod === 'Account Balance') {
+                const currentBalance = Number(user?.balance || 0);
+                if (numericAmount > currentBalance) {
+                  setStatusMessage({
+                    type: 'error',
+                    text: `Insufficient Account Balance ($${currentBalance.toFixed(2)} available).`,
+                  });
+                  return;
+                }
+
+                try {
+                  const res = await fetch(`${API_URL}/invest/`, {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      plan_id: selectedPlan.id,
+                      amount: depositAmount,
+                      payment_method: depositMethod,
+                    }),
+                  });
+
+                  const data = await res.json();
+
+                  if (!res.ok) {
+                    setStatusMessage({ type: 'error', text: data.error || 'Failed to process request.' });
+                    return;
+                  }
+
+                  await loadUserData();
+                  setStatusMessage({ type: 'success', text: data.message || 'Plan activated successfully!' });
+                  setActiveTab('dashboard');
+                  setDepositStep(1);
+                  setDepositAmount('');
+                } catch (err) {
+                  console.error('Submission error:', err);
+                  setStatusMessage({ type: 'error', text: 'Network error while processing request.' });
+                }
+              } else {
+                setDepositStep(2);
+              }
+            }}
+            className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
+          >
+            Proceed & Invest
+          </button>
+        </div>
+      </div>
+    )}
+
+    {depositStep === 2 && (
+      <div className="space-y-4">
+        <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
+          Deposit Confirmation:
+        </div>
+
+        <div className="bg-[#161f33] border border-gray-800 p-6 rounded space-y-5">
+          <div className="space-y-1.5">
+            <label className="block text-gray-300 font-semibold text-xs">
+              Send your payment to this address
+            </label>
+            <div className="flex gap-2 max-w-xl">
+              <input
+                type="text"
+                readOnly
+                value={activeWalletAddress}
+                className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-200 font-mono text-xs select-all"
+              />
+              <button
+                type="button"
+                onClick={handleCopyWallet}
+                className="px-3 py-1.5 bg-gray-200 hover:bg-white text-gray-900 font-bold border border-gray-400 rounded shrink-0 text-xs transition"
+              >
+                {copied ? 'Copied' : 'Copy address'}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1 text-xs text-gray-300 max-w-xl py-2 border-t border-b border-gray-800">
+            <div className="grid grid-cols-2 py-0.5">
+              <span className="text-gray-400">Plan:</span>
+              <span className="font-bold text-white uppercase">
+                {selectedPlan?.name || 'STARTER PLAN'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 py-0.5">
+              <span className="text-gray-400">Profit:</span>
+              <span className="text-emerald-400 font-semibold">
+                {selectedPlan?.daily_profit || '4.00'}% Daily for {selectedPlan?.duration_days || '3'} days
+              </span>
+            </div>
+            <div className="grid grid-cols-2 py-0.5">
+              <span className="text-gray-400">Credit Amount:</span>
+              <span className="text-white font-mono">${Number(depositAmount || 0).toFixed(2)}</span>
+            </div>
+            <div className="grid grid-cols-2 py-0.5">
+              <span className="text-gray-400">Payment Method:</span>
+              <span className="text-white">{depositMethod}</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleDepositSubmit} className="space-y-4 max-w-xl">
+            <div>
+              <label className="block text-gray-400 mb-1 font-semibold text-xs">
+                Required Information:
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 text-xs">Transaction ID</span>
+                <input
+                  type="text"
+                  required
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  className="bg-[#111827] border border-gray-700 rounded p-1.5 text-white font-mono text-xs w-64"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="submit"
+                className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded text-xs uppercase transition"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusMessage({ type: '', text: '' });
+                  setDepositStep(1);
+                }}
+                className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded text-xs uppercase transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </div>
+)}
 
 {/* WITHDRAWAL MODULE */}
           {activeTab === 'withdrawal' && (
