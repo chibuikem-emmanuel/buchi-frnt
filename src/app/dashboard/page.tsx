@@ -552,9 +552,12 @@ console.log("Current User Object in State:", user);
                         className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
                         translate="no"
                       >
-                        {Object.keys(WALLET_ADDRESSES || {}).map((gateway) => (
-                          <option key={gateway} value={gateway}>{gateway}</option>
-                        ))}
+                        <option value="Account Balance">Account Balance</option>
+                        {Object.keys(WALLET_ADDRESSES || {})
+                          .filter((gateway) => gateway !== 'Account Balance')
+                          .map((gateway) => (
+                            <option key={gateway} value={gateway}>{gateway}</option>
+                          ))}
                       </select>
                     </div>
 
@@ -571,60 +574,71 @@ console.log("Current User Object in State:", user);
                       />
                     </div>
 
-<button
-  type="button"
-  onClick={async () => {
-    if (!selectedPlan) {
-      alert('Please select a plan.');
-      return;
-    }
-    if (!depositAmount || Number(depositAmount) <= 0) {
-      alert('Please enter a valid amount.');
-      return;
-    }
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setStatusMessage({ type: '', text: '' });
 
-    if (depositMethod === 'Account Balance') {
-      try {
-        const res = await fetch(`${API_URL}/invest/`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            plan_id: selectedPlan.id,
-            amount: depositAmount,
-            payment_method: depositMethod,
-          }),
-        });
+                        if (!selectedPlan) {
+                          setStatusMessage({ type: 'error', text: 'Please select a plan.' });
+                          return;
+                        }
+                        if (!depositAmount || Number(depositAmount) <= 0) {
+                          setStatusMessage({ type: 'error', text: 'Please enter a valid amount.' });
+                          return;
+                        }
 
-        const data = await res.json();
+                        if (depositMethod === 'Account Balance') {
+                          try {
+                            const res = await fetch(`${API_URL}/invest/`, {
+                              method: 'POST',
+                              headers: {
+                                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                plan_id: selectedPlan.id,
+                                amount: depositAmount,
+                                payment_method: depositMethod,
+                              }),
+                            });
 
-        if (!res.ok) {
-          alert(data.error || 'Failed to process request.');
-          return;
-        }
+                            const data = await res.json();
 
-        if (typeof loadUserData === 'function') {
-          await loadUserData();
-        }
+                            if (!res.ok) {
+                              setStatusMessage({
+                                type: 'error',
+                                text: data.error || 'Failed to process request.',
+                              });
+                              return;
+                            }
 
-        alert(data.message || 'Plan activated successfully!');
-        setActiveTab('dashboard');
-        setDepositStep(1);
-        setDepositAmount('');
-      } catch (err) {
-        console.error('Submission error:', err);
-        alert('Network error while processing request.');
-      }
-    } else {
-      setDepositStep(2);
-    }
-  }}
-  className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
->
-  Proceed & Invest
-</button>
+                            if (typeof loadUserData === 'function') {
+                              await loadUserData();
+                            }
+
+                            setStatusMessage({
+                              type: 'success',
+                              text: data.message || 'Plan activated successfully!',
+                            });
+                            setActiveTab('dashboard');
+                            setDepositStep(1);
+                            setDepositAmount('');
+                          } catch (err) {
+                            console.error('Submission error:', err);
+                            setStatusMessage({
+                              type: 'error',
+                              text: 'Network error while processing request.',
+                            });
+                          }
+                        } else {
+                          setDepositStep(2);
+                        }
+                      }}
+                      className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold rounded uppercase text-xs transition"
+                    >
+                      Proceed & Invest
+                    </button>
                   </div>
                 </div>
               )}
