@@ -561,7 +561,7 @@ console.log("Current User Object in State:", user);
             </select>
           </div>
 
-<div>
+          <div>
             <label className="block text-gray-400 mb-1 text-[11px]">Select Payment Method</label>
             <select
               value={depositMethod}
