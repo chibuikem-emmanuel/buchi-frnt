@@ -527,6 +527,58 @@ if (depositStep === 2) {
   </div>
 )}
 
+
+{/* ADD THIS RIGHT BELOW THE 4-COLUMN METRIC GRID */}
+    <div className="bg-[#161f33] border border-gray-800 p-6 rounded space-y-3">
+      <h3 className="text-xs font-bold uppercase tracking-wide text-white">
+        Investment Plans & Expiration
+      </h3>
+
+      {user?.investments && user.investments.length > 0 ? (
+        <div className="space-y-2">
+          {user.investments.map((inv: any) => {
+            const isExpired =
+              Boolean(inv.is_expired) ||
+              String(inv.status).toUpperCase() !== 'ACTIVE' ||
+              (inv.expires_at && new Date(inv.expires_at).getTime() <= Date.now());
+
+            return (
+              <div
+                key={inv.id}
+                className="flex flex-wrap items-center justify-between gap-2 bg-[#111827] border border-gray-800 p-3 rounded text-xs"
+              >
+                <div>
+                  <p className="font-bold text-white uppercase">{inv.plan_name}</p>
+                  <p className="text-gray-400 text-[11px]">
+                    Principal: <span className="text-white font-mono">${Number(inv.amount).toFixed(2)}</span> ·
+                    Profit: <span className="text-emerald-400">{inv.daily_profit_percentage}%/day</span> ·
+                    Duration: <span className="text-gray-200">{inv.duration_days} days</span>
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      isExpired
+                        ? 'bg-red-900/50 text-red-300 border border-red-700'
+                        : 'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
+                    }`}
+                  >
+                    {isExpired ? 'EXPIRED — Earning Stopped' : 'ACTIVE'}
+                  </span>
+                  <p className="text-gray-400 text-[11px] mt-1 font-mono">
+                    Expires: {inv.expires_at_display || (inv.expires_at ? new Date(inv.expires_at).toLocaleString() : '—')}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="text-gray-400 text-xs">No active or completed investments yet.</p>
+      )}
+    </div>
+
 {/* MAKE DEPOSIT MODULE */}
 {activeTab === 'make_deposit' && (
   <div className="space-y-4 text-xs text-gray-300">

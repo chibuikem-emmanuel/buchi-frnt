@@ -363,6 +363,30 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
 };
 
 
+const handleReleaseDeposit = async (depositId: number | string) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''; // match your file's existing API base variable
+  const token = localStorage.getItem('access_token') || localStorage.getItem('access') || '';
+
+  const res = await fetch(`${baseUrl}/admin/expiring-deposits/${depositId}/release/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!res.ok) {
+    console.error('Failed to release deposit:', await res.text());
+    return;
+  }
+
+  // Update local expiringDeposits list directly if you don't have a separate reload function
+  setExpiringDeposits?.((prev: any[] = []) =>
+    prev.filter((item) => item.id !== depositId)
+  );
+};
+
+
 
 
   const handleManageDeposits = async (userId: number) => {
@@ -822,50 +846,54 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
     )}
   </div>
 )}
-          {/* TAB 3: EXPIRING DEPOSITS */}
-          {activeTab === 'expiring' && (
-            <div className="space-y-4">
-              <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
-                Deposits:
-              </h2>
+ {activeTab === 'expiring' && (
+  <div className="space-y-4">
+    <h2 className="text-sm font-bold text-gray-800 uppercase border-b border-orange-200 pb-2">
+      Deposits:
+    </h2>
 
-              <div className="border border-orange-200 rounded overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">User</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Plan</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Deposit</th>
-                      <th className="p-2 border-r border-orange-200 font-bold uppercase">Expires</th>
-                      <th className="p-2 font-bold uppercase text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-orange-100">
-                    {expiringDeposits.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="p-6 text-center text-gray-500 font-semibold">
-                          No records found
-                        </td>
-                      </tr>
-                    ) : (
-                      expiringDeposits.map((d) => (
-                        <tr key={d.id} className="hover:bg-amber-50/40">
-                          <td className="p-2 font-bold text-blue-900 border-r border-orange-100">{d.username}</td>
-                          <td className="p-2 border-r border-orange-100">{d.plan_name}</td>
-                          <td className="p-2 font-bold text-emerald-700 border-r border-orange-100">${Number(d.amount).toFixed(2)}</td>
-                          <td className="p-2 border-r border-orange-100 text-gray-600">{d.expires_at}</td>
-                          <td className="p-2 text-right">
-                            <button className="px-2 py-0.5 bg-red-600 text-white rounded text-[10px] uppercase font-bold">Release</button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+    <div className="border border-orange-200 rounded overflow-hidden">
+      <table className="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr className="bg-amber-100 text-gray-900 border-b border-orange-200">
+            <th className="p-2 border-r border-orange-200 font-bold uppercase">User</th>
+            <th className="p-2 border-r border-orange-200 font-bold uppercase">Plan</th>
+            <th className="p-2 border-r border-orange-200 font-bold uppercase">Deposit</th>
+            <th className="p-2 border-r border-orange-200 font-bold uppercase">Expires</th>
+            <th className="p-2 font-bold uppercase text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-orange-100">
+          {expiringDeposits.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="p-6 text-center text-gray-500 font-semibold">
+                No records found
+              </td>
+            </tr>
+          ) : (
+            expiringDeposits.map((d) => (
+              <tr key={d.id} className="hover:bg-amber-50/40">
+                <td className="p-2 font-bold text-blue-900 border-r border-orange-100">{d.username}</td>
+                <td className="p-2 border-r border-orange-100">{d.plan_name}</td>
+                <td className="p-2 font-bold text-emerald-700 border-r border-orange-100">${Number(d.amount).toFixed(2)}</td>
+                <td className="p-2 border-r border-orange-100 text-gray-600">{d.expires_at}</td>
+                <td className="p-2 text-right">
+                  <button
+                    type="button"
+                    onClick={() => handleReleaseDeposit(d.id)}
+                    className="px-2 py-0.5 bg-red-600 hover:bg-red-700 text-white rounded text-[10px] uppercase font-bold"
+                  >
+                    Release
+                  </button>
+                </td>
+              </tr>
+            ))
           )}
-
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
           {/* TAB 4: PROCESSINGS MANAGEMENT */}
           {activeTab === 'processings' && (
             <div className="space-y-4">
