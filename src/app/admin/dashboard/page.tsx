@@ -406,8 +406,10 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
     setProcFormData({
       name: proc.name || '',
       status: proc.status || 'ON',
-      walletAddress: proc.wallet_address || proc.walletAddress || '',
-      instructions: proc.instructions || `Transfer funds to the official ${proc.name} wallet address.`,
+      walletAddress: proc.wallet_address || proc.walletAddress || proc.address || '',
+      instructions:
+        proc.instructions ||
+        `Transfer funds to the official ${proc.name || 'gateway'} wallet address.`,
       minDeposit: proc.min_deposit || '100.00',
       maxDeposit: proc.max_deposit || '100000.00',
       depositFeePct: '0.00',
@@ -425,10 +427,13 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
   const handleSaveProcessing = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const cleanWallet = (procFormData.walletAddress || '').trim();
+
     const payload = {
       name: procFormData.name,
       status: procFormData.status,
-      wallet_address: procFormData.walletAddress.trim(),
+      wallet_address: cleanWallet,
+      walletAddress: cleanWallet,
       instructions: procFormData.instructions,
       min_deposit: procFormData.minDeposit,
       max_deposit: procFormData.maxDeposit,
