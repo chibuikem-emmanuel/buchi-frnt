@@ -400,72 +400,91 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
     }
   };
 
-// Processing Actions
-  const handleOpenEditProcessing = (proc: any) => {
-    setSelectedProcessing(proc);
-    setProcFormData({
-      name: proc.name || '',
-      status: proc.status || 'ON',
-      walletAddress: proc.wallet_address || proc.walletAddress || proc.address || '',
-      instructions:
-        proc.instructions ||
-        `Transfer funds to the official ${proc.name || 'gateway'} wallet address.`,
-      minDeposit: proc.min_deposit || '100.00',
-      maxDeposit: proc.max_deposit || '100000.00',
-      depositFeePct: '0.00',
-      depositFeeAdd: '0.00',
-      minWithdraw: proc.min_withdraw || '10.00',
-      maxWithdraw: proc.max_withdraw || '50000.00',
-      withdrawFeePct: '0.00',
-      withdrawFeeAdd: '0.00',
-      accountField: 'Transaction ID',
-      withdrawAccountField: 'Account / Wallet Address'
-    });
-    setProcessingViewMode('edit');
+const handleOpenEditProcessing = (gateway: any) => {
+  setSelectedProcessing(gateway);
+  setProcFormData((prev: any) => ({
+    ...prev,
+    name: gateway?.name || '',
+    status: gateway?.status || 'ON',
+    instructions: gateway?.instructions || '',
+    walletAddress: gateway?.wallet_address || gateway?.walletAddress || '',
+    accountField: gateway?.accountField || prev?.accountField || 'Transaction ID',
+    minDeposit: gateway?.min_deposit ?? gateway?.minDeposit ?? 0,
+    maxDeposit: gateway?.max_deposit ?? gateway?.maxDeposit ?? 0,
+    minWithdraw: gateway?.min_withdraw ?? gateway?.minWithdraw ?? 0,
+    maxWithdraw: gateway?.max_withdraw ?? gateway?.maxWithdraw ?? 0,
+    withdrawAccountField: gateway?.withdrawAccountField || prev?.withdrawAccountField || 'Wallet Address',
+  }));
+  setProcessingViewMode('edit');
+};
+
+const handleSaveProcessing = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!selectedProcessing) return;
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''; // match your file's existing base URL
+  const isNew = !selectedProcessing.id || Number(selectedProcessing.id) > 1_000_000_000;
+  const url = isNew
+    ? `${baseUrl}/admin/processings/`
+    : `${baseUrl}/admin/processings/${selectedProcessing.id}/`;
+  const method = isNew ? 'POST' : 'PUT';
+
+  const payload = {
+    name: procFormData.name,
+    status: procFormData.status,
+    instructions: procFormData.instructions,
+    wallet_address: (procFormData.walletAddress || '').trim(),
+    min_deposit: procFormData.minDeposit,
+    max_deposit: procFormData.maxDeposit,
+    min_withdraw: procFormData.minWithdraw,
+    max_withdraw: procFormData.maxWithdraw,
   };
 
-  const handleSaveProcessing = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const token = localStorage.getItem('access_token') || localStorage.getItem('access') || '';
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
 
-    const cleanWallet = (procFormData.walletAddress || '').trim();
+  if (!res.ok) {
+    console.error('Failed to save processing:', await res.text());
+    return;
+  }
 
-    const payload = {
-      name: procFormData.name,
-      status: procFormData.status,
-      wallet_address: cleanWallet,
-      walletAddress: cleanWallet,
-      instructions: procFormData.instructions,
-      min_deposit: procFormData.minDeposit,
-      max_deposit: procFormData.maxDeposit,
-      min_withdraw: procFormData.minWithdraw,
-      max_withdraw: procFormData.maxWithdraw,
-    };
+  const savedData = await res.json().catch(() => ({}));
+  const updatedWallet = (savedData?.wallet_address ?? payload.wallet_address).trim();
 
-    try {
-      const isNew = !selectedProcessing?.id || String(selectedProcessing.id).length > 10;
+  // Update local list state if you don't have a separate reload function
+  setProcessings?.((prev: any[] = []) =>
+    isNew
+      ? [
+          ...prev,
+          {
+            ...selectedProcessing,
+            id: savedData?.id ?? selectedProcessing.id,
+            ...payload,
+            wallet_address: updatedWallet,
+            walletAddress: updatedWallet,
+          },
+        ]
+      : prev.map((item) =>
+          item.id === selectedProcessing.id
+            ? {
+                ...item,
+                ...payload,
+                wallet_address: updatedWallet,
+                walletAddress: updatedWallet,
+              }
+            : item
+        )
+  );
 
-      if (isNew) {
-        await createAdminProcessing(payload);
-        alert(`Processing gateway "${procFormData.name}" created successfully!`);
-      } else {
-        await updateAdminProcessing(Number(selectedProcessing.id), payload);
-        alert(`Processing gateway "${procFormData.name}" updated successfully!`);
-      }
-
-      setProcessingViewMode('list');
-
-      // Refresh your table data
-      const updatedList = await fetchAdminProcessings();
-      if (Array.isArray(updatedList)) {
-        setProcessings(updatedList);
-      }
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save gateway settings.';
-      console.error("Save processing error:", err);
-      alert(errorMessage);
-    }
-  };
-
+  setProcessingViewMode('list');
+};
   // User Actions
   const handleOpenEditUser = (user: any) => {
     setSelectedUser(user);
