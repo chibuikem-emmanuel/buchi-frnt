@@ -955,7 +955,7 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                     <div className="border-t border-orange-200 pt-3 space-y-3">
                       <p className="font-bold text-orange-900 uppercase">Deposit:</p>
                       
-                      <div className="grid grid-cols-3 items-start gap-2">
+                      {/* <div className="grid grid-cols-3 items-start gap-2">
                         <label className="font-bold text-gray-700 text-right pt-1">Payment Instructions for Users:</label>
                         <textarea
                           rows={4}
@@ -963,7 +963,7 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                           onChange={(e) => setProcFormData({ ...procFormData, instructions: e.target.value })}
                           className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
                         ></textarea>
-                      </div>
+                      </div> */}
 
                       <div className="grid grid-cols-3 items-center gap-2">
                         <label className="font-bold text-gray-700 text-right">Wallet Address:</label>
