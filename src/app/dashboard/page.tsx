@@ -165,6 +165,31 @@ const loadUserData = async () => {
     }
   };
 
+
+  const [processings, setProcessings] = useState<any[]>([]);
+
+const loadProcessings = async () => {
+  try {
+    const res = await fetch(`${API_URL}/processings/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : [];
+    setProcessings(list);
+  } catch (err) {
+    console.error('Failed to load processings:', err);
+  }
+};
+
+useEffect(() => {
+  if (activeTab === 'make_deposit' || depositStep === 2) {
+    loadProcessings();
+  }
+}, [activeTab, depositStep]);
+
   
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
@@ -186,6 +211,26 @@ const loadUserData = async () => {
   };
 
 console.log("Current User Object in State:", user);
+
+
+const matchedGateway = (processings || []).find(
+  (item: any) =>
+    String(item?.name || '').trim().toLowerCase() === String(depositMethod || '').trim().toLowerCase()
+);
+
+const currentGatewayAddress =
+  matchedGateway?.wallet_address ||
+  matchedGateway?.walletAddress ||
+  activeWalletAddress ||
+  WALLET_ADDRESSES?.[depositMethod] ||
+  '';
+
+
+  useEffect(() => {
+  if ((activeTab === 'make_deposit' || depositStep === 2) && typeof loadProcessings === 'function') {
+    loadProcessings();
+  }
+}, [activeTab, depositStep]);
 
   return (
     <div className="min-h-screen bg-[#0d1322] text-gray-200 font-sans text-xs">
@@ -667,16 +712,13 @@ console.log("Current User Object in State:", user);
               Send your payment to this address
             </label>
             <div className="flex gap-2 max-w-xl">
-              <input
-                type="text"
-                readOnly
-                value={
-                  activeWalletAddress ||
-                  WALLET_ADDRESSES?.[depositMethod] ||
-                  'bc1q4edf256m4khgdxvxtkjhnhcunnmjt09a3m266h'
-                }
-                className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-200 font-mono text-xs select-all"
-              />
+<input
+  type="text"
+  readOnly
+  value={currentGatewayAddress}
+  placeholder="No wallet address set for this gateway"
+  className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-gray-200 font-mono text-xs select-all"
+/>
               <button
                 type="button"
                 onClick={handleCopyWallet}
