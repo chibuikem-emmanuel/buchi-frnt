@@ -227,6 +227,7 @@ const matchedGateway = (processings || []).find(
 const currentGatewayAddress = (
   matchedGateway?.wallet_address ||
   matchedGateway?.walletAddress ||
+  matchedGateway?.instructions ||
   (depositMethod !== 'Account Balance'
     ? activeWalletAddress || WALLET_ADDRESSES?.[depositMethod] || ''
     : '')
