@@ -561,7 +561,7 @@ console.log("Current User Object in State:", user);
             </select>
           </div>
 
-          <div>
+<div>
             <label className="block text-gray-400 mb-1 text-[11px]">Select Payment Method</label>
             <select
               value={depositMethod}
@@ -569,11 +569,16 @@ console.log("Current User Object in State:", user);
               className="w-full bg-[#111827] border border-gray-700 rounded p-2 text-white text-xs notranslate"
               translate="no"
             >
-              {Object.keys(WALLET_ADDRESSES || {}).map((gateway) => (
-                <option key={gateway} value={gateway}>
-                  {gateway}
-                </option>
-              ))}
+              <option value="Account Balance">
+                Account Balance (${Number(user?.balance || 0).toFixed(2)})
+              </option>
+              {Object.keys(WALLET_ADDRESSES || {})
+                .filter((gateway) => gateway !== 'Account Balance')
+                .map((gateway) => (
+                  <option key={gateway} value={gateway}>
+                    {gateway}
+                  </option>
+                ))}
             </select>
           </div>
 
