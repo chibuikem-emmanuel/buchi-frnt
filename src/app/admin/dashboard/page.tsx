@@ -196,10 +196,11 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
 
   
 
-  // Edit Processing Form State
+// Edit Processing Form State
   const [procFormData, setProcFormData] = useState({
     name: '',
     status: 'ON',
+    walletAddress: '',
     instructions: '',
     minDeposit: '100.00',
     maxDeposit: '100000.00',
@@ -399,12 +400,13 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
     }
   };
 
-  // Processing Actions
+// Processing Actions
   const handleOpenEditProcessing = (proc: any) => {
     setSelectedProcessing(proc);
     setProcFormData({
       name: proc.name || '',
       status: proc.status || 'ON',
+      walletAddress: proc.wallet_address || proc.walletAddress || '',
       instructions: proc.instructions || `Transfer funds to the official ${proc.name} wallet address.`,
       minDeposit: proc.min_deposit || '100.00',
       maxDeposit: proc.max_deposit || '100000.00',
@@ -420,41 +422,44 @@ const [userDepositsList, setUserDepositsList] = useState<any[]>([]);
     setProcessingViewMode('edit');
   };
 
-const handleSaveProcessing = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSaveProcessing = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const payload = {
-    name: procFormData.name,
-    status: procFormData.status,
-    instructions: procFormData.instructions,
-    min_deposit: procFormData.minDeposit,
-    max_deposit: procFormData.maxDeposit,
-    min_withdraw: procFormData.minWithdraw,
-    max_withdraw: procFormData.maxWithdraw,
-  };
+    const payload = {
+      name: procFormData.name,
+      status: procFormData.status,
+      wallet_address: procFormData.walletAddress.trim(),
+      instructions: procFormData.instructions,
+      min_deposit: procFormData.minDeposit,
+      max_deposit: procFormData.maxDeposit,
+      min_withdraw: procFormData.minWithdraw,
+      max_withdraw: procFormData.maxWithdraw,
+    };
 
-  try {
-    const isNew = !selectedProcessing?.id || String(selectedProcessing.id).length > 10;
+    try {
+      const isNew = !selectedProcessing?.id || String(selectedProcessing.id).length > 10;
 
-    if (isNew) {
-      await createAdminProcessing(payload);
-      alert(`Processing gateway "${procFormData.name}" created successfully!`);
-    } else {
-      await updateAdminProcessing(Number(selectedProcessing.id), payload);
-      alert(`Processing gateway "${procFormData.name}" updated successfully!`);
+      if (isNew) {
+        await createAdminProcessing(payload);
+        alert(`Processing gateway "${procFormData.name}" created successfully!`);
+      } else {
+        await updateAdminProcessing(Number(selectedProcessing.id), payload);
+        alert(`Processing gateway "${procFormData.name}" updated successfully!`);
+      }
+
+      setProcessingViewMode('list');
+
+      // Refresh your table data
+      const updatedList = await fetchAdminProcessings();
+      if (Array.isArray(updatedList)) {
+        setProcessings(updatedList);
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save gateway settings.';
+      console.error("Save processing error:", err);
+      alert(errorMessage);
     }
-
-    setProcessingViewMode('list');
-    
-    // Refresh your table data
-    const updatedList = await fetchAdminProcessings();
-    setProcessings(updatedList);
-  } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : 'Failed to save gateway settings.';
-    console.error("Save processing error:", err);
-    alert(errorMessage);
-  }
-};
+  };
 
   // User Actions
   const handleOpenEditUser = (user: any) => {
@@ -934,6 +939,17 @@ const handleSaveProcessing = async (e: React.FormEvent) => {
                           onChange={(e) => setProcFormData({ ...procFormData, instructions: e.target.value })}
                           className="col-span-2 border border-orange-300 rounded p-1.5 bg-white"
                         ></textarea>
+                      </div>
+
+                      <div className="grid grid-cols-3 items-center gap-2">
+                        <label className="font-bold text-gray-700 text-right">Wallet Address:</label>
+                        <input
+                          type="text"
+                          value={procFormData.walletAddress || ''}
+                          onChange={(e) => setProcFormData({ ...procFormData, walletAddress: e.target.value })}
+                          placeholder="Enter gateway wallet address"
+                          className="col-span-2 border border-orange-300 rounded p-1.5 bg-white font-mono"
+                        />
                       </div>
 
                       <div className="grid grid-cols-3 items-center gap-2">
