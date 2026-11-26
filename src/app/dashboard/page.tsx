@@ -62,11 +62,12 @@ export default function UserDashboardPage() {
 
 
 
-  const handleCopyWallet = () => {
-    navigator.clipboard.writeText(activeWalletAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+const handleCopyWallet = () => {
+  if (!currentGatewayAddress) return;
+  navigator.clipboard?.writeText(currentGatewayAddress);
+  setCopied(true);
+  setTimeout(() => setCopied(false), 2000);
+};
 
   useEffect(() => {
     loadUserData();
@@ -166,7 +167,7 @@ const loadUserData = async () => {
   };
 
 
-  const [processings, setProcessings] = useState<any[]>([]);
+const [processings, setProcessings] = useState<any[]>([]);
 
 const loadProcessings = async () => {
   try {
@@ -213,17 +214,32 @@ useEffect(() => {
 console.log("Current User Object in State:", user);
 
 
+
+
+
+
 const matchedGateway = (processings || []).find(
   (item: any) =>
-    String(item?.name || '').trim().toLowerCase() === String(depositMethod || '').trim().toLowerCase()
+    String(item?.name || '').trim().toLowerCase() ===
+    String(depositMethod || '').trim().toLowerCase()
 );
 
-const currentGatewayAddress =
+const currentGatewayAddress = (
   matchedGateway?.wallet_address ||
   matchedGateway?.walletAddress ||
-  activeWalletAddress ||
-  WALLET_ADDRESSES?.[depositMethod] ||
-  '';
+  (depositMethod !== 'Account Balance'
+    ? activeWalletAddress || WALLET_ADDRESSES?.[depositMethod] || ''
+    : '')
+).trim();
+
+if (depositStep === 2) {
+  console.log({
+    depositMethod,
+    processings,
+    matchedGateway,
+    currentGatewayAddress,
+  });
+}
 
 
   useEffect(() => {
