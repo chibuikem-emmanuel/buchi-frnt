@@ -135,6 +135,26 @@ const [analytics, setAnalytics] = useState<any>({
   withdrawals: { totalApproved: '0.00', pendingCount: 0, pendingAmount: '0.00' }
 });
 
+useEffect(() => {
+  if (activeTab === 'expiring') {
+    fetchExpiringDeposits()
+      .then(setExpiringDeposits)
+      .catch(() => setExpiringDeposits([]));
+  }
+}, [activeTab]);
+
+
+useEffect(() => {
+  if (activeTab !== 'expiring') return;
+
+  fetchExpiringDeposits()
+    .then((items) => setExpiringDeposits(items))
+    .catch((err) => {
+      console.error('Expiring deposits error:', err);
+      setExpiringDeposits([]);
+    });
+}, [activeTab]);
+
 
 
 

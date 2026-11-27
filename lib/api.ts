@@ -368,12 +368,16 @@ export async function deleteInvestmentPlan(planId: number) {
 }
 
 export async function fetchExpiringDeposits() {
-  const res = await fetch(`${API_URL}/admin/expiring-deposits/`, { headers: getAuthHeaders() });
-  if (!res.ok) throw new Error('Failed to load expiring deposits');
-  const data = await res.json();
+  const res = await fetch(`${API_URL}/admin/expiring-deposits/`, {
+    headers: getAuthHeaders(),
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`Failed to load expiring deposits (${res.status}): ${text}`);
+  }
+  const data = text ? JSON.parse(text) : [];
   return Array.isArray(data) ? data : [];
 }
-
 
 export async function createAdminProcessing(payload: any) {
   const res = await fetch(`${API_URL}/admin/processings/`, {
