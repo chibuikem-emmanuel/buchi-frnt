@@ -133,38 +133,51 @@ const loadUserData = async () => {
     }
   };
 
-  const handleDepositSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch(`${API_URL}/user/deposits/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify({
-          amount: parseFloat(depositAmount),
-          gateway: depositMethod,
-          transaction_id: transactionId,
-          plan_id: selectedPlan?.id
-        })
-      });
+const handleDepositSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setStatusMessage({ type: '', text: '' });
 
-      if (res.ok) {
-        setStatusMessage({ type: 'success', text: 'Deposit request submitted successfully! Awaiting admin confirmation.' });
-        setDepositAmount('');
-        setTransactionId('');
-        setSelectedPlan(null);
-        loadUserData();
-      } else {
-        const errData = await res.json();
-        setStatusMessage({ type: 'error', text: errData.error || 'Failed to submit deposit request.' });
-      }
-    } catch (err) {
-      console.error("Deposit submission error:", err);
-      setStatusMessage({ type: 'error', text: 'An error occurred during deposit submission.' });
+  try {
+    const res = await fetch(`${API_URL}/user/deposits/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+      body: JSON.stringify({
+        amount: parseFloat(depositAmount),
+        gateway: depositMethod,
+        transaction_id: transactionId,
+        plan_id: selectedPlan?.id
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      setStatusMessage({
+        type: 'success',
+        text: data.message || 'Deposit request submitted successfully! Awaiting admin confirmation.'
+      });
+      setDepositAmount('');
+      setTransactionId('');
+      setSelectedPlan(null);
+      setDepositStep(1);
+      await loadUserData();
+    } else {
+      setStatusMessage({
+        type: 'error',
+        text: data.error || data.message || 'Failed to submit deposit request.'
+      });
     }
-  };
+  } catch (err) {
+    console.error("Deposit submission error:", err);
+    setStatusMessage({
+      type: 'error',
+      text: 'An error occurred during deposit submission.'
+    });
+  }
+};
 
 
 const [processings, setProcessings] = useState<any[]>([]);
@@ -585,21 +598,22 @@ if (depositStep === 2) {
     {/* STEP 1: PLAN SELECTION & INITIAL FORM (Matching dhx3.PNG) */}
     {depositStep === 1 && (
       <div className="space-y-4">
-        <div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
-          Make a deposit
-        </div>
+<div className="bg-orange-500 text-gray-900 font-bold px-4 py-2.5 uppercase tracking-wide rounded">
+        Make a deposit
+      </div>
 
-        {statusMessage.text && (
-          <div
-            className={`p-3 rounded font-medium ${
-              statusMessage.type === 'success'
-                ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700'
-                : 'bg-red-900/40 text-red-300 border border-red-700'
-            }`}
-          >
-            {statusMessage.text}
-          </div>
-        )}
+      {/* Render outside depositStep === 1 so it shows on any step */}
+      {statusMessage?.text && (
+        <div
+          className={`p-3 rounded font-medium ${
+            statusMessage.type === 'success'
+              ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700'
+              : 'bg-red-900/40 text-red-300 border border-red-700'
+          }`}
+        >
+          {statusMessage.text}
+        </div>
+      )}
 
         {/* 1. PLAN CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
