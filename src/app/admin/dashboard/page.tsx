@@ -137,6 +137,28 @@ const [analytics, setAnalytics] = useState<any>({
 
 
 
+
+useEffect(() => {
+  if (activeTab !== 'expiring') return;
+
+  let active = true;
+  (async () => {
+    try {
+      const items = await fetchExpiringDeposits();
+      if (active) setExpiringDeposits(items);
+    } catch (err) {
+      console.error('Failed to load expiring deposits:', err);
+      if (active) setExpiringDeposits([]);
+    }
+  })();
+
+  return () => {
+    active = false;
+  };
+}, [activeTab]);
+
+
+
   
   // Dynamic State Arrays
   const [users, setUsers] = useState<any[]>([]);
